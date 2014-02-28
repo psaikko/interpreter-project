@@ -25,18 +25,23 @@ namespace InterpreterProject
             {
                 char c = (i == text.Length) ? EOF : text[i];
 
+                Console.WriteLine("Tokenizer: i = " + i + "\t c = '" + c + "'");
+
                 automaton.FeedCharacter(c);
 
                 if (automaton.IsFailState())
                 {
+                    Console.WriteLine("Tokenizer: fail state");
                     Token t = automaton.GetToken();
                     if (t != null)
                     {
+                        Console.WriteLine("Tokenizer: adding token");
                         tokens.Add(t);
                         i -= (automaton.Rewind() + 1);
                     }
                     else
                     {
+                        Console.WriteLine("Tokenizer: error");
                         if (c == EOF) break;
                         i -= automaton.Rewind();
                     }

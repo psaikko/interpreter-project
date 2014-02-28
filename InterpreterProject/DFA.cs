@@ -44,7 +44,8 @@ namespace InterpreterProject
                     currentState = null;
                 }
             }
-            //Console.WriteLine(accumulator);
+
+            Console.WriteLine(accumulator);
         }
 
         public bool IsFailState()

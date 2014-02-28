@@ -120,6 +120,51 @@ namespace InterpreterProject
         }
 
         /*
+         * Do a BFS of the underlying automaton and print node data
+         * For debugging purposes
+         */
+        public override string ToString()
+        {
+            String s = "";
+            ISet<Node> visited = new HashSet<Node>();
+            Queue<Node> q = new Queue<Node>();
+            q.Enqueue(start);
+            visited.Add(start);
+            while (q.Count != 0)
+            {
+                Node current = q.Dequeue();
+                
+                s += "ID " + current.id + " Transitions: { ";
+                foreach (char c in current.transitions.Keys)
+                {
+                    Node next = current.transitions[c];
+                    s += c + ":" + next.id + " ";
+                    if (!visited.Contains(next))
+                    {
+                        q.Enqueue(next);
+                        visited.Add(next);
+                    }
+                        
+                }
+                s += "}, Eps: { ";
+                foreach (Node next in current.epsilonTransitions)
+                {
+                    s += next.id + " ";
+                    if (!visited.Contains(next))
+                    {
+                        q.Enqueue(next);
+                        visited.Add(next);
+                    }
+                }
+                s += "}";
+                if (current.tokenClass != null)
+                    s += ", Token: " + current.tokenClass.name;
+                s += "\n";
+            }
+            return s;
+        }
+
+        /*
          * Make a DFA-ish automaton from the regex
          */
         public DFA ConstructDFA()
@@ -144,17 +189,22 @@ namespace InterpreterProject
                 Console.WriteLine("In Stack:");
                 foreach (ISet<Node> nodeset in s)
                     Node.PrintSet(nodeset);
-                Console.WriteLine("\nCurrent:");
+                Console.WriteLine("Current:");
                 Node.PrintSet(currentNFAStates);
                 
                 ISet<char> nextChars = new HashSet<char>();
                 
 
                 // find which characters we can move with from NFAStates
-                foreach (Node n in NFAStartStates)
+                foreach (Node n in currentNFAStates)
                 {
                     nextChars.UnionWith(n.transitions.Keys);
                 }
+
+                Console.Write("\nTransition chars: ");
+                foreach (char c in nextChars)
+                    Console.Write(c + " ");
+                Console.WriteLine("\n");
 
                 // for each character find states we can move to, make a new DFA state 
                 foreach (char c in nextChars)
