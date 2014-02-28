@@ -4,18 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterpreterMiniPL
+namespace InterpreterProject
 {
     class Program
     {
         static void Main(string[] args)
         {
             
-            Re aa = Re.Concat("aa");
-            Re a = Re.Character('a');
-            Re b = Re.Character('b');
-            Re aba = Re.Plus(Re.Concat("aba"));
-            Re space = Re.Plus(Re.Character(' '));
+            Regex aa = Regex.Concat("aa");
+            Regex a = Regex.Character('a');
+            Regex b = Regex.Character('b');
+            Regex aba = Regex.Plus(Regex.Concat("aba"));
+            Regex space = Regex.Plus(Regex.Character(' '));
 
             TokenClass aa_token = new TokenClass("aa", aa);
             TokenClass a_token = new TokenClass("a", a);
@@ -23,7 +23,7 @@ namespace InterpreterMiniPL
             TokenClass aba_token = new TokenClass("aba", aba);
             TokenClass space_token = new TokenClass("space", space);
 
-            Re combined = Re.Union(Re.Union(Re.Union(Re.Union(aba, space), a), aa), b);
+            Regex combined = Regex.Union(Regex.Union(Regex.Union(Regex.Union(aba, space), a), aa), b);
 
             Console.WriteLine("Regex created");
 
@@ -32,27 +32,10 @@ namespace InterpreterMiniPL
             Console.WriteLine("Automaton created");
 
             string text = "bbbabaaba aaabac  aaa";
-            for (int i = 0; i < text.Length; i++)
-            {
-                char c = text[i];
-                //Console.WriteLine("feed: " + c);
-                automaton.FeedCharacter(c);
-                if (automaton.IsFailState())
-                {
-                    if (automaton.GetToken() != null)
-                    {
-                        Token t = automaton.GetToken();
-                        Console.WriteLine("token: "+t.type.name+ " - lexeme: "+t.lexeme);
-                        i -= (automaton.Rewind() + 1);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid token");
-                        i -= automaton.Rewind();
-                    }
-                }
-            }
-            Console.WriteLine(automaton.GetToken().lexeme);
+
+            Scanner sc = new Scanner(automaton);
+            List<Token> tokens = sc.Tokenize(text);
+            Token.PrintList(tokens);
 
             Console.WriteLine("Finished");
             Console.ReadLine();

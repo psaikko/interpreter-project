@@ -4,34 +4,34 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterpreterMiniPL
+namespace InterpreterProject
 {
-    class Re
+    public class Regex
     {
         private Node start;
         private Node end;
 
-        private Re(Node start, Node end)
+        private Regex(Node start, Node end)
         {
             this.start = start;
             this.end = end;
         }
 
-        public static Re Concat(Re a, Re b)
+        public static Regex Concat(Regex a, Regex b)
         {
             a.end.epsilonTransitions.Add(b.start);
-            return new Re(a.start, b.end);
+            return new Regex(a.start, b.end);
         }
 
-        public static Re Concat(String s)
+        public static Regex Concat(String s)
         {
-            Re re = Any();
+            Regex re = Any();
             for (int i = 0; i < s.Length; i++)
-                re = Re.Concat(re, Re.Character(s[i]));
+                re = Regex.Concat(re, Regex.Character(s[i]));
             return re;
         }
 
-        public static Re Star(Re r)
+        public static Regex Star(Regex r)
         {
             Node start = new Node();
             Node end = new Node();
@@ -39,10 +39,10 @@ namespace InterpreterMiniPL
             start.epsilonTransitions.Add(r.start);
             start.epsilonTransitions.Add(end);
             r.end.epsilonTransitions.Add(end);
-            return new Re(start, end);
+            return new Regex(start, end);
         }
 
-        public static Re Plus(Re r)
+        public static Regex Plus(Regex r)
         {
             // like star, but need to go through r at least once
             Node start = new Node();
@@ -50,10 +50,10 @@ namespace InterpreterMiniPL
             r.end.epsilonTransitions.Add(r.start);
             start.epsilonTransitions.Add(r.start);
             r.end.epsilonTransitions.Add(end);
-            return new Re(start, end);
+            return new Regex(start, end);
         }
 
-        public static Re Maybe(Re r)
+        public static Regex Maybe(Regex r)
         {
             // like star, but can't repeat r
             Node start = new Node();
@@ -61,10 +61,10 @@ namespace InterpreterMiniPL
             start.epsilonTransitions.Add(r.start);
             start.epsilonTransitions.Add(end);
             r.end.epsilonTransitions.Add(end);
-            return new Re(start, end);
+            return new Regex(start, end);
         }
 
-        public static Re Union(Re a, Re b)
+        public static Regex Union(Regex a, Regex b)
         {
             Node start = new Node();
             Node end = new Node();
@@ -72,49 +72,49 @@ namespace InterpreterMiniPL
             start.epsilonTransitions.Add(b.start);
             a.end.epsilonTransitions.Add(end);
             b.end.epsilonTransitions.Add(end);
-            return new Re(start, end);
+            return new Regex(start, end);
         }
 
-        public static Re Union(String s)
+        public static Regex Union(String s)
         {
-            Re re = None();
+            Regex re = None();
             for (int i = 0; i < s.Length; i++)
                 re = Union(re, Character(s[i]));
             return re;
         }
 
-        public static Re Range(char a, char b)
+        public static Regex Range(char a, char b)
         {
-            Re re = None();
+            Regex re = None();
             for (char c = a; c < b; c++)
                 re = Union(re, Character(c));
             return re;
         }
 
-        public static Re Character(char c)
+        public static Regex Character(char c)
         {
             Node start = new Node();
             Node end = new Node();
             start.transitions.Add(c, end);
-            return new Re(start, end);
+            return new Regex(start, end);
         }
 
-        public static Re None()
+        public static Regex None()
         {
             Node start = new Node();
             Node end = new Node();
-            return new Re(start, end);
+            return new Regex(start, end);
         }
 
-        public static Re Any()
+        public static Regex Any()
         {
             Node start = new Node();
             Node end = new Node();
             start.epsilonTransitions.Add(end);
-            return new Re(start, end);
+            return new Regex(start, end);
         }
 
-        public void defineTokenClass(TokenClass tokenClass)
+        public void DefineTokenClass(TokenClass tokenClass)
         {
             this.end.tokenClass = tokenClass;
         }

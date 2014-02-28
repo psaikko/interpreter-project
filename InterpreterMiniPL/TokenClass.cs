@@ -4,18 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterpreterMiniPL
+namespace InterpreterProject
 {
-    class TokenClass
+    public class TokenClass
     {
         public readonly String name;
-        readonly Re regex;
+        readonly Regex regex;
 
-        public TokenClass(String name, Re regex)
+        public TokenClass(String name, Regex regex)
         {
             this.name = name;
             this.regex = regex;
-            regex.defineTokenClass(this);
+            regex.DefineTokenClass(this);
         }
 
         public Token CreateToken(String lexeme)

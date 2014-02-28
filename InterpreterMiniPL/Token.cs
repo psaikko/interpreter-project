@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterpreterMiniPL
+namespace InterpreterProject
 {
-    class Token
+    public class Token
     {
         public readonly TokenClass type;
         public readonly String lexeme;
@@ -15,6 +15,14 @@ namespace InterpreterMiniPL
         {
             this.type = type;
             this.lexeme = lexeme;
+        }
+
+        public static void PrintList(List<Token> tokens)
+        {
+            foreach (Token t in tokens)
+            {
+                Console.WriteLine(string.Format("Type: {0,-10} Lexeme: '{1}'", t.type.name, t.lexeme));
+            }
         }
     }
 }

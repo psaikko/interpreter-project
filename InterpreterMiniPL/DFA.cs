@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterpreterMiniPL
+namespace InterpreterProject
 {
-    class DFA
+    public class DFA
     {
         private State initialState;
         private State currentState;
