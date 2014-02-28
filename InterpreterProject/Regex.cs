@@ -17,77 +17,19 @@ namespace InterpreterProject
             this.end = end;
         }
 
-        public static Regex Concat(Regex a, Regex b)
-        {
-            a.end.epsilonTransitions.Add(b.start);
-            return new Regex(a.start, b.end);
-        }
-
-        public static Regex Concat(String s)
-        {
-            Regex re = Any();
-            for (int i = 0; i < s.Length; i++)
-                re = Regex.Concat(re, Regex.Character(s[i]));
-            return re;
-        }
-
-        public static Regex Star(Regex r)
-        {
-            Node start = new Node();
-            Node end = new Node();
-            r.end.epsilonTransitions.Add(r.start);
-            start.epsilonTransitions.Add(r.start);
-            start.epsilonTransitions.Add(end);
-            r.end.epsilonTransitions.Add(end);
-            return new Regex(start, end);
-        }
-
-        public static Regex Plus(Regex r)
-        {
-            // like star, but need to go through r at least once
-            Node start = new Node();
-            Node end = new Node();
-            r.end.epsilonTransitions.Add(r.start);
-            start.epsilonTransitions.Add(r.start);
-            r.end.epsilonTransitions.Add(end);
-            return new Regex(start, end);
-        }
-
-        public static Regex Maybe(Regex r)
-        {
-            // like star, but can't repeat r
-            Node start = new Node();
-            Node end = new Node();
-            start.epsilonTransitions.Add(r.start);
-            start.epsilonTransitions.Add(end);
-            r.end.epsilonTransitions.Add(end);
-            return new Regex(start, end);
-        }
-
-        public static Regex Union(Regex a, Regex b)
-        {
-            Node start = new Node();
-            Node end = new Node();
-            start.epsilonTransitions.Add(a.start);
-            start.epsilonTransitions.Add(b.start);
-            a.end.epsilonTransitions.Add(end);
-            b.end.epsilonTransitions.Add(end);
-            return new Regex(start, end);
-        }
-
         public static Regex Union(String s)
         {
             Regex re = None();
             for (int i = 0; i < s.Length; i++)
-                re = Union(re, Character(s[i]));
+                re = re.Union(Character(s[i]));
             return re;
         }
 
         public static Regex Range(char a, char b)
         {
             Regex re = None();
-            for (char c = a; c < b; c++)
-                re = Union(re, Character(c));
+            for (char c = a; c <= b; c++)
+                re = re.Union(Character(c));
             return re;
         }
 
@@ -111,6 +53,64 @@ namespace InterpreterProject
             Node start = new Node();
             Node end = new Node();
             start.epsilonTransitions.Add(end);
+            return new Regex(start, end);
+        }
+
+        public static Regex Concat(String s)
+        {
+            Regex re = Any();
+            for (int i = 0; i < s.Length; i++)
+                re = re.Concat(Regex.Character(s[i]));
+            return re;
+        }
+
+        public Regex Concat(Regex other)
+        {
+            this.end.epsilonTransitions.Add(other.start);
+            return new Regex(this.start, other.end);
+        }
+
+        public Regex Star()
+        {
+            Node start = new Node();
+            Node end = new Node();
+            this.end.epsilonTransitions.Add(this.start);
+            start.epsilonTransitions.Add(this.start);
+            start.epsilonTransitions.Add(end);
+            this.end.epsilonTransitions.Add(end);
+            return new Regex(start, end);
+        }
+
+        public Regex Plus()
+        {
+            // like star, but need to go through r at least once
+            Node start = new Node();
+            Node end = new Node();
+            this.end.epsilonTransitions.Add(this.start);
+            start.epsilonTransitions.Add(this.start);
+            this.end.epsilonTransitions.Add(end);
+            return new Regex(start, end);
+        }
+
+        public Regex Maybe()
+        {
+            // like star, but can't repeat r
+            Node start = new Node();
+            Node end = new Node();
+            start.epsilonTransitions.Add(this.start);
+            start.epsilonTransitions.Add(end);
+            this.end.epsilonTransitions.Add(end);
+            return new Regex(start, end);
+        }
+
+        public Regex Union(Regex other)
+        {
+            Node start = new Node();
+            Node end = new Node();
+            start.epsilonTransitions.Add(this.start);
+            start.epsilonTransitions.Add(other.start);
+            this.end.epsilonTransitions.Add(end);
+            other.end.epsilonTransitions.Add(end);
             return new Regex(start, end);
         }
 

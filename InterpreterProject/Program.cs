@@ -14,8 +14,8 @@ namespace InterpreterProject
             Regex aa = Regex.Concat("aa");
             Regex a = Regex.Character('a');
             Regex b = Regex.Character('b');
-            Regex aba = Regex.Plus(Regex.Concat("aba"));
-            Regex space = Regex.Plus(Regex.Character(' '));
+            Regex aba = Regex.Concat("aba").Plus();
+            Regex space = Regex.Character(' ').Plus();
 
             TokenClass aa_token = new TokenClass("aa", aa);
             TokenClass a_token = new TokenClass("a", a);
@@ -23,7 +23,7 @@ namespace InterpreterProject
             TokenClass aba_token = new TokenClass("aba", aba);
             TokenClass space_token = new TokenClass("space", space);
 
-            Regex combined = Regex.Union(Regex.Union(Regex.Union(Regex.Union(aba, space), a), aa), b);
+            Regex combined = aba.Union(aa).Union(a).Union(b).Union(aba).Union(space);
 
             Console.WriteLine("Regex created");
 
