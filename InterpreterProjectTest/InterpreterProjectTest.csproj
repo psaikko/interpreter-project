@@ -54,7 +54,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\InterpreterMiniPL\InterpreterProject.csproj">
+    <ProjectReference Include="..\InterpreterProject\InterpreterProject.csproj">
       <Project>{9012f331-961e-4dfc-8d04-6d2eb873e41b}</Project>
       <Name>InterpreterProject</Name>
     </ProjectReference>
