@@ -10,31 +10,26 @@ namespace InterpreterProject
     {
         static void Main(string[] args)
         {
-            
-            Regex aa = Regex.Concat("aa");
-            Regex a = Regex.Character('a');
-            Regex b = Regex.Character('b');
-            Regex aba = Regex.Concat("aba").Plus();
-            Regex space = Regex.Character(' ').Plus();
 
-            TokenClass aa_token = new TokenClass("aa", aa);
-            TokenClass a_token = new TokenClass("a", a);
-            TokenClass b_token = new TokenClass("b", b);
-            TokenClass aba_token = new TokenClass("aba", aba);
-            TokenClass space_token = new TokenClass("space", space);
+            Regex whitespace = Regex.Union(" \t\n").Star();
+            Regex str = Regex.Character('"').Concat(Regex.Not('"').Star()).Concat(Regex.Character('"'));
 
-            Regex combined = aba.Union(aa).Union(a).Union(b).Union(aba).Union(space);
+            TokenClass whitespaceToken = new TokenClass("Whitespace", whitespace);
+            TokenClass stringToken = new TokenClass("string", str);
 
-            Console.WriteLine("Regex created");
+            Regex combined = whitespace.Union(str);
+
+            //Console.ReadLine();
 
             DFA automaton = combined.ConstructDFA();
-
-            Console.WriteLine("Automaton created");
-
-            string text = "bbbabaaba aaabac  aaaca";
-
             Scanner sc = new Scanner(automaton);
+
+            string text = "\"asdf\" \"sdfg\"";
+
+            
+
             List<Token> tokens = sc.Tokenize(text);
+
             Token.PrintList(tokens);
 
             Console.WriteLine("Finished");

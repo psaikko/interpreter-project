@@ -33,6 +33,7 @@ namespace InterpreterProject
                     Token t = automaton.GetToken();
                     if (t != null)
                     {
+                        // EOF handled internally by scanner, automaton - don't pass it forward
                         if (t.type == TokenClass.EOF)
                             break;
                         Console.WriteLine("Tokenizer: adding token");
@@ -42,7 +43,7 @@ namespace InterpreterProject
                     else
                     {
                         Console.WriteLine("Tokenizer: error");
-                        Console.WriteLine();
+                        // Add error token, skip one character forward in text
                         tokens.Add(automaton.GetErrorToken());
                         i -= (automaton.Rewind() - 1);
                     }

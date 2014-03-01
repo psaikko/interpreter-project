@@ -64,6 +64,19 @@ namespace InterpreterProject
             return re;
         }
 
+        public static Regex Not(char c)
+        {
+            Regex re = None();
+            for (char a = (char)1; a < 256; a++)
+            {
+                if (a != c)
+                {
+                    re = re.Union(Character(a));
+                }
+            }
+            return re;
+        }
+
         public Regex Concat(Regex other)
         {
             this.end.epsilonTransitions.Add(other.start);
@@ -179,19 +192,24 @@ namespace InterpreterProject
             
             while (s.Count != 0)
             {
+                //Console.ReadLine();
+
                 ISet<Node> currentNFAStates = s.Pop();
                 DFA.State currentDFAState = DFAStates[currentNFAStates];
-
+                /*
                 Console.WriteLine("=================================");
-                Console.WriteLine("Existing States:");
+                Console.WriteLine("Existing States: "+DFAStates.Keys.Count);
                 foreach (ISet<Node> nodeset in DFAStates.Keys)
-                    Node.PrintSet(nodeset);
-                Console.WriteLine("In Stack:");
+                    Console.WriteLine(nodeset.GetHashCode());
+                    //Node.PrintSet(nodeset);
+                Console.WriteLine("\nIn Stack: "+ s.Count);
                 foreach (ISet<Node> nodeset in s)
-                    Node.PrintSet(nodeset);
-                Console.WriteLine("Current:");
-                Node.PrintSet(currentNFAStates);
-                
+                    Console.WriteLine(nodeset.GetHashCode());
+                    //Node.PrintSet(nodeset);
+                Console.WriteLine("\nCurrent:");
+                Console.WriteLine(currentNFAStates.GetHashCode());
+                //Node.PrintSet(currentNFAStates);
+                */
                 ISet<char> nextChars = new HashSet<char>();
                 
 
@@ -200,13 +218,15 @@ namespace InterpreterProject
                 {
                     nextChars.UnionWith(n.transitions.Keys);
                 }
-
+                /*
                 Console.Write("\nTransition chars: ");
                 foreach (char c in nextChars)
-                    Console.Write(c + " ");
+                    Console.Write("#"+(int)c+" ");
                 Console.WriteLine("\n");
-
+                */
                 // for each character find states we can move to, make a new DFA state 
+                //int added = 0;
+                //int skipped = 0;
                 foreach (char c in nextChars)
                 {
                     ISet<Node> nextNFAStates = Node.Move(currentNFAStates, c);
@@ -214,11 +234,12 @@ namespace InterpreterProject
                     HashSet<Node> epsilonClosure = new HashSet<Node>();
                     epsilonClosure.UnionWith(nextNFAStates);
                     epsilonClosure.UnionWith(Node.EpsilonMove(nextNFAStates));
-
+                   
                     if (epsilonClosure.Count != 0)
                     {
-                        Console.WriteLine("Reachable with " + c + ":");
-                        Node.PrintSet(epsilonClosure);
+                        //Console.WriteLine("Reachable with '" + c + "' ("+(int)c+"):");
+                        //Console.WriteLine(epsilonClosure.GetHashCode());
+                        //Node.PrintSet(epsilonClosure);
                         
                         DFA.State nextDFAState;
 
@@ -230,20 +251,27 @@ namespace InterpreterProject
                                 if (n.tokenClass != null)
                                     nextDFAState.recognizedTokens.Add(n.tokenClass);
 
-                            Console.WriteLine("Adding:");
-                            Node.PrintSet(epsilonClosure);
+                            //Console.WriteLine("Adding:");
+                            //Console.WriteLine(epsilonClosure.GetHashCode());
+                            //Node.PrintSet(epsilonClosure);
                             DFAStates.Add(epsilonClosure, nextDFAState);
                             s.Push(epsilonClosure);
+                            //added++;
                         }
                         else
                         {
-                            Console.WriteLine("Exists");
+                            //Console.WriteLine("Exists");
+                            //skipped++;
                         }
-                        Console.WriteLine();
-
+                        
                         currentDFAState.transitions.Add(c, nextDFAState);
                     }
+                    
                 }
+                /*
+                Console.WriteLine("add: " + added + " skip: " + skipped);
+                Console.WriteLine("stack: " + s.Count);
+                 */
             }
 
             return new DFA(DFAStartState);
