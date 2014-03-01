@@ -28,6 +28,18 @@ namespace InterpreterProject
             return new Regex(start, end);
         }
 
+        public static Regex Union(params Regex[] rs)
+        {
+            Node start = new Node();
+            Node end = new Node();
+            foreach (Regex r in rs)
+            {
+                start.epsilonTransitions.Add(r.start);
+                r.end.epsilonTransitions.Add(end);
+            }
+            return new Regex(start, end);
+        }
+
         public static Regex Range(char a, char b)
         {
             Node start = new Node();
@@ -145,7 +157,7 @@ namespace InterpreterProject
             return new Regex(start, end);
         }
 
-        public void DefineTokenClass(TokenClass tokenClass)
+        public void DefineTokenClass(TokenType tokenClass)
         {
             this.end.tokenClass = tokenClass;
         }
@@ -198,11 +210,11 @@ namespace InterpreterProject
         /*
          * Make a DFA-ish automaton from the regex
          */
-        public DFA ConstructDFA()
+        public TokenAutomaton ConstructAutomaton()
         {
-            Dictionary<ISet<Node>, DFA.State> DFAStates = 
-                new Dictionary<ISet<Node>, DFA.State>(new SetEqualityComparer<Node>());
-            DFA.State DFAStartState = new DFA.State();
+            Dictionary<ISet<Node>, TokenAutomaton.State> DFAStates = 
+                new Dictionary<ISet<Node>, TokenAutomaton.State>(new SetEqualityComparer<Node>());
+            TokenAutomaton.State DFAStartState = new TokenAutomaton.State();
             ISet<Node> NFAStartStates = start.EpsilonMove();
             DFAStates.Add(NFAStartStates, DFAStartState);
 
@@ -212,7 +224,7 @@ namespace InterpreterProject
             while (s.Count != 0)
             {
                 ISet<Node> currentNFAStates = s.Pop();
-                DFA.State currentDFAState = DFAStates[currentNFAStates];
+                TokenAutomaton.State currentDFAState = DFAStates[currentNFAStates];
                 ISet<char> nextChars = new HashSet<char>();
                 
                 // find which characters we can move with from currentNFAStates
@@ -229,11 +241,11 @@ namespace InterpreterProject
                         epsilonClosure.UnionWith(nextNFAStates);
                         epsilonClosure.UnionWith(Node.EpsilonMove(nextNFAStates, cached: true));
                         
-                        DFA.State nextDFAState;
+                        TokenAutomaton.State nextDFAState;
 
                         if (!DFAStates.TryGetValue(epsilonClosure, out nextDFAState))
                         {
-                            nextDFAState = new DFA.State();
+                            nextDFAState = new TokenAutomaton.State();
 
                             foreach (Node n in epsilonClosure)
                                 if (n.tokenClass != null)
@@ -249,7 +261,7 @@ namespace InterpreterProject
                 }                
             }
 
-            return new DFA(DFAStartState);
+            return new TokenAutomaton(DFAStartState);
         }
 
         /*
@@ -262,7 +274,7 @@ namespace InterpreterProject
 
             public Dictionary<char, Node> transitions = new Dictionary<char, Node>();
             public List<Node> epsilonTransitions = new List<Node>();
-            public TokenClass tokenClass = null;
+            public TokenType tokenClass = null;
 
             /*
              * Calculates the epsilon closure of a node with BFS from node

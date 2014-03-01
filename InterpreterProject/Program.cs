@@ -14,14 +14,14 @@ namespace InterpreterProject
             Regex whitespace = Regex.Union(" \t\n").Star();
             Regex str = Regex.Character('"').Concat(Regex.Not('"').Star()).Concat(Regex.Character('"'));
 
-            TokenClass whitespaceToken = new TokenClass("Whitespace", whitespace);
-            TokenClass stringToken = new TokenClass("string", str);
+            TokenType whitespaceToken = new TokenType("Whitespace", whitespace);
+            TokenType stringToken = new TokenType("string", str);
 
             Regex combined = whitespace.Union(str);
 
             
 
-            DFA automaton = combined.ConstructDFA();
+            TokenAutomaton automaton = combined.ConstructAutomaton();
 
             //Console.ReadLine();
 
