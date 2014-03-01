@@ -12,8 +12,8 @@ namespace InterpreterProjectTest
         public void Regex_CharacterTest()
         {
             Regex a = Regex.Character('a');
-            TokenClass aClass = new TokenClass("a", a);
-            DFA automaton = a.ConstructDFA();
+            TokenType aType = new TokenType("a", a);
+            TokenAutomaton automaton = aType.Automaton();
 
             string text = "aaaaa";
 
@@ -29,8 +29,8 @@ namespace InterpreterProjectTest
         public void Regex_ConcatTest()
         {
             Regex ab = Regex.Concat("ab");
-            TokenClass abClass = new TokenClass("ab", ab);
-            DFA automaton = ab.ConstructDFA();
+            TokenType abType = new TokenType("ab", ab);
+            TokenAutomaton automaton = abType.Automaton();
 
             string text = "ababab";
 
@@ -46,8 +46,8 @@ namespace InterpreterProjectTest
         public void Regex_RangeTest()
         {
             Regex az = Regex.Range('a', 'z');
-            TokenClass azClass = new TokenClass("az", az);
-            DFA automaton = az.ConstructDFA();
+            TokenType azType = new TokenType("az", az);
+            TokenAutomaton automaton = azType.Automaton();
 
             string text = "abcdefghijklmnopqrstuvwxyz";
 
@@ -64,10 +64,9 @@ namespace InterpreterProjectTest
         {
             Regex aa = Regex.Concat("aa");
             Regex ab = Regex.Union("ab");
-            TokenClass aaClass = new TokenClass("aa", aa);
-            TokenClass abClass = new TokenClass("a|b", ab);
-            Regex combined = aa.Union(ab);
-            DFA automaton = combined.ConstructDFA();
+            TokenType aaType = new TokenType("aa", aa);
+            TokenType abType = new TokenType("a|b", ab);
+            TokenAutomaton automaton = TokenType.CombinedAutomaton(aaType, abType);
 
             string text = "aababaabaa";
 
@@ -84,8 +83,8 @@ namespace InterpreterProjectTest
         public void Regex_PlusTest()
         {
             Regex ba = Regex.Character('b').Concat(Regex.Character('a').Plus());
-            TokenClass baClass = new TokenClass("ba+", ba);
-            DFA automaton = ba.ConstructDFA();
+            TokenType baType = new TokenType("ba+", ba);
+            TokenAutomaton automaton = baType.Automaton();
 
             string text = "baababab";
 
@@ -96,15 +95,15 @@ namespace InterpreterProjectTest
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-            Assert.AreEqual(TokenClass.ERROR, tokens[3].type);
+            Assert.AreEqual(TokenType.ERROR, tokens[3].type);
         }
 
         [TestMethod]
         public void Regex_StarTest()
         {
             Regex ab = Regex.Character('a').Star().Concat(Regex.Character('b'));
-            TokenClass abClass = new TokenClass("a*b", ab);
-            DFA automaton = ab.ConstructDFA();
+            TokenType abType = new TokenType("a*b", ab);
+            TokenAutomaton automaton = abType.Automaton();
 
             string text = "aababb";
 
@@ -121,8 +120,8 @@ namespace InterpreterProjectTest
         public void Regex_MaybeTest()
         {
             Regex ab = Regex.Character('a').Maybe().Concat(Regex.Character('b'));
-            TokenClass abClass = new TokenClass("a?b", ab);
-            DFA automaton = ab.ConstructDFA();
+            TokenType abType = new TokenType("a?b", ab);
+            TokenAutomaton automaton = abType.Automaton();
 
             string text = "babbab";
 
@@ -140,16 +139,14 @@ namespace InterpreterProjectTest
         {
             Regex b = Regex.Character('b');
             Regex notb = Regex.Not('b');
-
-            TokenClass bToken = new TokenClass("b", b);
-            TokenClass notbToken = new TokenClass("not b", notb);
-
-            Regex combined = b.Union(notb);
-            DFA automaton = combined.ConstructDFA();
+            TokenType bType = new TokenType("b", b);
+            TokenType notbType = new TokenType("not b", notb);
+            TokenAutomaton automaton = TokenType.CombinedAutomaton(bType, notbType);
 
             string text = "9jQbksjhbQ3b";
 
             Scanner sc = new Scanner(automaton);
+
             List<Token> tokens = sc.Tokenize(text);
 
             string[] expectedTokens = { "9","j","Q","b","k","s","j","h","b","Q","3","b" };
@@ -168,10 +165,8 @@ namespace InterpreterProjectTest
         public void Regex_AnyTest()
         {
             Regex any = Regex.Any();
-
-            TokenClass anyToken = new TokenClass("any", any);
-
-            DFA automaton = any.ConstructDFA();
+            TokenType anyType = new TokenType("any", any);
+            TokenAutomaton automaton = anyType.Automaton();
 
             string text = "9jQbksjhbQ3b";
 
@@ -183,7 +178,7 @@ namespace InterpreterProjectTest
             for (int i = 0; i < expectedTokens.Length; i++)
             {
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(anyToken, tokens[i].type);
+                Assert.AreEqual(anyType, tokens[i].type);
             }
         }
     }
