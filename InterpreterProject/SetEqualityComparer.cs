@@ -18,7 +18,7 @@ namespace InterpreterProject
             int hash = 0;
             foreach (T t in obj)
             {
-                hash = (hash + t.GetHashCode()) % 101;
+                hash = (hash + t.GetHashCode()) % 7919;
             }
             return hash;
         }    

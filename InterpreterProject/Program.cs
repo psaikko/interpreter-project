@@ -19,9 +19,12 @@ namespace InterpreterProject
 
             Regex combined = whitespace.Union(str);
 
-            //Console.ReadLine();
+            
 
             DFA automaton = combined.ConstructDFA();
+
+            //Console.ReadLine();
+
             Scanner sc = new Scanner(automaton);
 
             string text = "\"asdf\" \"sdfg\"";
@@ -33,7 +36,7 @@ namespace InterpreterProject
             Token.PrintList(tokens);
 
             Console.WriteLine("Finished");
-            Console.ReadLine();
+            //Console.ReadLine();
         }
     }
 }

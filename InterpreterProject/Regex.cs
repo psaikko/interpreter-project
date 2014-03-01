@@ -182,7 +182,8 @@ namespace InterpreterProject
          */
         public DFA ConstructDFA()
         {
-            Dictionary<ISet<Node>, DFA.State> DFAStates = new Dictionary<ISet<Node>, DFA.State>(new SetEqualityComparer<Node>());
+            Dictionary<ISet<Node>, DFA.State> DFAStates = 
+                new Dictionary<ISet<Node>, DFA.State>(new SetEqualityComparer<Node>());
             DFA.State DFAStartState = new DFA.State();
             ISet<Node> NFAStartStates = start.EpsilonMove();
             DFAStates.Add(NFAStartStates, DFAStartState);
@@ -192,54 +193,23 @@ namespace InterpreterProject
             
             while (s.Count != 0)
             {
-                //Console.ReadLine();
-
                 ISet<Node> currentNFAStates = s.Pop();
                 DFA.State currentDFAState = DFAStates[currentNFAStates];
-                /*
-                Console.WriteLine("=================================");
-                Console.WriteLine("Existing States: "+DFAStates.Keys.Count);
-                foreach (ISet<Node> nodeset in DFAStates.Keys)
-                    Console.WriteLine(nodeset.GetHashCode());
-                    //Node.PrintSet(nodeset);
-                Console.WriteLine("\nIn Stack: "+ s.Count);
-                foreach (ISet<Node> nodeset in s)
-                    Console.WriteLine(nodeset.GetHashCode());
-                    //Node.PrintSet(nodeset);
-                Console.WriteLine("\nCurrent:");
-                Console.WriteLine(currentNFAStates.GetHashCode());
-                //Node.PrintSet(currentNFAStates);
-                */
                 ISet<char> nextChars = new HashSet<char>();
                 
-
-                // find which characters we can move with from NFAStates
+                // find which characters we can move with from currentNFAStates
                 foreach (Node n in currentNFAStates)
-                {
                     nextChars.UnionWith(n.transitions.Keys);
-                }
-                /*
-                Console.Write("\nTransition chars: ");
-                foreach (char c in nextChars)
-                    Console.Write("#"+(int)c+" ");
-                Console.WriteLine("\n");
-                */
-                // for each character find states we can move to, make a new DFA state 
-                //int added = 0;
-                //int skipped = 0;
+
                 foreach (char c in nextChars)
                 {
                     ISet<Node> nextNFAStates = Node.Move(currentNFAStates, c);
 
-                    HashSet<Node> epsilonClosure = new HashSet<Node>();
-                    epsilonClosure.UnionWith(nextNFAStates);
-                    epsilonClosure.UnionWith(Node.EpsilonMove(nextNFAStates));
-                   
-                    if (epsilonClosure.Count != 0)
+                    if (nextNFAStates.Count != 0)
                     {
-                        //Console.WriteLine("Reachable with '" + c + "' ("+(int)c+"):");
-                        //Console.WriteLine(epsilonClosure.GetHashCode());
-                        //Node.PrintSet(epsilonClosure);
+                        HashSet<Node> epsilonClosure = new HashSet<Node>();
+                        epsilonClosure.UnionWith(nextNFAStates);
+                        epsilonClosure.UnionWith(Node.EpsilonMove(nextNFAStates, cached: true));
                         
                         DFA.State nextDFAState;
 
@@ -251,27 +221,14 @@ namespace InterpreterProject
                                 if (n.tokenClass != null)
                                     nextDFAState.recognizedTokens.Add(n.tokenClass);
 
-                            //Console.WriteLine("Adding:");
-                            //Console.WriteLine(epsilonClosure.GetHashCode());
-                            //Node.PrintSet(epsilonClosure);
                             DFAStates.Add(epsilonClosure, nextDFAState);
                             s.Push(epsilonClosure);
-                            //added++;
                         }
-                        else
-                        {
-                            //Console.WriteLine("Exists");
-                            //skipped++;
-                        }
-                        
+                   
                         currentDFAState.transitions.Add(c, nextDFAState);
                     }
                     
-                }
-                /*
-                Console.WriteLine("add: " + added + " skip: " + skipped);
-                Console.WriteLine("stack: " + s.Count);
-                 */
+                }                
             }
 
             return new DFA(DFAStartState);
@@ -294,10 +251,12 @@ namespace InterpreterProject
              */
             public ISet<Node> EpsilonMove()
             {
+                calls++;
                 HashSet<Node> reachable = new HashSet<Node>();
                 reachable.Add(this);
                 Stack<Node> s = new Stack<Node>();
                 s.Push(this);
+                
                 while (s.Count != 0)
                 {
                     Node current = s.Pop();
@@ -313,11 +272,33 @@ namespace InterpreterProject
                 return reachable;
             }
 
-            public static ISet<Node> EpsilonMove(ICollection<Node> nodes)
+            public static int calls = 0;
+
+            /*
+             * During the DFA construction process the structure will remain
+             * unchanged, but EpsilonMove will get called many times for any 
+             * particular node so we cache the result as it is an expensive
+             * operation.
+             */
+            private ISet<Node> cachedEpsilonMove = null;
+            public ISet<Node> EpsilonMove(bool cache)
+            {
+                if (cache)
+                {
+                    if (cachedEpsilonMove == null)
+                        cachedEpsilonMove = EpsilonMove();
+                    
+                       
+                    return cachedEpsilonMove;
+                }
+                return EpsilonMove();
+            }
+
+            public static ISet<Node> EpsilonMove(ICollection<Node> nodes, bool cached = false)
             {
                 HashSet<Node> reachable = new HashSet<Node>();
                 foreach (Node node in nodes)
-                    reachable.UnionWith(node.EpsilonMove());
+                    reachable.UnionWith(node.EpsilonMove(cached));
                 return reachable;
             }
 
