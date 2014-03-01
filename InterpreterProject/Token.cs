@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace InterpreterProject
 {
     public class Token
-    {
+    {       
         public readonly TokenClass type;
         public readonly String lexeme;
 

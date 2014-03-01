@@ -31,7 +31,7 @@ namespace InterpreterProject
 
             Console.WriteLine("Automaton created");
 
-            string text = "bbbabaaba aaabac  aaa";
+            string text = "bbbabaaba aaabac  aaaca";
 
             Scanner sc = new Scanner(automaton);
             List<Token> tokens = sc.Tokenize(text);

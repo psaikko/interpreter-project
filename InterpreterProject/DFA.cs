@@ -8,6 +8,8 @@ namespace InterpreterProject
 {
     public class DFA
     {
+        public const char EOF = '\0';
+
         private State initialState;
         private State currentState;
 
@@ -27,9 +29,9 @@ namespace InterpreterProject
         {           
             if (!IsFailState())
             {
+                accumulator += c;
                 if (currentState.HasTransition(c))
-                {
-                    accumulator += c;
+                {                    
                     currentState = currentState.GetNext(c);
 
                     if (currentState.IsAcceptingState())
@@ -45,7 +47,9 @@ namespace InterpreterProject
                 }
             }
 
-            Console.WriteLine(accumulator);
+            Console.WriteLine("acc: "+accumulator);
+            //Console.Write("waiting.. ");
+            //Console.ReadLine();
         }
 
         public bool IsFailState()
@@ -55,7 +59,15 @@ namespace InterpreterProject
 
         public Token GetToken()
         {
-            return lastToken;
+            if (lastToken == null && accumulator == ""+EOF)
+                return new Token(TokenClass.EOF, accumulator);
+            else
+                return lastToken;
+        }
+
+        public Token GetErrorToken()
+        {
+            return new Token(TokenClass.ERROR, "" + accumulator[0]);
         }
 
         public int Rewind()

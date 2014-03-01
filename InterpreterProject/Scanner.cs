@@ -10,8 +10,6 @@ namespace InterpreterProject
     {
         DFA automaton;
 
-        const char EOF = '\0';
-
         public Scanner(DFA automaton)
         {
             this.automaton = automaton;
@@ -23,7 +21,7 @@ namespace InterpreterProject
 
             for (int i = 0; i <= text.Length; i++)
             {
-                char c = (i == text.Length) ? EOF : text[i];
+                char c = (i == text.Length) ? DFA.EOF : text[i];
 
                 Console.WriteLine("Tokenizer: i = " + i + "\t c = '" + c + "'");
 
@@ -35,15 +33,18 @@ namespace InterpreterProject
                     Token t = automaton.GetToken();
                     if (t != null)
                     {
+                        if (t.type == TokenClass.EOF)
+                            break;
                         Console.WriteLine("Tokenizer: adding token");
                         tokens.Add(t);
-                        i -= (automaton.Rewind() + 1);
+                        i -= automaton.Rewind();
                     }
                     else
                     {
                         Console.WriteLine("Tokenizer: error");
-                        if (c == EOF) break;
-                        i -= automaton.Rewind();
+                        Console.WriteLine();
+                        tokens.Add(automaton.GetErrorToken());
+                        i -= (automaton.Rewind() - 1);
                     }
                 }
             }
