@@ -31,14 +31,17 @@ namespace InterpreterProject
                     Token t = automaton.GetToken();
                     if (t != null)
                     {
+                        Console.WriteLine("SCANNER: Recognize token, type: " + t.type.name + " lexeme: " + t.lexeme);
                         // EOF handled internally by scanner, automaton - don't pass it forward
                         if (t.type == TokenType.EOF)
                             break;
-                        tokens.Add(t);
+                        if (t.type.priority != TokenType.Priority.Whitespace)
+                            tokens.Add(t);
                         i -= automaton.Rewind();
                     }
                     else
                     {
+                        Console.WriteLine("SCANNER: Invalid token!");
                         // Add error token, skip one character forward in text
                         tokens.Add(automaton.GetErrorToken());
                         i -= (automaton.Rewind() - 1);

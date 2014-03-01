@@ -19,9 +19,14 @@ namespace InterpreterProject
 
         public static Regex Union(String s)
         {
+            return Union(s.ToCharArray());
+        }
+
+        public static Regex Union(params char[] cs)
+        {
             Node start = new Node();
             Node end = new Node();
-            foreach (char c in s)
+            foreach (char c in cs)
             {
                 start.transitions.Add(c, end);
             }
@@ -76,9 +81,14 @@ namespace InterpreterProject
 
         public static Regex Concat(String s)
         {
+            return Concat(s.ToCharArray());
+        }
+
+        public static Regex Concat(params char[] cs)
+        {
             Regex re = Empty();
-            for (int i = 0; i < s.Length; i++)
-                re = re.Concat(Regex.Character(s[i]));
+            foreach (char c in cs)
+                re = re.Concat(Character(c));
             return re;
         }
 
@@ -159,7 +169,7 @@ namespace InterpreterProject
 
         public void DefineTokenClass(TokenType tokenClass)
         {
-            this.end.tokenClass = tokenClass;
+            this.end.tokenType = tokenClass;
         }
 
         /*
@@ -200,8 +210,8 @@ namespace InterpreterProject
                     }
                 }
                 s += "}";
-                if (current.tokenClass != null)
-                    s += ", Token: " + current.tokenClass.name;
+                if (current.tokenType != null)
+                    s += ", Token: " + current.tokenType.name;
                 s += "\n";
             }
             return s;
@@ -248,8 +258,14 @@ namespace InterpreterProject
                             nextDFAState = new TokenAutomaton.State();
 
                             foreach (Node n in epsilonClosure)
-                                if (n.tokenClass != null)
-                                    nextDFAState.recognizedTokens.Add(n.tokenClass);
+                            {
+                                if (n.tokenType != null && 
+                                    (nextDFAState.recognizedTokenType == null ||
+                                    (n.tokenType.priority < nextDFAState.recognizedTokenType.priority)))
+                                {
+                                    nextDFAState.recognizedTokenType = n.tokenType;
+                                }
+                            }
 
                             DFAStates.Add(epsilonClosure, nextDFAState);
                             s.Push(epsilonClosure);
@@ -274,7 +290,7 @@ namespace InterpreterProject
 
             public Dictionary<char, Node> transitions = new Dictionary<char, Node>();
             public List<Node> epsilonTransitions = new List<Node>();
-            public TokenType tokenClass = null;
+            public TokenType tokenType = null;
 
             /*
              * Calculates the epsilon closure of a node with BFS from node
