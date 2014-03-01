@@ -48,7 +48,7 @@ namespace InterpreterProject
             return new Regex(start, end);
         }
 
-        public static Regex Any()
+        public static Regex Empty()
         {
             Node start = new Node();
             Node end = new Node();
@@ -58,21 +58,31 @@ namespace InterpreterProject
 
         public static Regex Concat(String s)
         {
-            Regex re = Any();
+            Regex re = Empty();
             for (int i = 0; i < s.Length; i++)
                 re = re.Concat(Regex.Character(s[i]));
             return re;
         }
 
-        public static Regex Not(char c)
+        public static Regex Not(params char[] cs)
         {
             Regex re = None();
             for (char a = (char)1; a < 256; a++)
             {
-                if (a != c)
+                if (!cs.Contains(a))
                 {
                     re = re.Union(Character(a));
                 }
+            }
+            return re;
+        }
+
+        public static Regex Any()
+        {
+            Regex re = None();
+            for (char a = (char)1; a < 256; a++)
+            {
+                re = re.Union(Character(a));
             }
             return re;
         }
