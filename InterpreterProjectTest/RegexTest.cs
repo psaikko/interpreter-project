@@ -79,5 +79,60 @@ namespace InterpreterProjectTest
             for (int i = 0; i < expectedTokens.Length; i++)
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
         }
+
+        [TestMethod]
+        public void Regex_PlusTest()
+        {
+            Regex ba = Regex.Character('b').Concat(Regex.Character('a').Plus());
+            TokenClass baClass = new TokenClass("ba+", ba);
+            DFA automaton = ba.ConstructDFA();
+
+            string text = "baababab";
+
+            Scanner sc = new Scanner(automaton);
+            List<Token> tokens = sc.Tokenize(text);
+
+            string[] expectedTokens = { "baa","ba","ba","b" };
+            Assert.AreEqual(expectedTokens.Length, tokens.Count);
+            for (int i = 0; i < expectedTokens.Length; i++)
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+            Assert.AreEqual(TokenClass.ERROR, tokens[3].type);
+        }
+
+        [TestMethod]
+        public void Regex_StarTest()
+        {
+            Regex ab = Regex.Character('a').Star().Concat(Regex.Character('b'));
+            TokenClass abClass = new TokenClass("a*b", ab);
+            DFA automaton = ab.ConstructDFA();
+
+            string text = "aababb";
+
+            Scanner sc = new Scanner(automaton);
+            List<Token> tokens = sc.Tokenize(text);
+
+            string[] expectedTokens = { "aab","ab","b" };
+            Assert.AreEqual(expectedTokens.Length, tokens.Count);
+            for (int i = 0; i < expectedTokens.Length; i++)
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+        }
+
+        [TestMethod]
+        public void Regex_MaybeTest()
+        {
+            Regex ab = Regex.Character('a').Maybe().Concat(Regex.Character('b'));
+            TokenClass abClass = new TokenClass("a?b", ab);
+            DFA automaton = ab.ConstructDFA();
+
+            string text = "babbab";
+
+            Scanner sc = new Scanner(automaton);
+            List<Token> tokens = sc.Tokenize(text);
+
+            string[] expectedTokens = { "b","ab","b","ab" };
+            Assert.AreEqual(expectedTokens.Length, tokens.Count);
+            for (int i = 0; i < expectedTokens.Length; i++)
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+        }
     }
 }
