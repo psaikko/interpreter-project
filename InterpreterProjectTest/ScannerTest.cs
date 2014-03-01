@@ -167,7 +167,7 @@ namespace InterpreterProjectTest
             TokenType ttKeyword = new TokenType("keyword", keywords, priority: TokenType.Priority.Keyword);
             TokenType ttWords = new TokenType("words", words);
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace, priority: TokenType.Priority.Whitespace);
-            TokenAutomaton automaton = TokenType.CombinedAutomaton(ttKeyword, ttWords, ttWhitespace);
+            TokenAutomaton automaton = TokenType.CombinedAutomaton(ttWords, ttWhitespace, ttKeyword);
 
             Scanner sc = new Scanner(automaton);
 
@@ -195,8 +195,8 @@ namespace InterpreterProjectTest
                 Regex.Concat("var"), Regex.Concat("for"), Regex.Concat("end"), Regex.Concat("in"),
                 Regex.Concat("do"), Regex.Concat("read"), Regex.Concat("print"), Regex.Concat("int"),
                 Regex.Concat("string"), Regex.Concat("bool"), Regex.Concat("assert"));
-            Regex lParen = Regex.Character('(');
-            Regex rParen = Regex.Character(')');
+            Regex lParen = Regex.Character(')');
+            Regex rParen = Regex.Character('(');
             Regex colon = Regex.Character(':');
             Regex semicolon = Regex.Character(';');
             Regex assign = Regex.Concat(":=");
@@ -206,24 +206,26 @@ namespace InterpreterProjectTest
                             .Concat(Regex.Union(Regex.Range('A', 'Z'),
                                                 Regex.Range('a', 'z'),
                                                 Regex.Range('0', '9'),
-                                                Regex.Character('_')));
+                                                Regex.Character('_')).Star());
+            Regex integer = Regex.Range('0', '9').Plus();
 
-            TokenType ttWhitespace = new TokenType("whitespace", whitespace);
+            TokenType ttInteger = new TokenType("integer", integer);
+            TokenType ttWhitespace = new TokenType("whitespace", whitespace, priority: TokenType.Priority.Whitespace);
             TokenType ttString = new TokenType("string", str);
             TokenType ttBinaryOp = new TokenType("binary op", binaryOp);
             TokenType ttUnaryOp = new TokenType("unary op", unaryOp);
-            TokenType ttKeyword = new TokenType("keyword", keyword);
+            TokenType ttKeyword = new TokenType("keyword", keyword, priority: TokenType.Priority.Keyword);
             TokenType ttRightParen = new TokenType("right paren", rParen);
             TokenType ttLeftParen = new TokenType("left paren", lParen);
             TokenType ttColon = new TokenType("colon", colon);
             TokenType ttSemicolon = new TokenType("semicolon", semicolon);
             TokenType ttAssign = new TokenType("assignment", assign);
-            TokenType ttDots = new TokenType("range dots", dots);
+            TokenType ttDots = new TokenType("dots", dots);
             TokenType ttIdent = new TokenType("identifier", ident);
 
             TokenAutomaton automaton = TokenType.CombinedAutomaton(
                 ttWhitespace, ttString, ttBinaryOp, ttUnaryOp, ttKeyword, ttRightParen, ttLeftParen,
-                ttColon, ttSemicolon, ttAssign, ttDots, ttIdent);
+                ttColon, ttSemicolon, ttAssign, ttDots, ttIdent, ttInteger);
 
             return new Scanner(automaton);
         }
@@ -231,15 +233,29 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Scanner_MiniPLTest_Example1()
         {
-
+            Scanner sc = CreateMiniPLScanner();
 
             string text = "var X : int := 4 + (6 * 2);\n"+
                           "print X;";
+
+            string[] expectedTokens = { "var", "X", ":", "int", ":=", "4", "+", "(", "6", "*", "2", ")", ";", "print", "X", ";" };
+            string[] expectedTypeNames = { "keyword", "identifier", "colon", "keyword", "assignment", "integer", "binary op", "right paren",
+                                           "integer", "binary op", "integer", "left paren", "semicolon", "keyword", "identifier", "semicolon"};
+
+            List<Token> tokens = sc.Tokenize(text);
+
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTypeNames[i], tokens[i].type.name);
+            }
         }
 
         [TestMethod]
         public void Scanner_MiniPLTest_Example2()
         {
+            Scanner sc = CreateMiniPLScanner();
+
             string text = "var nTimes : int := 0;\n" +
                           "print \"How many times?\";\n" +
                           "read nTimes;\n" +
@@ -249,11 +265,41 @@ namespace InterpreterProjectTest
                           "     print \" : Hello, World!\n\";\n" +
                           "end for;\n" +
                           "assert (x = nTimes);";
+
+            string[] expectedTokens = { "var", "nTimes", ":", "int", ":=", "0", ";",
+                                        "print","\"How many times?\"",";",
+                                        "read","nTimes",";",
+                                        "var","x",":","int",";",
+                                        "for","x","in","0","..","nTimes","-","1","do",
+                                        "print","x",";",
+                                        "print","\" : Hello, World!\n\"",";",
+                                        "end","for",";",
+                                        "assert","(","x","=","nTimes",")",";" };
+
+            string[] expectedTypeNames = { "keyword", "identifier", "colon", "keyword", "assignment", "integer", "semicolon",
+                                           "keyword","string","semicolon",
+                                           "keyword","identifier","semicolon",
+                                           "keyword","identifier","colon","keyword", "semicolon",
+                                           "keyword","identifier","keyword","integer","dots","identifier","binary op","integer","keyword",
+                                           "keyword","identifier","semicolon",
+                                           "keyword","string","semicolon",
+                                           "keyword","keyword","semicolon",
+                                           "keyword","right paren","identifier","binary op","identifier","left paren","semicolon" };
+
+            List<Token> tokens = sc.Tokenize(text);
+
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTypeNames[i], tokens[i].type.name);
+            }
         }
 
         [TestMethod]
         public void Scanner_MiniPLTest_Example3()
         {
+            Scanner sc = CreateMiniPLScanner();
+
             string text = "print \"Give a number\";\n" +
                           "var n : int;\n" +
                           "read n;\n" +
@@ -264,6 +310,35 @@ namespace InterpreterProjectTest
                           "end for;\n" +
                           "print \"The result is: \";\n" +
                           "print f;";
+
+            string[] expectedTokens = { "print", "\"Give a number\"", ";",
+                                        "var", "n", ":", "int", ";",
+                                        "read", "n", ";",
+                                        "var", "f", ":", "int", ":=", "1", ";",
+                                        "var", "i", ":", "int", ";",
+                                        "for", "i", "in", "1", "..", "n", "do",
+                                        "f", ":=", "f", "*", "i", ";",
+                                        "end", "for", ";",
+                                        "print", "\"The result is: \"", ";",
+                                        "print", "f", ";"};
+            string[] expectedTypeNames = { "keyword", "string", "semicolon",
+                                           "keyword", "identifier", "colon", "keyword", "semicolon",
+                                           "keyword", "identifier", "semicolon",
+                                           "keyword", "identifier", "colon", "keyword", "assignment", "integer", "semicolon",
+                                           "keyword", "identifier", "colon", "keyword", "semicolon",
+                                           "keyword", "identifier", "keyword", "integer", "dots", "identifier", "keyword",
+                                           "identifier", "assignment", "identifier", "binary op", "identifier", "semicolon",
+                                           "keyword", "keyword", "semicolon",
+                                           "keyword", "string", "semicolon",
+                                           "keyword", "identifier", "semicolon"};
+
+            List<Token> tokens = sc.Tokenize(text);
+
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTypeNames[i], tokens[i].type.name);
+            }
         }
     }
 }
