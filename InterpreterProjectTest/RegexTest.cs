@@ -134,5 +134,57 @@ namespace InterpreterProjectTest
             for (int i = 0; i < expectedTokens.Length; i++)
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
         }
+
+        [TestMethod]
+        public void Regex_NotTest()
+        {
+            Regex b = Regex.Character('b');
+            Regex notb = Regex.Not('b');
+
+            TokenClass bToken = new TokenClass("b", b);
+            TokenClass notbToken = new TokenClass("not b", notb);
+
+            Regex combined = b.Union(notb);
+            DFA automaton = combined.ConstructDFA();
+
+            string text = "9jQbksjhbQ3b";
+
+            Scanner sc = new Scanner(automaton);
+            List<Token> tokens = sc.Tokenize(text);
+
+            string[] expectedTokens = { "9","j","Q","b","k","s","j","h","b","Q","3","b" };
+            Assert.AreEqual(expectedTokens.Length, tokens.Count);
+            for (int i = 0; i < expectedTokens.Length; i++)
+            {
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                if (expectedTokens[i] == "b")
+                    Assert.AreEqual("b", tokens[i].type.name);
+                else
+                    Assert.AreEqual("not b", tokens[i].type.name);
+            }
+        }
+
+        [TestMethod]
+        public void Regex_AnyTest()
+        {
+            Regex any = Regex.Any();
+
+            TokenClass anyToken = new TokenClass("any", any);
+
+            DFA automaton = any.ConstructDFA();
+
+            string text = "9jQbksjhbQ3b";
+
+            Scanner sc = new Scanner(automaton);
+            List<Token> tokens = sc.Tokenize(text);
+
+            string[] expectedTokens = { "9", "j", "Q", "b", "k", "s", "j", "h", "b", "Q", "3", "b" };
+            Assert.AreEqual(expectedTokens.Length, tokens.Count);
+            for (int i = 0; i < expectedTokens.Length; i++)
+            {
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(anyToken, tokens[i].type);
+            }
+        }
     }
 }
