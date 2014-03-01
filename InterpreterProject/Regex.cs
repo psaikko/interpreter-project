@@ -19,18 +19,24 @@ namespace InterpreterProject
 
         public static Regex Union(String s)
         {
-            Regex re = None();
-            for (int i = 0; i < s.Length; i++)
-                re = re.Union(Character(s[i]));
-            return re;
+            Node start = new Node();
+            Node end = new Node();
+            foreach (char c in s)
+            {
+                start.transitions.Add(c, end);
+            }
+            return new Regex(start, end);
         }
 
         public static Regex Range(char a, char b)
         {
-            Regex re = None();
+            Node start = new Node();
+            Node end = new Node();
             for (char c = a; c <= b; c++)
-                re = re.Union(Character(c));
-            return re;
+            {
+                start.transitions.Add(c, end);
+            }
+            return new Regex(start, end);
         }
 
         public static Regex Character(char c)
@@ -66,25 +72,27 @@ namespace InterpreterProject
 
         public static Regex Not(params char[] cs)
         {
-            Regex re = None();
+            Node start = new Node();
+            Node end = new Node();
             for (char a = (char)1; a < 256; a++)
             {
                 if (!cs.Contains(a))
                 {
-                    re = re.Union(Character(a));
+                    start.transitions.Add(a, end);
                 }
             }
-            return re;
+            return new Regex(start, end);
         }
 
         public static Regex Any()
         {
-            Regex re = None();
+            Node start = new Node();
+            Node end = new Node();
             for (char a = (char)1; a < 256; a++)
             {
-                re = re.Union(Character(a));
+                start.transitions.Add(a, end);
             }
-            return re;
+            return new Regex(start, end);
         }
 
         public Regex Concat(Regex other)
