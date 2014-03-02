@@ -33,18 +33,6 @@ namespace InterpreterProject
             return new Regex(start, end);
         }
 
-        public static Regex MatchCount(Regex pre, Regex post)
-        {
-            Counter ctr = new Counter();
-            Decrementer dec = new Decrementer(ctr);
-            Incrementer inc = new Incrementer(ctr);
-            pre.start.function = inc;
-            post.end.function = dec;
-            Regex re = pre.Plus().Concat(post.Plus());
-            re.end.state = ctr;
-            return re;
-        }
-
         public static Regex Union(params Regex[] rs)
         {
             Node start = new Node();
@@ -234,7 +222,6 @@ namespace InterpreterProject
          */
         public TokenAutomaton ConstructAutomaton()
         {
-            List<IState> states = new List<IState>();
             Dictionary<ISet<Node>, TokenAutomaton.Node> DFAStates = 
                 new Dictionary<ISet<Node>, TokenAutomaton.Node>(new SetEqualityComparer<Node>());
             TokenAutomaton.Node DFAStartState = new TokenAutomaton.Node();
@@ -278,13 +265,6 @@ namespace InterpreterProject
                                 {
                                     nextDFAState.recognizedTokenType = n.tokenType;
                                 }
-                                if (n.state != null)
-                                {
-                                    nextDFAState.state = n.state;
-                                    states.Add(n.state);
-                                }
-                                if (n.function != null)
-                                    nextDFAState.functions.Add(n.function);
                             }
 
                             DFAStates.Add(epsilonClosure, nextDFAState);
@@ -297,7 +277,7 @@ namespace InterpreterProject
                 }                
             }
 
-            return new TokenAutomaton(DFAStartState, states);
+            return new TokenAutomaton(DFAStartState);
         }
 
         /*
@@ -311,9 +291,6 @@ namespace InterpreterProject
             public Dictionary<char, Node> transitions = new Dictionary<char, Node>();
             public List<Node> epsilonTransitions = new List<Node>();
             public TokenType tokenType = null;
-
-            public IFunction function = null;
-            public IState state = null;
 
             /*
              * Calculates the epsilon closure of a node with BFS from node

@@ -18,14 +18,11 @@ namespace InterpreterProject
         private String accumulator = "";
 
         private bool fail = false;
-        private ICollection<IState> nodeStates = new List<IState>();
 
-        public TokenAutomaton(Node initNode, ICollection<IState> nodeStates = null)
+        public TokenAutomaton(Node initNode)
         {
             this.initialNode = initNode;
             this.currentNode = initNode;
-            if (nodeStates != null)
-                this.nodeStates = nodeStates;
         }
 
         public void FeedCharacter(char c)
@@ -36,7 +33,6 @@ namespace InterpreterProject
                 if (CanTransitionWith(c))
                 {
                     TransitionWith(c);
-                    currentNode.Visit();
                     UpdateToken();                  
                 }
                 else
@@ -101,9 +97,6 @@ namespace InterpreterProject
             fail = false;
             currentNode = initialNode;
 
-            foreach (IState state in nodeStates)
-                state.Reset();
-
             return accLength - tokenLength;
         }
 
@@ -111,21 +104,10 @@ namespace InterpreterProject
         {
             public Dictionary<char, Node> transitions = new Dictionary<char, Node>();
             public TokenType recognizedTokenType = null;
-            public List<IFunction> functions = new List<IFunction>();
-            public IState state = null;
 
             public bool IsAcceptingState()
             {
-                if (state == null)
-                    return recognizedTokenType != null;
-                else
-                    return state.Check() && recognizedTokenType != null;
-            }
-
-            public void Visit()
-            {
-                foreach (IFunction f in functions)
-                    f.Call();
+                return recognizedTokenType != null;
             }
 
             public Node GetNext(char c)

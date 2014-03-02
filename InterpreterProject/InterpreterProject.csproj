@@ -56,10 +56,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Decrementer.cs" />
-    <Compile Include="IState.cs" />
-    <Compile Include="IFunction.cs" />
-    <Compile Include="Incrementer.cs" />
     <Compile Include="TokenAutomaton.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -68,7 +64,6 @@
     <Compile Include="SetEqualityComparer.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="TokenType.cs" />
-    <Compile Include="Counter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

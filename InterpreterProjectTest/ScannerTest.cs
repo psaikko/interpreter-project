@@ -67,6 +67,7 @@ namespace InterpreterProjectTest
         public void Scanner_BlockCommentTest()
         {
             Assert.Fail();
+
         }
 
         [TestMethod]
