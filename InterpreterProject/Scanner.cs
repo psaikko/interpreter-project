@@ -31,7 +31,7 @@ namespace InterpreterProject
                     Token t = automaton.GetToken();
                     if (t != null)
                     {
-                        Console.WriteLine("SCANNER: Recognize token, type: " + t.type.name + " lexeme: " + t.lexeme);
+                        Console.WriteLine("SCANNER: Recognize token, type: <" + t.type.name + "> lexeme: <" + t.lexeme + ">");
                         // EOF handled internally by scanner, automaton - don't pass it forward
                         if (t.type == TokenType.EOF)
                             break;

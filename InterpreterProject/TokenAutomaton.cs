@@ -10,44 +10,67 @@ namespace InterpreterProject
     {
         public const char EOF = '\0';
 
-        private State initialState;
-        private State currentState;
+        private Node initialNode;
+        private Node currentNode;
 
-        private State lastAccepting;
+        private Node lastAccepting;
         private Token lastToken;
         private String accumulator = "";
 
         private bool fail = false;
+        private ICollection<IState> nodeStates = new List<IState>();
 
-        public TokenAutomaton(State initialState)
+        public TokenAutomaton(Node initNode, ICollection<IState> nodeStates = null)
         {
-            this.initialState = initialState;
-            this.currentState = initialState;
+            this.initialNode = initNode;
+            this.currentNode = initNode;
+            if (nodeStates != null)
+                this.nodeStates = nodeStates;
         }
 
         public void FeedCharacter(char c)
-        {           
+        {
             if (!IsFailState())
             {
                 accumulator += c;
-                if (currentState.HasTransition(c))
-                {                    
-                    currentState = currentState.GetNext(c);
-
-                    if (currentState.IsAcceptingState())
-                    {
-                        lastAccepting = currentState;
-                        lastToken = currentState.recognizedTokenType.CreateToken(accumulator);
-                    }
+                if (CanTransitionWith(c))
+                {
+                    TransitionWith(c);
+                    currentNode.Visit();
+                    UpdateToken();                  
                 }
                 else
                 {
-                    fail = true;
-                    currentState = null;
+                    SetFailState();
                 }
             }
 
-            Console.WriteLine("acc: "+accumulator);
+            Console.WriteLine("AUTOMATON accumulated: " + accumulator);
+        }
+
+        public bool CanTransitionWith(char c)
+        {
+            return currentNode.HasTransition(c);
+        }
+
+        public void TransitionWith(char c)
+        {
+            currentNode = currentNode.GetNext(c);
+        }
+
+        public void UpdateToken()
+        {
+            if (currentNode.IsAcceptingState())
+            {
+                lastAccepting = currentNode;
+                lastToken = currentNode.recognizedTokenType.CreateToken(accumulator);
+            }
+        }
+
+        public void SetFailState()
+        {
+            fail = true;
+            currentNode = null;
         }
 
         public bool IsFailState()
@@ -76,22 +99,36 @@ namespace InterpreterProject
             accumulator = "";
             lastToken = null;
             fail = false;
-            currentState = initialState;
+            currentNode = initialNode;
+
+            foreach (IState state in nodeStates)
+                state.Reset();
 
             return accLength - tokenLength;
         }
 
-        public class State
+        public class Node
         {
-            public Dictionary<char, State> transitions = new Dictionary<char, State>();
+            public Dictionary<char, Node> transitions = new Dictionary<char, Node>();
             public TokenType recognizedTokenType = null;
+            public List<IFunction> functions = new List<IFunction>();
+            public IState state = null;
 
             public bool IsAcceptingState()
             {
-                return (recognizedTokenType != null);
+                if (state == null)
+                    return recognizedTokenType != null;
+                else
+                    return state.Check() && recognizedTokenType != null;
             }
 
-            public State GetNext(char c)
+            public void Visit()
+            {
+                foreach (IFunction f in functions)
+                    f.Call();
+            }
+
+            public Node GetNext(char c)
             {
                 return transitions[c];
             }
