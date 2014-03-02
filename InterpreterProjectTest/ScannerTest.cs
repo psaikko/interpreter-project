@@ -36,9 +36,6 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Scanner_LineCommentTest()
         {
-            // We can recognize line comments with tokens marked whitespace 
-            // so they aren't returned by the scanner
-
             Regex a = Regex.Character('a').Star();
             Regex lineComment = Regex.Concat("//").Concat(Regex.Not('\n').Star());
             Regex whitespace = Regex.Union(" \t\n").Star();
@@ -66,8 +63,57 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Scanner_BlockCommentTest()
         {
-            Assert.Fail();
+            Regex a = Regex.Character('a').Star();
+            Regex b = Regex.Character('b').Star();
+            // block comment regex /\*([^*]|(\*+[^*/]))\*+/
+            Regex blockComment = Regex.Concat("/*")
+                                    .Concat(Regex.Not('*')
+                                        .Union(Regex.Character('*').Plus()
+                                                .Concat(Regex.Not('*','/')))
+                                        .Star())
+                                    .Concat(Regex.Character('*').Plus().Concat(Regex.Character('/')));          
+            Regex whitespace = Regex.Union(" \t\n").Star();
+            TokenType ttWhitespace = new TokenType("Whitespace", whitespace, priority: TokenType.Priority.Whitespace);
+            TokenType ttA = new TokenType("a*", a);
+            TokenType ttB = new TokenType("b*", b);
+            TokenType ttBlockComment = new TokenType("line comment", blockComment, priority: TokenType.Priority.Whitespace);
+            TokenAutomaton automaton = TokenType.CombinedAutomaton(ttA, ttB, ttBlockComment, ttWhitespace);
 
+            Scanner sc = new Scanner(automaton);
+
+            string text = "/* aaa */   \n" +
+                          "bbb         \n" +
+                          "/* aaa */   \n" +
+                          "bbb         \n" +
+                          "/* aaa      \n" +
+                          "   aaa */   \n" +
+                          "bbb         \n" +
+                          "/*          \n" +
+                          " * aaa      \n" +
+                          " */         \n" +
+                          "bbb         \n" +
+                          "/***        \n" +
+                          " * aaa      \n" +
+                          " ***/       \n" +
+                          "bbb         \n" +
+                          "/*/ aaa /*/ \n" +
+                          "/*****/     \n" +
+                          "/*///*/     \n" +
+                          "bbb         \n" +
+                          "/***        \n" +
+                          " * aaa      \n" +
+                          " */         \n" +
+                          "bbb        ";
+
+            List<Token> tokens = sc.Tokenize(text);
+
+            string[] expectedTokens = { "bbb", "bbb", "bbb", "bbb", "bbb", "bbb", "bbb" };
+            Assert.AreEqual(expectedTokens.Length, tokens.Count);
+            for (int i = 0; i < expectedTokens.Length; i++)
+            {
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(ttB, tokens[i].type);
+            }
         }
 
         [TestMethod]
