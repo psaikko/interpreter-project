@@ -181,5 +181,32 @@ namespace InterpreterProjectTest
                 Assert.AreEqual(anyType, tokens[i].type);
             }
         }
+
+        [TestMethod]
+        public void Regex_MatchCountTest()
+        {
+            Regex heresy = Regex.MatchCount(Regex.Character('a'), Regex.Character('b'));
+            Regex a = Regex.Character('a');
+            Regex b = Regex.Character('b');
+            TokenType abMatch = new TokenType("abMatch", heresy);
+            TokenType aToken = new TokenType("a", a);
+            TokenType bToken = new TokenType("b", b);
+            TokenAutomaton automaton = TokenType.CombinedAutomaton(abMatch, aToken, bToken);
+
+            string text = "abaabbaaabbaababb";
+
+            Scanner sc = new Scanner(automaton);
+            List<Token> tokens = sc.Tokenize(text);
+
+            Token.PrintList(tokens);
+
+            string[] expectedTokens = { "ab", "aabb", "a", "aabb", "a", "ab", "ab", "b"};
+
+            Assert.AreEqual(expectedTokens.Length, tokens.Count);
+            for (int i = 0; i < expectedTokens.Length; i++)
+            {
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+            }
+        }
     }
 }
