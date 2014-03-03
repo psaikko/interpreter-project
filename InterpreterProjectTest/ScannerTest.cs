@@ -8,6 +8,13 @@ namespace InterpreterProjectTest
     [TestClass]
     public class ScannerTest
     {
+        private List<Token> GetTokens(TokenAutomaton automaton, string text)
+        {
+            Scanner sc = new Scanner(automaton);
+            IEnumerable<Token> tokens = sc.Tokenize(text);
+            return new List<Token>(tokens);
+        }
+
         [TestMethod]
         public void Scanner_ErrorTest()
         {
@@ -15,11 +22,7 @@ namespace InterpreterProjectTest
             TokenType aToken = new TokenType("a", a);
             TokenAutomaton automaton = aToken.Automaton();
 
-            Scanner sc = new Scanner(automaton);
-
-            string text = "ccaacaacc";
-
-            List<Token> tokens = sc.Tokenize(text);
+            List<Token> tokens = GetTokens(automaton, "ccaacaacc");
 
             string[] expectedTokens = {"c","c","a","a","c","a","a","c","c"};
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
@@ -44,13 +47,11 @@ namespace InterpreterProjectTest
             TokenType ttLineComment = new TokenType("line comment", lineComment, priority: TokenType.Priority.Whitespace);
             TokenAutomaton automaton = TokenType.CombinedAutomaton(ttA, ttLineComment, ttWhitespace);
 
-            Scanner sc = new Scanner(automaton);
-
             string text = "aaa//aaa\n"+
                           "//aaaaaaa\n"+
                           "aaa//aaa";
 
-            List<Token> tokens = sc.Tokenize(text);
+            List<Token> tokens = GetTokens(automaton, text);
 
             string[] expectedTokens = { "aaa", "aaa" };
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
@@ -79,8 +80,6 @@ namespace InterpreterProjectTest
             TokenType ttBlockComment = new TokenType("line comment", blockComment, priority: TokenType.Priority.Whitespace);
             TokenAutomaton automaton = TokenType.CombinedAutomaton(ttA, ttB, ttBlockComment, ttWhitespace);
 
-            Scanner sc = new Scanner(automaton);
-
             string text = "/* aaa */   \n" +
                           "bbb         \n" +
                           "/* aaa */   \n" +
@@ -105,7 +104,7 @@ namespace InterpreterProjectTest
                           " */         \n" +
                           "bbb        ";
 
-            List<Token> tokens = sc.Tokenize(text);
+            List<Token> tokens = GetTokens(automaton, text);
 
             string[] expectedTokens = { "bbb", "bbb", "bbb", "bbb", "bbb", "bbb", "bbb" };
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
@@ -127,11 +126,8 @@ namespace InterpreterProjectTest
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace);
             TokenType ttInteger = new TokenType("integer", integer);
             TokenAutomaton automaton = TokenType.CombinedAutomaton(ttInteger, ttWhitespace);
+            List<Token> tokens = GetTokens(automaton, "1234 0 -99 -1");
 
-            Scanner sc = new Scanner(automaton);
-
-            string text = "1234 0 -99 -1";
-            List<Token> tokens = sc.Tokenize(text);
             string[] expectedTokens = { "1234", " ", "0", " ", "-99", " ", "-1" };
 
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
@@ -147,11 +143,7 @@ namespace InterpreterProjectTest
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace);
             TokenType ttA = new TokenType("a", a);
             TokenAutomaton automaton = TokenType.CombinedAutomaton(ttA, ttWhitespace);
-
-            Scanner sc = new Scanner(automaton);
-
-            string text = "a   a  \t\na  \n  a   \t\t   a     \n\t a ";
-            List<Token> tokens = sc.Tokenize(text);
+            List<Token> tokens = GetTokens(automaton, "a   a  \t\na  \n  a   \t\t   a     \n\t a ");
             string[] expectedTokens = { "a", "   ", "a", "  \t\n", "a", "  \n  ", "a", "   \t\t   ", "a", "     \n\t ", "a", " " };
 
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
@@ -167,11 +159,8 @@ namespace InterpreterProjectTest
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace);
             TokenType ttString = new TokenType("string", str);
             TokenAutomaton automaton = TokenType.CombinedAutomaton(ttWhitespace, ttString);
+            List<Token> tokens = GetTokens(automaton, "\"asdf\" \"sdfg\"");
 
-            Scanner sc = new Scanner(automaton);
-
-            string text = "\"asdf\" \"sdfg\"";
-            List<Token> tokens = sc.Tokenize(text);
             string[] expectedTokens = { "\"asdf\"", " ", "\"sdfg\"" };
 
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
@@ -191,11 +180,7 @@ namespace InterpreterProjectTest
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace);
             TokenType ttString = new TokenType("string", str);
             TokenAutomaton automaton = TokenType.CombinedAutomaton(ttWhitespace, ttString);
-
-            Scanner sc = new Scanner(automaton);
-
-            string text = "\"as\\ndf\\\"\" \"sdfg\\\\\" \"\\\\\"\"";
-            List<Token> tokens = sc.Tokenize(text);
+            List<Token> tokens = GetTokens(automaton, "\"as\\ndf\\\"\" \"sdfg\\\\\" \"\\\\\"\"");
             
             string[] expectedTokens = { "\"as\\ndf\\\"\"", " ", "\"sdfg\\\\\"" , " ", "\"\\\\\"", "\""};
 
@@ -215,11 +200,7 @@ namespace InterpreterProjectTest
             TokenType ttWords = new TokenType("words", words);
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace, priority: TokenType.Priority.Whitespace);
             TokenAutomaton automaton = TokenType.CombinedAutomaton(ttWords, ttWhitespace, ttKeyword);
-
-            Scanner sc = new Scanner(automaton);
-
-            string text = "in int ints bool bools boo";
-            List<Token> tokens = sc.Tokenize(text);
+            List<Token> tokens = GetTokens(automaton, "in int ints bool bools boo");
 
             string[] expectedTokens = { "in", "int", "ints", "bool", "bools", "boo"};
 
@@ -228,7 +209,7 @@ namespace InterpreterProjectTest
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
         }
 
-        private Scanner CreateMiniPLScanner()
+        private TokenAutomaton CreateMiniPLAutomaton()
         {
             Regex whitespace = Regex.Union(" \t\n").Star();
             Regex str = Regex.Character('"')
@@ -270,18 +251,14 @@ namespace InterpreterProjectTest
             TokenType ttDots = new TokenType("dots", dots);
             TokenType ttIdent = new TokenType("identifier", ident);
 
-            TokenAutomaton automaton = TokenType.CombinedAutomaton(
+            return TokenType.CombinedAutomaton(
                 ttWhitespace, ttString, ttBinaryOp, ttUnaryOp, ttKeyword, ttRightParen, ttLeftParen,
                 ttColon, ttSemicolon, ttAssign, ttDots, ttIdent, ttInteger);
-
-            return new Scanner(automaton);
         }
 
         [TestMethod]
         public void Scanner_MiniPLTest_Example1()
         {
-            Scanner sc = CreateMiniPLScanner();
-
             string text = "var X : int := 4 + (6 * 2);\n"+
                           "print X;";
 
@@ -289,7 +266,7 @@ namespace InterpreterProjectTest
             string[] expectedTypeNames = { "keyword", "identifier", "colon", "keyword", "assignment", "integer", "binary op", "right paren",
                                            "integer", "binary op", "integer", "left paren", "semicolon", "keyword", "identifier", "semicolon"};
 
-            List<Token> tokens = sc.Tokenize(text);
+            List<Token> tokens = GetTokens(CreateMiniPLAutomaton(), text);
 
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -301,8 +278,6 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Scanner_MiniPLTest_Example2()
         {
-            Scanner sc = CreateMiniPLScanner();
-
             string text = "var nTimes : int := 0;\n" +
                           "print \"How many times?\";\n" +
                           "read nTimes;\n" +
@@ -333,7 +308,7 @@ namespace InterpreterProjectTest
                                            "keyword","keyword","semicolon",
                                            "keyword","right paren","identifier","binary op","identifier","left paren","semicolon" };
 
-            List<Token> tokens = sc.Tokenize(text);
+            List<Token> tokens = GetTokens(CreateMiniPLAutomaton(), text);
 
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -345,8 +320,6 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Scanner_MiniPLTest_Example3()
         {
-            Scanner sc = CreateMiniPLScanner();
-
             string text = "print \"Give a number\";\n" +
                           "var n : int;\n" +
                           "read n;\n" +
@@ -379,7 +352,7 @@ namespace InterpreterProjectTest
                                            "keyword", "string", "semicolon",
                                            "keyword", "identifier", "semicolon"};
 
-            List<Token> tokens = sc.Tokenize(text);
+            List<Token> tokens = GetTokens(CreateMiniPLAutomaton(), text);
 
             for (int i = 0; i < tokens.Count; i++)
             {

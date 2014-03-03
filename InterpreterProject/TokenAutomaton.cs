@@ -32,8 +32,11 @@ namespace InterpreterProject
             Console.WriteLine("AUTOMATON accumulated: " + charBuffer);
 
             if (lastToken == null)
-            {              
-                lastToken = TokenType.ERROR.CreateToken(charBuffer);
+            {
+                if (charBuffer[0] == EOF)
+                    lastToken = TokenType.EOF.CreateToken(charBuffer);
+                else
+                    lastToken = TokenType.ERROR.CreateToken(charBuffer);
             }    
 
             if (position.HasTransition(c))
@@ -46,14 +49,8 @@ namespace InterpreterProject
             }
             else
             {
-                fail = true;
-            }
-            
-            if (fail)
-            {
                 int tokenLength = lastToken.lexeme.Length;
                 tokenBuffer.Enqueue(lastToken);
-                fail = false;
 
                 Console.WriteLine("AUTOMATON recognize token, type: <" + lastToken.tokenType.name + "> lexeme: <" + lastToken.lexeme + ">");
 

@@ -10,36 +10,48 @@ namespace InterpreterProject
     public class Scanner
     {
         TokenAutomaton automaton;
-        StreamReader reader;
-
+        
         public Scanner(TokenAutomaton automaton)
         {
             this.automaton = automaton;
         }
 
-        public List<Token> Tokenize(string text)
+        public IEnumerable<Token> Tokenize(Stream input)
         {
-            List<Token> tokens = new List<Token>();
+            StreamReader reader = new StreamReader(input);
+            Token t;
 
-            text = text + TokenAutomaton.EOF;
-            for (int i = 0; i < text.Length; i++)
+            while (!reader.EndOfStream)
             {
-                char c = text[i];
+                char c = (char) reader.Read();
                 Console.WriteLine("SCANNER: feeding " + c);
                 automaton.FeedCharacter(c);
-                Token t = automaton.GetToken();
-                if (t != null)
+                t = automaton.GetToken();
+                if (t != null && IsRelevant(t))
                 {
-                    if (t.tokenType == TokenType.EOF)
-                        break;
-                    if (t.tokenType.priority != TokenType.Priority.Whitespace)
-                    {
-                        Console.WriteLine("SCANNER: token, type: <" + t.tokenType.name + "> lexeme: <" + t.lexeme + ">");
-                        tokens.Add(t);
-                    }
+                    Console.WriteLine("SCANNER: token, type: <" + t.tokenType.name + "> lexeme: <" + t.lexeme + ">");
+                    yield return t;
                 }
             }
-            return tokens;
+
+            automaton.FeedCharacter(TokenAutomaton.EOF);
+
+            while ((t = automaton.GetToken()) != null && IsRelevant(t))
+            {
+                Console.WriteLine("SCANNER: token, type: <" + t.tokenType.name + "> lexeme: <" + t.lexeme + ">");
+                yield return t;
+            }
+        }
+
+        private bool IsRelevant(Token t)
+        {
+            return (t.tokenType.priority != TokenType.Priority.Whitespace && t.tokenType != TokenType.EOF);
+        }
+
+        public IEnumerable<Token> Tokenize(string text)
+        {
+            MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(text));
+            return Tokenize(ms);
         }
     }
 }
