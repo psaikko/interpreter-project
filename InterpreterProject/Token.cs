@@ -8,12 +8,12 @@ namespace InterpreterProject
 {
     public class Token
     {       
-        public readonly TokenType type;
+        public readonly TokenType tokenType;
         public readonly String lexeme;
 
         public Token(TokenType type, String lexeme)
         {
-            this.type = type;
+            this.tokenType = type;
             this.lexeme = lexeme;
         }
 
@@ -21,7 +21,7 @@ namespace InterpreterProject
         {
             foreach (Token t in tokens)
             {
-                Console.WriteLine(string.Format("Type: {0,-10} Lexeme: '{1}'", t.type.name, t.lexeme));
+                Console.WriteLine(string.Format("Type: {0,-10} Lexeme: '{1}'", t.tokenType.name, t.lexeme));
             }
         }
     }

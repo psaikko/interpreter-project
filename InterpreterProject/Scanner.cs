@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace InterpreterProject
     public class Scanner
     {
         TokenAutomaton automaton;
+        StreamReader reader;
 
         public Scanner(TokenAutomaton automaton)
         {
@@ -20,31 +22,20 @@ namespace InterpreterProject
             List<Token> tokens = new List<Token>();
 
             text = text + TokenAutomaton.EOF;
-            for (int i = 0; i <= text.Length; i++)
+            for (int i = 0; i < text.Length; i++)
             {
-                char c = text[i];            
+                char c = text[i];
+                Console.WriteLine("SCANNER: feeding " + c);
                 automaton.FeedCharacter(c);
-
-                if (automaton.IsFailState())
+                Token t = automaton.GetToken();
+                if (t != null)
                 {
-                    
-                    Token t = automaton.GetToken();
-                    if (t != null)
+                    if (t.tokenType == TokenType.EOF)
+                        break;
+                    if (t.tokenType.priority != TokenType.Priority.Whitespace)
                     {
-                        Console.WriteLine("SCANNER: Recognize token, type: <" + t.type.name + "> lexeme: <" + t.lexeme + ">");
-                        // EOF handled internally by scanner, automaton - don't pass it forward
-                        if (t.type == TokenType.EOF)
-                            break;
-                        if (t.type.priority != TokenType.Priority.Whitespace)
-                            tokens.Add(t);
-                        i -= automaton.Rewind();
-                    }
-                    else
-                    {
-                        Console.WriteLine("SCANNER: Invalid token!");
-                        // Add error token, skip one character forward in text
-                        tokens.Add(automaton.GetErrorToken());
-                        i -= (automaton.Rewind() - 1);
+                        Console.WriteLine("SCANNER: token, type: <" + t.tokenType.name + "> lexeme: <" + t.lexeme + ">");
+                        tokens.Add(t);
                     }
                 }
             }

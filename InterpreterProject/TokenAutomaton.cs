@@ -10,104 +10,78 @@ namespace InterpreterProject
     {
         public const char EOF = '\0';
 
-        private Node initialNode;
-        private Node currentNode;
+        private Node start;
+        private Node position;
 
-        private Node lastAccepting;
-        private Token lastToken;
-        private String accumulator = "";
+        private Queue<Token> tokenBuffer = new Queue<Token>();
+
+        private Token lastToken = null;
+        private string charBuffer = "";
 
         private bool fail = false;
 
         public TokenAutomaton(Node initNode)
         {
-            this.initialNode = initNode;
-            this.currentNode = initNode;
+            this.start = initNode;
+            this.position = initNode;
         }
 
         public void FeedCharacter(char c)
         {
-            if (!IsFailState())
+            charBuffer += c;
+            Console.WriteLine("AUTOMATON accumulated: " + charBuffer);
+
+            if (lastToken == null)
+            {              
+                lastToken = TokenType.ERROR.CreateToken(charBuffer);
+            }    
+
+            if (position.HasTransition(c))
             {
-                accumulator += c;
-                if (CanTransitionWith(c))
+                position = position.GetNext(c);
+                if (position.IsAcceptingState())
                 {
-                    TransitionWith(c);
-                    UpdateToken();                  
-                }
-                else
-                {
-                    SetFailState();
-                }
+                    lastToken = position.acceptedTokenType.CreateToken(charBuffer);
+                }           
             }
-
-            Console.WriteLine("AUTOMATON accumulated: " + accumulator);
-        }
-
-        public bool CanTransitionWith(char c)
-        {
-            return currentNode.HasTransition(c);
-        }
-
-        public void TransitionWith(char c)
-        {
-            currentNode = currentNode.GetNext(c);
-        }
-
-        public void UpdateToken()
-        {
-            if (currentNode.IsAcceptingState())
+            else
             {
-                lastAccepting = currentNode;
-                lastToken = currentNode.recognizedTokenType.CreateToken(accumulator);
+                fail = true;
             }
-        }
+            
+            if (fail)
+            {
+                int tokenLength = lastToken.lexeme.Length;
+                tokenBuffer.Enqueue(lastToken);
+                fail = false;
 
-        public void SetFailState()
-        {
-            fail = true;
-            currentNode = null;
-        }
+                Console.WriteLine("AUTOMATON recognize token, type: <" + lastToken.tokenType.name + "> lexeme: <" + lastToken.lexeme + ">");
 
-        public bool IsFailState()
-        {
-            return fail;
+                position = start;
+                lastToken = null;
+                string overflow = charBuffer.Remove(0, tokenLength);
+                charBuffer = "";
+                foreach (char ch in overflow)
+                    FeedCharacter(ch);
+            }
         }
 
         public Token GetToken()
         {
-            if (lastToken == null && accumulator == ""+EOF)
-                return new Token(TokenType.EOF, accumulator);
+            if (tokenBuffer.Count > 0)
+                return tokenBuffer.Dequeue();
             else
-                return lastToken;
+                return null;
         }
-
-        public Token GetErrorToken()
-        {
-            return new Token(TokenType.ERROR, "" + accumulator[0]);
-        }
-
-        public int Rewind()
-        {
-            int accLength = accumulator.Length;
-            int tokenLength = lastToken == null ? 0 : lastToken.lexeme.Length;
-
-            accumulator = "";
-            lastToken = null;
-            fail = false;
-            currentNode = initialNode;
-
-            return accLength - tokenLength;
-        }
-
+         
         public class Node
         {
             public Dictionary<char, Node> transitions = new Dictionary<char, Node>();
-            public TokenType recognizedTokenType = null;
+            public TokenType acceptedTokenType = null;
 
             public bool IsAcceptingState()
             {
-                return recognizedTokenType != null;
+                return acceptedTokenType != null;
             }
 
             public Node GetNext(char c)

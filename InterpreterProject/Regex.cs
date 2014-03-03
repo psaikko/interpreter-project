@@ -260,10 +260,10 @@ namespace InterpreterProject
                             foreach (Node n in epsilonClosure)
                             {
                                 if (n.tokenType != null && 
-                                    (nextDFAState.recognizedTokenType == null ||
+                                    (nextDFAState.acceptedTokenType == null ||
                                     (n.tokenType.priority == TokenType.Priority.Keyword)))
                                 {
-                                    nextDFAState.recognizedTokenType = n.tokenType;
+                                    nextDFAState.acceptedTokenType = n.tokenType;
                                 }
                             }
 

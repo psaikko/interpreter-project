@@ -27,9 +27,9 @@ namespace InterpreterProjectTest
             {
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
                 if (tokens[i].lexeme == "a")
-                    Assert.AreEqual(aToken, tokens[i].type);
+                    Assert.AreEqual(aToken, tokens[i].tokenType);
                 else
-                    Assert.AreEqual(TokenType.ERROR, tokens[i].type);
+                    Assert.AreEqual(TokenType.ERROR, tokens[i].tokenType);
             }
         }
 
@@ -112,7 +112,7 @@ namespace InterpreterProjectTest
             for (int i = 0; i < expectedTokens.Length; i++)
             {
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(ttB, tokens[i].type);
+                Assert.AreEqual(ttB, tokens[i].tokenType);
             }
         }
 
@@ -294,7 +294,7 @@ namespace InterpreterProjectTest
             for (int i = 0; i < tokens.Count; i++)
             {
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(expectedTypeNames[i], tokens[i].type.name);
+                Assert.AreEqual(expectedTypeNames[i], tokens[i].tokenType.name);
             }
         }
 
@@ -338,7 +338,7 @@ namespace InterpreterProjectTest
             for (int i = 0; i < tokens.Count; i++)
             {
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(expectedTypeNames[i], tokens[i].type.name);
+                Assert.AreEqual(expectedTypeNames[i], tokens[i].tokenType.name);
             }
         }
 
@@ -384,7 +384,7 @@ namespace InterpreterProjectTest
             for (int i = 0; i < tokens.Count; i++)
             {
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(expectedTypeNames[i], tokens[i].type.name);
+                Assert.AreEqual(expectedTypeNames[i], tokens[i].tokenType.name);
             }
         }
     }

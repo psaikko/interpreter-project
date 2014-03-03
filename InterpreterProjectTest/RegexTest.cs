@@ -95,7 +95,7 @@ namespace InterpreterProjectTest
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-            Assert.AreEqual(TokenType.ERROR, tokens[3].type);
+            Assert.AreEqual(TokenType.ERROR, tokens[3].tokenType);
         }
 
         [TestMethod]
@@ -155,9 +155,9 @@ namespace InterpreterProjectTest
             {
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
                 if (expectedTokens[i] == "b")
-                    Assert.AreEqual("b", tokens[i].type.name);
+                    Assert.AreEqual("b", tokens[i].tokenType.name);
                 else
-                    Assert.AreEqual("not b", tokens[i].type.name);
+                    Assert.AreEqual("not b", tokens[i].tokenType.name);
             }
         }
 
@@ -178,7 +178,7 @@ namespace InterpreterProjectTest
             for (int i = 0; i < expectedTokens.Length; i++)
             {
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(anyType, tokens[i].type);
+                Assert.AreEqual(anyType, tokens[i].tokenType);
             }
         }
     }
