@@ -43,6 +43,13 @@ namespace InterpreterProject
             }
         }
 
+        public List<ISymbol[]> GetProductionRules(Variable v)
+        {
+            List<ISymbol[]> productionRules= null;
+            productions.TryGetValue(v, out productionRules);
+            return productionRules;
+        }
+
         public Dictionary<Variable, Dictionary<Terminal, ISymbol[]>> CreateLL1ParseTable()
         {
             Dictionary<Variable, Dictionary<Terminal, ISymbol[]>> LL1ParseTable =

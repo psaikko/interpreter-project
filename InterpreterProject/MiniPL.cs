@@ -139,14 +139,14 @@ namespace InterpreterProject
             return tts;
         }
 
-        public Dictionary<string, CFG.ISymbol> GetGrammarNonterminals()
+        public Dictionary<string, CFG.Variable> GetGrammarNonterminals()
         {
-            throw new NotImplementedException();
+            return vars;
         }
 
-        public Dictionary<string, CFG.ISymbol> GetGrammarTerminals()
+        public Dictionary<string, CFG.Terminal> GetGrammarTerminals()
         {
-            throw new NotImplementedException();
+            return terms;
         }
 
         public Scanner GetScanner()
