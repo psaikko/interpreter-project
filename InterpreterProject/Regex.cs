@@ -56,7 +56,7 @@ namespace InterpreterProject
             return new Regex(start, end);
         }
 
-        public static Regex Character(char c)
+        public static Regex Char(char c)
         {
             Node start = new Node();
             Node end = new Node();
@@ -88,7 +88,7 @@ namespace InterpreterProject
         {
             Regex re = Empty();
             foreach (char c in cs)
-                re = re.Concat(Character(c));
+                re = re.Concat(Char(c));
             return re;
         }
 

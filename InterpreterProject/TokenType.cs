@@ -11,7 +11,7 @@ namespace InterpreterProject
         public enum Priority { Whitespace, Default, Keyword };
 
         public static readonly TokenType ERROR = new TokenType("ERROR", Regex.None());
-        public static readonly TokenType EOF = new TokenType("EOF", Regex.Character(TokenAutomaton.EOF));
+        public static readonly TokenType EOF = new TokenType("EOF", Regex.Char(TokenAutomaton.EOF));
 
         public readonly String name;
         public readonly Priority priority;

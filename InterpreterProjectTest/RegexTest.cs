@@ -18,7 +18,7 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Regex_CharacterTest()
         {
-            Regex a = Regex.Character('a');
+            Regex a = Regex.Char('a');
             TokenType aType = new TokenType("a", a);
             TokenAutomaton automaton = aType.Automaton();
             List<Token> tokens = GetTokens(automaton, "aaaaa");
@@ -74,7 +74,7 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Regex_PlusTest()
         {
-            Regex ba = Regex.Character('b').Concat(Regex.Character('a').Plus());
+            Regex ba = Regex.Char('b').Concat(Regex.Char('a').Plus());
             TokenType baType = new TokenType("ba+", ba);
             TokenAutomaton automaton = baType.Automaton();
             List<Token> tokens = GetTokens(automaton, "baababab");
@@ -89,7 +89,7 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Regex_StarTest()
         {
-            Regex ab = Regex.Character('a').Star().Concat(Regex.Character('b'));
+            Regex ab = Regex.Char('a').Star().Concat(Regex.Char('b'));
             TokenType abType = new TokenType("a*b", ab);
             TokenAutomaton automaton = abType.Automaton();
             List<Token> tokens = GetTokens(automaton, "aababb");
@@ -103,7 +103,7 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Regex_MaybeTest()
         {
-            Regex ab = Regex.Character('a').Maybe().Concat(Regex.Character('b'));
+            Regex ab = Regex.Char('a').Maybe().Concat(Regex.Char('b'));
             TokenType abType = new TokenType("a?b", ab);
             TokenAutomaton automaton = abType.Automaton();
             List<Token> tokens = GetTokens(automaton, "babbab");
@@ -117,7 +117,7 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Regex_NotTest()
         {
-            Regex b = Regex.Character('b');
+            Regex b = Regex.Char('b');
             Regex notb = Regex.Not('b');
             TokenType bType = new TokenType("b", b);
             TokenType notbType = new TokenType("not b", notb);

@@ -18,8 +18,6 @@ namespace InterpreterProject
         private Token lastToken = null;
         private string charBuffer = "";
 
-        private bool fail = false;
-
         public TokenAutomaton(Node initNode)
         {
             this.start = initNode;

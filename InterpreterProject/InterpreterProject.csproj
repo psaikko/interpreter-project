@@ -56,6 +56,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CFG.cs" />
+    <Compile Include="Parser.cs" />
     <Compile Include="TokenAutomaton.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

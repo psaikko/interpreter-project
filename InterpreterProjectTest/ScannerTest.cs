@@ -18,7 +18,7 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Scanner_ErrorTest()
         {
-            Regex a = Regex.Character('a');
+            Regex a = Regex.Char('a');
             TokenType aToken = new TokenType("a", a);
             TokenAutomaton automaton = aToken.Automaton();
 
@@ -39,7 +39,7 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Scanner_LineCommentTest()
         {
-            Regex a = Regex.Character('a').Star();
+            Regex a = Regex.Char('a').Star();
             Regex lineComment = Regex.Concat("//").Concat(Regex.Not('\n').Star());
             Regex whitespace = Regex.Union(" \t\n").Star();
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace, priority: TokenType.Priority.Whitespace);
@@ -64,15 +64,15 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Scanner_BlockCommentTest()
         {
-            Regex a = Regex.Character('a').Star();
-            Regex b = Regex.Character('b').Star();
+            Regex a = Regex.Char('a').Star();
+            Regex b = Regex.Char('b').Star();
             // block comment regex /\*([^*]|(\*+[^*/]))\*+/
             Regex blockComment = Regex.Concat("/*")
                                     .Concat(Regex.Not('*')
-                                        .Union(Regex.Character('*').Plus()
+                                        .Union(Regex.Char('*').Plus()
                                                 .Concat(Regex.Not('*','/')))
                                         .Star())
-                                    .Concat(Regex.Character('*').Plus().Concat(Regex.Character('/')));          
+                                    .Concat(Regex.Char('*').Plus().Concat(Regex.Char('/')));          
             Regex whitespace = Regex.Union(" \t\n").Star();
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace, priority: TokenType.Priority.Whitespace);
             TokenType ttA = new TokenType("a*", a);
@@ -119,10 +119,10 @@ namespace InterpreterProjectTest
         public void Scanner_IntegerTest()
         {
             Regex whitespace = Regex.Union(" \t\n").Star();
-            Regex integer = Regex.Character('-').Maybe()
+            Regex integer = Regex.Char('-').Maybe()
                 .Concat(Regex.Range('1', '9'))
                 .Concat(Regex.Range('0', '9').Star())
-                .Union(Regex.Character('0'));
+                .Union(Regex.Char('0'));
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace);
             TokenType ttInteger = new TokenType("integer", integer);
             TokenAutomaton automaton = TokenType.CombinedAutomaton(ttInteger, ttWhitespace);
@@ -139,7 +139,7 @@ namespace InterpreterProjectTest
         public void Scanner_WhitespaceTest()
         {
             Regex whitespace = Regex.Union(" \t\n").Star();
-            Regex a = Regex.Character('a');
+            Regex a = Regex.Char('a');
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace);
             TokenType ttA = new TokenType("a", a);
             TokenAutomaton automaton = TokenType.CombinedAutomaton(ttA, ttWhitespace);
@@ -155,7 +155,7 @@ namespace InterpreterProjectTest
         public void Scanner_StringTest()
         {
             Regex whitespace = Regex.Union(" \t\n").Star();
-            Regex str = Regex.Character('"').Concat(Regex.Not('"').Star()).Concat(Regex.Character('"'));
+            Regex str = Regex.Char('"').Concat(Regex.Not('"').Star()).Concat(Regex.Char('"'));
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace);
             TokenType ttString = new TokenType("string", str);
             TokenAutomaton automaton = TokenType.CombinedAutomaton(ttWhitespace, ttString);
@@ -173,9 +173,9 @@ namespace InterpreterProjectTest
         {
             Regex whitespace = Regex.Union(" \t\n").Star();
             // construct the regex "(\\.|[^"\\])*"
-            Regex strBegin = Regex.Character('"');
-            Regex strEnd = Regex.Character('"');
-            Regex strBody = Regex.Character('\\').Concat(Regex.Any()).Union(Regex.Not('"', '\\')).Star();
+            Regex strBegin = Regex.Char('"');
+            Regex strEnd = Regex.Char('"');
+            Regex strBody = Regex.Char('\\').Concat(Regex.Any()).Union(Regex.Not('"', '\\')).Star();
             Regex str = strBegin.Concat(strBody).Concat(strEnd);
             TokenType ttWhitespace = new TokenType("Whitespace", whitespace);
             TokenType ttString = new TokenType("string", str);
@@ -211,49 +211,53 @@ namespace InterpreterProjectTest
 
         private TokenAutomaton CreateMiniPLAutomaton()
         {
-            Regex whitespace = Regex.Union(" \t\n").Star();
-            Regex str = Regex.Character('"')
-                        .Concat(Regex.Character('\\')
-                            .Concat(Regex.Any())
-                            .Union(Regex.Not('"', '\\')).Star())
-                        .Concat(Regex.Character('"'));
-            Regex binaryOp = Regex.Union("+-*/<=&");
-            Regex unaryOp = Regex.Character('!');
-            Regex keyword = Regex.Union(
-                Regex.Concat("var"), Regex.Concat("for"), Regex.Concat("end"), Regex.Concat("in"),
-                Regex.Concat("do"), Regex.Concat("read"), Regex.Concat("print"), Regex.Concat("int"),
-                Regex.Concat("string"), Regex.Concat("bool"), Regex.Concat("assert"));
-            Regex lParen = Regex.Character(')');
-            Regex rParen = Regex.Character('(');
-            Regex colon = Regex.Character(':');
-            Regex semicolon = Regex.Character(';');
-            Regex assign = Regex.Concat(":=");
-            Regex dots = Regex.Concat("..");
-            Regex ident = Regex.Union(Regex.Range('A', 'Z'), 
-                                      Regex.Range('a', 'z'))
-                            .Concat(Regex.Union(Regex.Range('A', 'Z'),
-                                                Regex.Range('a', 'z'),
-                                                Regex.Range('0', '9'),
-                                                Regex.Character('_')).Star());
-            Regex integer = Regex.Range('0', '9').Plus();
+            // Define token regexes
+            Regex reBlockComment = Regex.Concat("/*").Concat(Regex.Not('*').Union(Regex.Char('*').Plus().Concat(Regex.Not('*', '/'))).Star())
+                                                     .Concat(Regex.Char('*').Plus().Concat(Regex.Char('/')));
+            Regex reLineComment = Regex.Concat("//").Concat(Regex.Not('\n').Star());
 
-            TokenType ttInteger = new TokenType("integer", integer);
-            TokenType ttWhitespace = new TokenType("whitespace", whitespace, priority: TokenType.Priority.Whitespace);
-            TokenType ttString = new TokenType("string", str);
-            TokenType ttBinaryOp = new TokenType("binary op", binaryOp);
-            TokenType ttUnaryOp = new TokenType("unary op", unaryOp);
-            TokenType ttKeyword = new TokenType("keyword", keyword, priority: TokenType.Priority.Keyword);
-            TokenType ttRightParen = new TokenType("right paren", rParen);
-            TokenType ttLeftParen = new TokenType("left paren", lParen);
-            TokenType ttColon = new TokenType("colon", colon);
-            TokenType ttSemicolon = new TokenType("semicolon", semicolon);
-            TokenType ttAssign = new TokenType("assignment", assign);
-            TokenType ttDots = new TokenType("dots", dots);
-            TokenType ttIdent = new TokenType("identifier", ident);
+            Regex reWhitespace = Regex.Union(" \t\n").Star().Union(reBlockComment).Union(reLineComment);
 
-            return TokenType.CombinedAutomaton(
-                ttWhitespace, ttString, ttBinaryOp, ttUnaryOp, ttKeyword, ttRightParen, ttLeftParen,
-                ttColon, ttSemicolon, ttAssign, ttDots, ttIdent, ttInteger);
+            Regex reString = Regex.Char('"').Concat(Regex.Char('\\').Concat(Regex.Any()).Union(Regex.Not('"', '\\')).Star()).Concat(Regex.Char('"'));
+            Regex reBinaryOperator = Regex.Union("+-*/<=&");
+            Regex reUnaryOperator = Regex.Char('!');
+            Regex reKeyword = Regex.Union(Regex.Concat("var"), Regex.Concat("for"), Regex.Concat("end"), Regex.Concat("in"),
+                                          Regex.Concat("do"), Regex.Concat("read"), Regex.Concat("print"), Regex.Concat("assert"));
+            Regex reType = Regex.Union(Regex.Concat("bool"), Regex.Concat("int"), Regex.Concat("string"));
+
+            Regex reParenRight = Regex.Char(')'),
+                  reParenLeft = Regex.Char('('),
+                  reColon = Regex.Char(':'),
+                  reSemicolon = Regex.Char(';'),
+                  reAssignment = Regex.Concat(":="),
+                  reDots = Regex.Concat("..");
+
+            Regex reIdentifier = Regex.Union(Regex.Range('A', 'Z'), Regex.Range('a', 'z'))
+                                      .Concat(Regex.Union(Regex.Range('A', 'Z'), Regex.Range('a', 'z'), Regex.Range('0', '9'), Regex.Char('_')).Star());
+            Regex reInteger = Regex.Range('0', '9').Plus();
+
+            // Define token types
+            TokenType ttInteger = new TokenType("integer", reInteger),
+                      ttWhitespace = new TokenType("whitespace", reWhitespace, priority: TokenType.Priority.Whitespace),
+                      ttString = new TokenType("string", reString),
+                      ttBinaryOperator = new TokenType("binary op", reBinaryOperator),
+                      ttUnaryOperator = new TokenType("unary op", reUnaryOperator),
+                      ttKeyword = new TokenType("keyword", reKeyword, priority: TokenType.Priority.Keyword),
+                      ttType = new TokenType("type", reType, priority: TokenType.Priority.Keyword),
+                      ttParenLeft = new TokenType("left paren", reParenLeft),
+                      ttParenRight = new TokenType("right paren", reParenRight),
+                      ttColon = new TokenType("colon", reColon),
+                      ttSemicolon = new TokenType("semicolon", reSemicolon),
+                      ttAssignment = new TokenType("assignment", reAssignment),
+                      ttDots = new TokenType("dots", reDots),
+                      ttIdentifier = new TokenType("identifier", reIdentifier);
+
+            // Construct automaton
+            TokenAutomaton automaton = TokenType.CombinedAutomaton(
+                ttWhitespace, ttString, ttBinaryOperator, ttUnaryOperator, ttKeyword, ttType, ttParenRight, ttParenLeft,
+                ttColon, ttSemicolon, ttAssignment, ttDots, ttIdentifier, ttInteger);
+
+            return automaton;
         }
 
         [TestMethod]
@@ -263,8 +267,8 @@ namespace InterpreterProjectTest
                           "print X;";
 
             string[] expectedTokens = { "var", "X", ":", "int", ":=", "4", "+", "(", "6", "*", "2", ")", ";", "print", "X", ";" };
-            string[] expectedTypeNames = { "keyword", "identifier", "colon", "keyword", "assignment", "integer", "binary op", "right paren",
-                                           "integer", "binary op", "integer", "left paren", "semicolon", "keyword", "identifier", "semicolon"};
+            string[] expectedTypeNames = { "keyword", "identifier", "colon", "type", "assignment", "integer", "binary op", "left paren",
+                                           "integer", "binary op", "integer", "right paren", "semicolon", "keyword", "identifier", "semicolon"};
 
             List<Token> tokens = GetTokens(CreateMiniPLAutomaton(), text);
 
@@ -298,15 +302,15 @@ namespace InterpreterProjectTest
                                         "end","for",";",
                                         "assert","(","x","=","nTimes",")",";" };
 
-            string[] expectedTypeNames = { "keyword", "identifier", "colon", "keyword", "assignment", "integer", "semicolon",
+            string[] expectedTypeNames = { "keyword", "identifier", "colon", "type", "assignment", "integer", "semicolon",
                                            "keyword","string","semicolon",
                                            "keyword","identifier","semicolon",
-                                           "keyword","identifier","colon","keyword", "semicolon",
+                                           "keyword","identifier","colon","type", "semicolon",
                                            "keyword","identifier","keyword","integer","dots","identifier","binary op","integer","keyword",
                                            "keyword","identifier","semicolon",
                                            "keyword","string","semicolon",
                                            "keyword","keyword","semicolon",
-                                           "keyword","right paren","identifier","binary op","identifier","left paren","semicolon" };
+                                           "keyword","left paren","identifier","binary op","identifier","right paren","semicolon" };
 
             List<Token> tokens = GetTokens(CreateMiniPLAutomaton(), text);
 
@@ -342,10 +346,10 @@ namespace InterpreterProjectTest
                                         "print", "\"The result is: \"", ";",
                                         "print", "f", ";"};
             string[] expectedTypeNames = { "keyword", "string", "semicolon",
-                                           "keyword", "identifier", "colon", "keyword", "semicolon",
+                                           "keyword", "identifier", "colon", "type", "semicolon",
                                            "keyword", "identifier", "semicolon",
-                                           "keyword", "identifier", "colon", "keyword", "assignment", "integer", "semicolon",
-                                           "keyword", "identifier", "colon", "keyword", "semicolon",
+                                           "keyword", "identifier", "colon", "type", "assignment", "integer", "semicolon",
+                                           "keyword", "identifier", "colon", "type", "semicolon",
                                            "keyword", "identifier", "keyword", "integer", "dots", "identifier", "keyword",
                                            "identifier", "assignment", "identifier", "binary op", "identifier", "semicolon",
                                            "keyword", "keyword", "semicolon",
