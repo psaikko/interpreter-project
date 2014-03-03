@@ -209,57 +209,6 @@ namespace InterpreterProjectTest
                 Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
         }
 
-        private TokenAutomaton CreateMiniPLAutomaton()
-        {
-            // Define token regexes
-            Regex reBlockComment = Regex.Concat("/*").Concat(Regex.Not('*').Union(Regex.Char('*').Plus().Concat(Regex.Not('*', '/'))).Star())
-                                                     .Concat(Regex.Char('*').Plus().Concat(Regex.Char('/')));
-            Regex reLineComment = Regex.Concat("//").Concat(Regex.Not('\n').Star());
-
-            Regex reWhitespace = Regex.Union(" \t\n").Star().Union(reBlockComment).Union(reLineComment);
-
-            Regex reString = Regex.Char('"').Concat(Regex.Char('\\').Concat(Regex.Any()).Union(Regex.Not('"', '\\')).Star()).Concat(Regex.Char('"'));
-            Regex reBinaryOperator = Regex.Union("+-*/<=&");
-            Regex reUnaryOperator = Regex.Char('!');
-            Regex reKeyword = Regex.Union(Regex.Concat("var"), Regex.Concat("for"), Regex.Concat("end"), Regex.Concat("in"),
-                                          Regex.Concat("do"), Regex.Concat("read"), Regex.Concat("print"), Regex.Concat("assert"));
-            Regex reType = Regex.Union(Regex.Concat("bool"), Regex.Concat("int"), Regex.Concat("string"));
-
-            Regex reParenRight = Regex.Char(')'),
-                  reParenLeft = Regex.Char('('),
-                  reColon = Regex.Char(':'),
-                  reSemicolon = Regex.Char(';'),
-                  reAssignment = Regex.Concat(":="),
-                  reDots = Regex.Concat("..");
-
-            Regex reIdentifier = Regex.Union(Regex.Range('A', 'Z'), Regex.Range('a', 'z'))
-                                      .Concat(Regex.Union(Regex.Range('A', 'Z'), Regex.Range('a', 'z'), Regex.Range('0', '9'), Regex.Char('_')).Star());
-            Regex reInteger = Regex.Range('0', '9').Plus();
-
-            // Define token types
-            TokenType ttInteger = new TokenType("integer", reInteger),
-                      ttWhitespace = new TokenType("whitespace", reWhitespace, priority: TokenType.Priority.Whitespace),
-                      ttString = new TokenType("string", reString),
-                      ttBinaryOperator = new TokenType("binary op", reBinaryOperator),
-                      ttUnaryOperator = new TokenType("unary op", reUnaryOperator),
-                      ttKeyword = new TokenType("keyword", reKeyword, priority: TokenType.Priority.Keyword),
-                      ttType = new TokenType("type", reType, priority: TokenType.Priority.Keyword),
-                      ttParenLeft = new TokenType("left paren", reParenLeft),
-                      ttParenRight = new TokenType("right paren", reParenRight),
-                      ttColon = new TokenType("colon", reColon),
-                      ttSemicolon = new TokenType("semicolon", reSemicolon),
-                      ttAssignment = new TokenType("assignment", reAssignment),
-                      ttDots = new TokenType("dots", reDots),
-                      ttIdentifier = new TokenType("identifier", reIdentifier);
-
-            // Construct automaton
-            TokenAutomaton automaton = TokenType.CombinedAutomaton(
-                ttWhitespace, ttString, ttBinaryOperator, ttUnaryOperator, ttKeyword, ttType, ttParenRight, ttParenLeft,
-                ttColon, ttSemicolon, ttAssignment, ttDots, ttIdentifier, ttInteger);
-
-            return automaton;
-        }
-
         [TestMethod]
         public void Scanner_MiniPLTest_Example1()
         {
@@ -270,7 +219,8 @@ namespace InterpreterProjectTest
             string[] expectedTypeNames = { "keyword", "identifier", "colon", "type", "assignment", "integer", "binary op", "left paren",
                                            "integer", "binary op", "integer", "right paren", "semicolon", "keyword", "identifier", "semicolon"};
 
-            List<Token> tokens = GetTokens(CreateMiniPLAutomaton(), text);
+            Scanner sc = MiniPL.GetInstance().GetScanner();
+            List<Token> tokens = new List<Token>(sc.Tokenize(text));
 
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -312,7 +262,8 @@ namespace InterpreterProjectTest
                                            "keyword","keyword","semicolon",
                                            "keyword","left paren","identifier","binary op","identifier","right paren","semicolon" };
 
-            List<Token> tokens = GetTokens(CreateMiniPLAutomaton(), text);
+            Scanner sc = MiniPL.GetInstance().GetScanner();
+            List<Token> tokens = new List<Token>(sc.Tokenize(text));
 
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -356,7 +307,8 @@ namespace InterpreterProjectTest
                                            "keyword", "string", "semicolon",
                                            "keyword", "identifier", "semicolon"};
 
-            List<Token> tokens = GetTokens(CreateMiniPLAutomaton(), text);
+            Scanner sc = MiniPL.GetInstance().GetScanner();
+            List<Token> tokens = new List<Token>(sc.Tokenize(text));
 
             for (int i = 0; i < tokens.Count; i++)
             {

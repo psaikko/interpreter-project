@@ -57,6 +57,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CFG.cs" />
+    <Compile Include="ILanguage.cs" />
+    <Compile Include="MiniPL.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="TokenAutomaton.cs" />
     <Compile Include="Program.cs" />

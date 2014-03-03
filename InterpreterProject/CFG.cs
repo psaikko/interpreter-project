@@ -55,57 +55,58 @@ namespace InterpreterProject
 
                 foreach (ISymbol[] varProduction in productions[var])
                 {
-                    Console.WriteLine("\nCFG: LL(1) table gen, var = "+var+" prod = "+SymbolsToString(varProduction));
-
-                    ISet<Terminal> productionFirst = First(varProduction);
-
-                    foreach (Terminal term in productionFirst)
+                    if (varProduction[0] != Terminal.epsilon)
                     {
-                        if (term != Terminal.epsilon)
+                        Console.WriteLine("\nCFG: LL(1) table gen, var = " + var + " prod = " + SymbolsToString(varProduction));
+
+                        ISet<Terminal> productionFirst = First(varProduction);
+
+                        foreach (Terminal term in productionFirst)
                         {
-                            if (LL1ParseTable[var][term] != null) // LL(1) violation
+                            if (term != Terminal.epsilon)
                             {
-                                Console.WriteLine("First");
-                                Console.WriteLine("CFG: LL(1) violation at ["+var+","+term+"]");
-                                Console.WriteLine("\tWas: " + SymbolsToString(LL1ParseTable[var][term]));
-                                Console.WriteLine("\tNew: " + SymbolsToString(varProduction));
-                                return null;
-                            }  
-                            else
-                            {
-                                LL1ParseTable[var][term] = varProduction;
-                            }   
-                        }
-                    }
-                    if (productionFirst.Contains(Terminal.epsilon))
-                    {
-                        foreach (Terminal term in Follow(var))
-                        {
-                            if (LL1ParseTable[var][term] != null) // LL(1) violation
-                            {
-                                Console.WriteLine("Follow");
-                                Console.WriteLine("CFG: LL(1) violation at [" + var + "," + term + "]");
-                                Console.WriteLine("\tWas: " + SymbolsToString(LL1ParseTable[var][term]));
-                                Console.WriteLine("\tNew: " + SymbolsToString(varProduction));
-                                return null;
-                            }  
-                            else
-                            {
-                                LL1ParseTable[var][term] = varProduction;
+                                if (LL1ParseTable[var][term] != null) // LL(1) violation
+                                {
+                                    Console.WriteLine("First");
+                                    Console.WriteLine("CFG: LL(1) violation at [" + var + "," + term + "]");
+                                    Console.WriteLine("\tWas: " + SymbolsToString(LL1ParseTable[var][term]));
+                                    Console.WriteLine("\tNew: " + SymbolsToString(varProduction));
+                                    return null;
+                                }
+                                else
+                                {
+                                    LL1ParseTable[var][term] = varProduction;
+                                }
                             }
-                                
+                        }
+                        if (productionFirst.Contains(Terminal.epsilon))
+                        {
+                            foreach (Terminal term in Follow(var))
+                            {
+                                if (LL1ParseTable[var][term] != null) // LL(1) violation
+                                {
+                                    Console.WriteLine("Follow");
+                                    Console.WriteLine("CFG: LL(1) violation at [" + var + "," + term + "]");
+                                    Console.WriteLine("\tWas: " + SymbolsToString(LL1ParseTable[var][term]));
+                                    Console.WriteLine("\tNew: " + SymbolsToString(varProduction));
+                                    return null;
+                                }
+                                else
+                                {
+                                    LL1ParseTable[var][term] = varProduction;
+                                }
+
+                            }
                         }
                     }
+                    
                 }
             }
-
             return LL1ParseTable;
         }
 
-        private ISet<Terminal> First(IEnumerable<ISymbol> production, bool debug = true)
+        public ISet<Terminal> First(IEnumerable<ISymbol> production, bool debug = true)
         {
-            if (debug)
-                Console.WriteLine("CFG: First " + SymbolsToString(production));
 
             ISet<Terminal> firstSet = new HashSet<Terminal>();
             foreach (ISymbol symbol in production)
@@ -139,7 +140,7 @@ namespace InterpreterProject
             return firstSet;
         }
 
-        private ISet<Terminal> Follow(Variable startVar)
+        public ISet<Terminal> Follow(Variable startVar)
         {
             ISet<Variable> visited = new HashSet<Variable>();
             Stack<Variable> followStack = new Stack<Variable>();
@@ -147,9 +148,6 @@ namespace InterpreterProject
 
             followStack.Push(startVar);
             visited.Add(startVar);
-
-            Console.WriteLine("CFG: Follow " + startVar.name);
-
 
             while (followStack.Count > 0)
             {
