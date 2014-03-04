@@ -77,7 +77,7 @@ namespace InterpreterProject
                 {
                     //if (varProduction[0] != Terminal.epsilon)
                     {
-                        Console.WriteLine("\nCFG: LL(1) table gen, var = " + var + " prod = " + SymbolsToString(varProduction));
+                        Console.WriteLine("CFG: LL(1) table gen, var = " + var + " prod = " + SymbolsToString(varProduction));
 
                         ISet<Terminal> productionFirst = First(varProduction);
 
@@ -87,8 +87,7 @@ namespace InterpreterProject
                             {
                                 if (LL1ParseTable[var][term] != null) // LL(1) violation
                                 {
-                                    Console.WriteLine("First");
-                                    Console.WriteLine("CFG: LL(1) violation at [" + var + "," + term + "]");
+                                    Console.WriteLine("CFG: LL(1) violation at (First) [" + var + "," + term + "]");
                                     Console.WriteLine("\tWas: " + SymbolsToString(LL1ParseTable[var][term]));
                                     Console.WriteLine("\tNew: " + SymbolsToString(varProduction));
                                     return null;
@@ -105,8 +104,7 @@ namespace InterpreterProject
                             {
                                 if (LL1ParseTable[var][term] != null) // LL(1) violation
                                 {
-                                    Console.WriteLine("Follow");
-                                    Console.WriteLine("CFG: LL(1) violation at [" + var + "," + term + "]");
+                                    Console.WriteLine("CFG: LL(1) violation at (Follow) [" + var + "," + term + "]");
                                     Console.WriteLine("\tWas: " + SymbolsToString(LL1ParseTable[var][term]));
                                     Console.WriteLine("\tNew: " + SymbolsToString(varProduction));
                                     return null;
@@ -125,7 +123,8 @@ namespace InterpreterProject
             {
                 foreach (Terminal term in terminals)
                 {
-                    Console.WriteLine("CFG: LL(1) Table[" + var + "][" + term + "] = " + SymbolsToString(LL1ParseTable[var][term]));
+                    if (LL1ParseTable[var][term] != null)
+                        Console.WriteLine("CFG: LL(1) Table[" + var + "][" + term + "] = " + SymbolsToString(LL1ParseTable[var][term]));
                 }
             }
 
@@ -156,15 +155,16 @@ namespace InterpreterProject
                 {
                     foreach (ISymbol[] production in productions[var])
                     {
-                        int before = first[var].Count;
-
+                        int tmp = first[var].Count;
                         first[var].UnionWith(First(production));
-
-                        int after = first[var].Count;
-
-                        if (after > before) converged = false;
+                        if (first[var].Count > tmp)
+                        {
+                            Console.WriteLine("CFG: First " + var + " = " + SymbolsToString(first[var]));
+                            converged = false;
+                        } 
                     }                 
                 }
+
             }
             Console.WriteLine("CFG: first sets converged");
         }
@@ -187,8 +187,6 @@ namespace InterpreterProject
                 firstSet.Remove(Terminal.epsilon);
                 firstSet.UnionWith(First(production.Skip(1).ToArray()));
             }
-
-            Console.WriteLine("CFG: First " + SymbolsToString(production) + "\n\t= " + SymbolsToString(firstSet));
 
             return firstSet;
         }

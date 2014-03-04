@@ -27,7 +27,7 @@ namespace InterpreterProject
         public void FeedCharacter(char c)
         {
             charBuffer += c;
-            Console.WriteLine("AUTOMATON accumulated: " + charBuffer);
+            Console.WriteLine(String.Format("AUTOMATON accumulated: \"{0}\"", charBuffer));
 
             if (lastToken == null)
             {
@@ -50,7 +50,7 @@ namespace InterpreterProject
                 int tokenLength = lastToken.lexeme.Length;
                 tokenBuffer.Enqueue(lastToken);
 
-                Console.WriteLine("AUTOMATON recognize token, type: <" + lastToken.tokenType.name + "> lexeme: <" + lastToken.lexeme + ">");
+                Console.WriteLine("AUTOMATON recognize token "+lastToken);
 
                 position = start;
                 lastToken = null;

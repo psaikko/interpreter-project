@@ -24,12 +24,12 @@ namespace InterpreterProject
             while (!reader.EndOfStream)
             {
                 char c = (char) reader.Read();
-                Console.WriteLine("SCANNER: feeding " + c);
+                Console.WriteLine(String.Format("SCANNER: feeding '{0}'", c));
                 automaton.FeedCharacter(c);
                 t = automaton.GetToken();
                 if (t != null && IsRelevant(t, yieldEOF))
                 {
-                    Console.WriteLine("SCANNER: token, type: <" + t.tokenType.name + "> lexeme: <" + t.lexeme + ">");
+                    Console.WriteLine("SCANNER: yield token "+t);
                     yield return t;
                 }
             }
@@ -38,7 +38,7 @@ namespace InterpreterProject
 
             while ((t = automaton.GetToken()) != null && IsRelevant(t, yieldEOF))
             {
-                Console.WriteLine("SCANNER: token, type: <" + t.tokenType.name + "> lexeme: <" + t.lexeme + ">");
+                Console.WriteLine("SCANNER: yield token "+t);
                 yield return t;
             }
         }

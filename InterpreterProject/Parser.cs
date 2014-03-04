@@ -23,6 +23,9 @@ namespace InterpreterProject
             s.Push(CFG.Terminal.EOF);
             s.Push(start);
 
+            INode root = new Tree(start);
+            Stack<INode> treeStack = new Stack<INode>();
+
             IEnumerator<Token> ts = tokens.GetEnumerator();
 
             ts.MoveNext();
@@ -37,6 +40,8 @@ namespace InterpreterProject
                 if (s.Peek() is CFG.Terminal)
                 {
                     CFG.Terminal term = s.Pop() as CFG.Terminal;
+                    Leaf leaf = treeStack.Pop() as Leaf;
+
                     if (term == CFG.Terminal.epsilon)
                     {
                         Console.WriteLine("PARSE: disregard epsilon");
@@ -44,6 +49,7 @@ namespace InterpreterProject
                     }
                     if (term.Matches(ts.Current))
                     {
+                        leaf.token = ts.Current;
                         Console.WriteLine("PARSE: Terminal match");
                         ts.MoveNext();                        
                         continue;
@@ -51,33 +57,49 @@ namespace InterpreterProject
                     else
                     {
                         Console.WriteLine("PARSE: Terminal mismatch");
-                        goto Error;
+                        Console.WriteLine("PARSE: Error");
+                        return false;
                     }
                 }
                 else // top of stack is a nonterminal
                 {
                     CFG.Variable var = s.Pop() as CFG.Variable;
+                    Tree subtree = treeStack.Pop() as Tree;
 
                     CFG.ISymbol[] production = tableGet(var, ts.Current);
 
                     if (production == null)
                     {
                         Console.WriteLine("PARSE: No such production");
-                        goto Error;
+                        Console.WriteLine("PARSE: Error");
+                        return false;
                     }
                     else
                     {
+                        // add leaves to tree
                         Console.WriteLine("PARSE: Using production " + SymbolsToString(production));
                         for (int i = production.Length - 1; i >= 0; i--)
+                        {                  
+                            INode treeChild;
+                            if (production[i] is CFG.Terminal)
+                            {
+                                treeChild = new Leaf(production[i] as CFG.Terminal);
+                            } 
+                            else 
+                            {
+                                treeChild = new Tree(production[i] as CFG.Variable);
+                            }
+                            subtree.children.Insert(0, treeChild);
+                            treeStack.Push(treeChild); 
                             s.Push(production[i]);
+                        }
                     }
                 }
             }
 
+            // TODO: debug print tree
+
             return true;
-        Error:
-            Console.WriteLine("Parse error");
-            return false;
         }
 
         private CFG.ISymbol[] tableGet(CFG.Variable var, Token token)
@@ -101,6 +123,28 @@ namespace InterpreterProject
                 s += symbol + " ";
             }
             return s;
+        }
+
+
+        private interface INode 
+        { 
+            CFG.ISymbol GetSymbol();
+        }
+
+        private class Tree : INode
+        {
+            public List<INode> children;
+            public CFG.Variable var;
+            public Tree(CFG.Variable var) { this.var = var; }
+            public CFG.ISymbol GetSymbol() { return var; }
+        }
+
+        private class Leaf : INode
+        {
+            public CFG.Terminal term;
+            public Token token;
+            public Leaf(CFG.Terminal term) { this.term = term; }
+            public CFG.ISymbol GetSymbol() { return term; }
         }
     }
 }
