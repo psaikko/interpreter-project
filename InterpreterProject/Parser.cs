@@ -8,6 +8,6 @@ namespace InterpreterProject
 {
     public class Parser
     {
-
+        
     }
 }

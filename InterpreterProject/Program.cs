@@ -10,7 +10,8 @@ namespace InterpreterProject
     {
         static void Main(string[] args)
         {
-
+            ILanguage miniPL = MiniPL.GetInstance();
+            Console.ReadLine();
         }
     }
 }

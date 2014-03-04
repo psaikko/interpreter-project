@@ -60,6 +60,8 @@ namespace InterpreterProject
             ComputeFirstSets();
             ComputeFollowSets();
 
+            Console.WriteLine("=========================================================");
+
             Dictionary<Variable, Dictionary<Terminal, ISymbol[]>> LL1ParseTable =
                 new Dictionary<Variable, Dictionary<Terminal, ISymbol[]>>();
 
@@ -122,6 +124,7 @@ namespace InterpreterProject
 
         private void ComputeFirstSets()
         {
+            Console.WriteLine("=========================================================");
             Console.WriteLine("CFG: Computing first sets");
             foreach (Variable var in nonterminals)
             {
@@ -138,6 +141,7 @@ namespace InterpreterProject
             while (!converged)
             {
                 converged = true;
+                Console.WriteLine("--iteration--");
                 foreach (Variable var in nonterminals)
                 {
                     foreach (ISymbol[] production in productions[var])
@@ -181,63 +185,79 @@ namespace InterpreterProject
 
         private void ComputeFollowSets()
         {
+            Console.WriteLine("=========================================================");
+            Console.WriteLine("CFG: Computing follow sets");
+            foreach (Variable A in nonterminals)
+            {
+                follow[A] = new HashSet<Terminal>();
+                if (A == startSymbol)
+                    follow[A].Add(Terminal.EOF);
+                foreach (Variable B in nonterminals)
+                {
+                    foreach (ISymbol[] prod in productions[B])
+                    {
+                        for (int i = 0; i < prod.Length - 1; i++)
+                            if (prod[i] == A && prod[i + 1] is Terminal)
+                                follow[A].Add(prod[i + 1] as Terminal);
+                    }                    
+                }
+                Console.WriteLine("CFG: Follow " + A + " = " + SymbolsToString(follow[A]));
+            }
 
+            Console.WriteLine("CFG: Initial step done");
+
+            bool converged = false;
+
+            while (!converged)
+            {
+                converged = true;
+                Console.WriteLine("--iteration--");
+                foreach (Variable B in nonterminals)
+                {
+                    foreach (ISymbol[] prod in productions[B])
+                    {
+                        for (int i = 0; i < prod.Length; i++)
+                        {
+                            if (prod[i] is Variable)
+                            {
+                                Variable A = prod[i] as Variable;
+                                int tmp = follow[A].Count;
+                                if (i == prod.Length - 1)
+                                {                          
+                                    follow[A].UnionWith(follow[B]);   
+                                }
+                                else
+                                {
+                                    ISymbol[] w = prod.Skip(i).ToArray();
+                                    ISet<Terminal> fw = First(w);
+                                    if (fw.Contains(Terminal.epsilon))
+                                    {
+                                        follow[A].UnionWith(follow[B]);
+                                        fw.Remove(Terminal.epsilon);
+                                    }
+                                    follow[A].UnionWith(fw);
+                                }
+                                if (follow[A].Count > tmp)
+                                {
+                                    Console.WriteLine("CFG: used rule "+B+" -> "+SymbolsToString(prod)+"for "+A);
+                                    Console.WriteLine("CFG: Follow " + A + " = " + SymbolsToString(follow[A]));
+                                    Console.WriteLine();
+                                    converged = false;
+                                }
+                            }
+                        }
+                    }  
+                }
+                foreach (Variable A in nonterminals)
+                    Console.WriteLine("CFG: Follow " + A + " = " + SymbolsToString(follow[A]));
+            }
+
+            Console.WriteLine("CFG: follow sets converged");
         }
 
         public ISet<Terminal> Follow(Variable startVar)
         {
-            ISet<Variable> visited = new HashSet<Variable>();
-            Stack<Variable> followStack = new Stack<Variable>();
-            ISet<Terminal> followSet = new HashSet<Terminal>();
-
-            followStack.Push(startVar);
-            visited.Add(startVar);
-
-            while (followStack.Count > 0)
-            {
-                Variable v = followStack.Pop();
-              
-                ISet<Terminal> vFollowSet = new HashSet<Terminal>();
-                if (v == startSymbol)
-                {
-                    vFollowSet.Add(Terminal.EOF);                    
-                }
-                else
-                {
-                    foreach (Variable var in productions.Keys)
-                    {
-                        foreach (ISymbol[] varProduction in productions[var])
-                        {
-                            for (int i = 0; i < varProduction.Length; i++)
-                            {
-                                if (varProduction[i] == v)
-                                {
-                                    if (i == varProduction.Length - 1)
-                                    {
-                                        if (!visited.Contains(var))
-                                        {
-                                            followStack.Push(var);
-                                            visited.Add(var);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        vFollowSet.UnionWith(First(varProduction.Skip(i).ToArray())); 
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                followSet.UnionWith(vFollowSet);
-            }
-            
-            followSet.Remove(Terminal.epsilon);
-
-            //Console.WriteLine("CFG: Follow " + startVar.name + " = " + SymbolsToString(followSet));
-
-            return followSet;
+            return follow[startVar];
         }
 
 
