@@ -16,7 +16,7 @@ namespace InterpreterProject
             this.automaton = automaton;
         }
 
-        public IEnumerable<Token> Tokenize(Stream input)
+        public IEnumerable<Token> Tokenize(Stream input, bool yieldEOF = true)
         {
             StreamReader reader = new StreamReader(input);
             Token t;
@@ -27,7 +27,7 @@ namespace InterpreterProject
                 Console.WriteLine("SCANNER: feeding " + c);
                 automaton.FeedCharacter(c);
                 t = automaton.GetToken();
-                if (t != null && IsRelevant(t))
+                if (t != null && IsRelevant(t, yieldEOF))
                 {
                     Console.WriteLine("SCANNER: token, type: <" + t.tokenType.name + "> lexeme: <" + t.lexeme + ">");
                     yield return t;
@@ -36,22 +36,22 @@ namespace InterpreterProject
 
             automaton.FeedCharacter(TokenAutomaton.EOF);
 
-            while ((t = automaton.GetToken()) != null && IsRelevant(t))
+            while ((t = automaton.GetToken()) != null && IsRelevant(t, yieldEOF))
             {
                 Console.WriteLine("SCANNER: token, type: <" + t.tokenType.name + "> lexeme: <" + t.lexeme + ">");
                 yield return t;
             }
         }
 
-        private bool IsRelevant(Token t)
+        private bool IsRelevant(Token t, bool EOFisRelevant)
         {
-            return (t.tokenType.priority != TokenType.Priority.Whitespace && t.tokenType != TokenType.EOF);
+            return (t.tokenType.priority != TokenType.Priority.Whitespace && (t.tokenType != TokenType.EOF || EOFisRelevant));
         }
 
-        public IEnumerable<Token> Tokenize(string text)
+        public IEnumerable<Token> Tokenize(string text, bool yieldEOF = true)
         {
             MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(text));
-            return Tokenize(ms);
+            return Tokenize(ms, yieldEOF);
         }
     }
 }

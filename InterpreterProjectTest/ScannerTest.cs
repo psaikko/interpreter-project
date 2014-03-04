@@ -11,7 +11,7 @@ namespace InterpreterProjectTest
         private List<Token> GetTokens(TokenAutomaton automaton, string text)
         {
             Scanner sc = new Scanner(automaton);
-            IEnumerable<Token> tokens = sc.Tokenize(text);
+            IEnumerable<Token> tokens = sc.Tokenize(text, yieldEOF:false);
             return new List<Token>(tokens);
         }
 
@@ -220,7 +220,7 @@ namespace InterpreterProjectTest
                                            "integer", "binary op", "integer", "right paren", "semicolon", "keyword", "identifier", "semicolon"};
 
             Scanner sc = MiniPL.GetInstance().GetScanner();
-            List<Token> tokens = new List<Token>(sc.Tokenize(text));
+            List<Token> tokens = new List<Token>(sc.Tokenize(text, yieldEOF:false));
 
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -263,7 +263,7 @@ namespace InterpreterProjectTest
                                            "keyword","left paren","identifier","binary op","identifier","right paren","semicolon" };
 
             Scanner sc = MiniPL.GetInstance().GetScanner();
-            List<Token> tokens = new List<Token>(sc.Tokenize(text));
+            List<Token> tokens = new List<Token>(sc.Tokenize(text, yieldEOF: false));
 
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -308,7 +308,7 @@ namespace InterpreterProjectTest
                                            "keyword", "identifier", "semicolon"};
 
             Scanner sc = MiniPL.GetInstance().GetScanner();
-            List<Token> tokens = new List<Token>(sc.Tokenize(text));
+            List<Token> tokens = new List<Token>(sc.Tokenize(text, yieldEOF: false));
 
             for (int i = 0; i < tokens.Count; i++)
             {

@@ -161,7 +161,7 @@ namespace InterpreterProject
 
         public Parser GetParser()
         {
-            throw new NotImplementedException();
+            return new Parser(parseTable, vars["program"]);
         }
 
 

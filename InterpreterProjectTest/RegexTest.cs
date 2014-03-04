@@ -11,7 +11,7 @@ namespace InterpreterProjectTest
         private List<Token> GetTokens(TokenAutomaton automaton, string text)
         {
             Scanner sc = new Scanner(automaton);
-            IEnumerable<Token> tokens = sc.Tokenize(text);
+            IEnumerable<Token> tokens = sc.Tokenize(text, yieldEOF:false);
             return new List<Token>(tokens);
         }
 

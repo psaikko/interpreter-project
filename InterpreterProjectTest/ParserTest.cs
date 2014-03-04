@@ -121,8 +121,61 @@ namespace InterpreterProjectTest
 
             followSet = grammar.Follow(vars["operand"]);
             Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
-                terms[".."], terms["do"], terms[")"], terms[";"], terms["binary_operator"] }));
-           
+                terms[".."], terms["do"], terms[")"], terms[";"], terms["binary_operator"] }));           
+        }
+
+        [TestMethod]
+        public void Parser_MiniPLTest1()
+        {
+            string text = "var X : int := 4 + (6 * 2);\n" +
+                          "print X;";
+
+            ILanguage miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+
+            Assert.IsTrue(ps.Parse(sc.Tokenize(text)));
+        }
+
+        [TestMethod]
+        public void Parser_MiniPLTest2()
+        {
+            string text = "var nTimes : int := 0;\n" +
+                          "print \"How many times?\";\n" +
+                          "read nTimes;\n" +
+                          "var x : int;\n" +
+                          "for x in 0..nTimes-1 do\n" +
+                          "     print x;\n" +
+                          "     print \" : Hello, World!\n\";\n" +
+                          "end for;\n" +
+                          "assert (x = nTimes);";
+
+            ILanguage miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+
+            Assert.IsTrue(ps.Parse(sc.Tokenize(text)));
+        }
+
+        [TestMethod]
+        public void Parser_MiniPLTest3()
+        {
+            string text = "print \"Give a number\";\n" +
+                          "var n : int;\n" +
+                          "read n;\n" +
+                          "var f : int := 1;\n" +
+                          "var i : int;\n" +
+                          "for i in 1..n do\n" +
+                          "    f := f * i;\n" +
+                          "end for;\n" +
+                          "print \"The result is: \";\n" +
+                          "print f;";
+
+            ILanguage miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+
+            Assert.IsTrue(ps.Parse(sc.Tokenize(text)));
         }
     }
 }

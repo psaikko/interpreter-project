@@ -24,5 +24,10 @@ namespace InterpreterProject
                 Console.WriteLine(string.Format("Type: {0,-10} Lexeme: '{1}'", t.tokenType.name, t.lexeme));
             }
         }
+
+        public override string ToString()
+        {
+            return "{" + tokenType.name + " : \"" + lexeme + "\"}";
+        }
     }
 }

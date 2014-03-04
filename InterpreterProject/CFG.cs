@@ -19,12 +19,15 @@ namespace InterpreterProject
         public CFG(Variable start, ICollection<Terminal> terminals, ICollection<Variable> nonterminals)
         {
             this.startSymbol = start;
-            this.terminals = terminals;
+            this.terminals = terminals.ToList();
+            this.terminals.Add(Terminal.EOF);
             this.nonterminals = nonterminals;
         }
 
         private string SymbolsToString(IEnumerable<ISymbol> production)
         {
+            if (production == null) return "null";
+
             string s = "";
             foreach (ISymbol symbol in production)
             {
@@ -72,7 +75,7 @@ namespace InterpreterProject
 
                 foreach (ISymbol[] varProduction in productions[var])
                 {
-                    if (varProduction[0] != Terminal.epsilon)
+                    //if (varProduction[0] != Terminal.epsilon)
                     {
                         Console.WriteLine("\nCFG: LL(1) table gen, var = " + var + " prod = " + SymbolsToString(varProduction));
 
@@ -112,13 +115,20 @@ namespace InterpreterProject
                                 {
                                     LL1ParseTable[var][term] = varProduction;
                                 }
-
                             }
                         }
-                    }
-                    
+                    }                    
                 }
             }
+
+            foreach (Variable var in nonterminals)
+            {
+                foreach (Terminal term in terminals)
+                {
+                    Console.WriteLine("CFG: LL(1) Table[" + var + "][" + term + "] = " + SymbolsToString(LL1ParseTable[var][term]));
+                }
+            }
+
             return LL1ParseTable;
         }
 
@@ -259,7 +269,6 @@ namespace InterpreterProject
         {
             return follow[startVar];
         }
-
 
         public interface ISymbol { }
 
