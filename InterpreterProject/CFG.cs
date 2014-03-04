@@ -228,7 +228,7 @@ namespace InterpreterProject
                                 }
                                 else
                                 {
-                                    ISymbol[] w = prod.Skip(i).ToArray();
+                                    ISymbol[] w = prod.Skip(i+1).ToArray();
                                     ISet<Terminal> fw = First(w);
                                     if (fw.Contains(Terminal.epsilon))
                                     {
