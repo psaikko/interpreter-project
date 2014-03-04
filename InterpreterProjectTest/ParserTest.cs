@@ -79,16 +79,50 @@ namespace InterpreterProjectTest
             Dictionary<string, CFG.Variable> vars = miniPL.GetGrammarNonterminals();
             Dictionary<string, CFG.Terminal> terms = miniPL.GetGrammarTerminals();
 
-            foreach (CFG.Variable var in vars.Values)
-            {
-                Console.WriteLine(var);
-                ISet<CFG.Terminal> followSet = grammar.Follow(var);
+            ISet<CFG.Terminal> followSet = grammar.Follow(vars["program"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                CFG.Terminal.EOF } ));
 
-                foreach (CFG.Terminal t in followSet) Console.Write(t + " ");
-                Console.WriteLine("\n");
-            }
+            followSet = grammar.Follow(vars["statements"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                terms["end"], CFG.Terminal.EOF }));
 
-            Assert.Fail();
+            followSet = grammar.Follow(vars["statements_head"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                terms["end"], CFG.Terminal.EOF, terms["var"], terms["assert"], terms["read"], terms["print"], terms["for"], terms["identifier"]}));
+
+            followSet = grammar.Follow(vars["statements_tail"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                terms["end"], CFG.Terminal.EOF}));
+
+            followSet = grammar.Follow(vars["statement"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                terms[";"]}));
+
+            followSet = grammar.Follow(vars["declaration"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                terms[";"]}));
+
+            followSet = grammar.Follow(vars["declaration_assignment"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                terms[";"]}));
+
+            followSet = grammar.Follow(vars["expression"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                terms[".."], terms["do"], terms[")"], terms[";"]}));
+
+            followSet = grammar.Follow(vars["unary_operation"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                terms[".."], terms["do"], terms[")"], terms[";"] }));
+
+            followSet = grammar.Follow(vars["binary_operation"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                terms[".."], terms["do"], terms[")"], terms[";"] }));
+
+            followSet = grammar.Follow(vars["operand"]);
+            Assert.IsTrue(followSet.SetEquals(new CFG.Terminal[] { 
+                terms[".."], terms["do"], terms[")"], terms[";"], terms["binary_operator"] }));
+           
         }
     }
 }
