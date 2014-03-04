@@ -11,11 +11,16 @@ namespace InterpreterProject
         Dictionary<Variable, List<ISymbol[]>> productions = new Dictionary<Variable, List<ISymbol[]>>();
         Variable startSymbol;
         ICollection<Terminal> terminals;
+        ICollection<Variable> nonterminals;
 
-        public CFG(Variable start, ICollection<Terminal> terminals)
+        Dictionary<ISymbol, ISet<Terminal>> first = new Dictionary<ISymbol, ISet<Terminal>>();
+        Dictionary<Variable, ISet<Terminal>> follow = new Dictionary<Variable, ISet<Terminal>>();
+ 
+        public CFG(Variable start, ICollection<Terminal> terminals, ICollection<Variable> nonterminals)
         {
             this.startSymbol = start;
             this.terminals = terminals;
+            this.nonterminals = nonterminals;
         }
 
         private string SymbolsToString(IEnumerable<ISymbol> production)
@@ -52,6 +57,9 @@ namespace InterpreterProject
 
         public Dictionary<Variable, Dictionary<Terminal, ISymbol[]>> CreateLL1ParseTable()
         {
+            ComputeFirstSets();
+            ComputeFollowSets();
+
             Dictionary<Variable, Dictionary<Terminal, ISymbol[]>> LL1ParseTable =
                 new Dictionary<Variable, Dictionary<Terminal, ISymbol[]>>();
 
@@ -112,39 +120,68 @@ namespace InterpreterProject
             return LL1ParseTable;
         }
 
-        public ISet<Terminal> First(IEnumerable<ISymbol> production, bool debug = true)
+        private void ComputeFirstSets()
         {
-
-            ISet<Terminal> firstSet = new HashSet<Terminal>();
-            foreach (ISymbol symbol in production)
+            Console.WriteLine("CFG: Computing first sets");
+            foreach (Variable var in nonterminals)
             {
-                if (symbol is Terminal)
-                {
-                    firstSet.Add(symbol as Terminal);
-
-                    break;
-                }
-                else
-                {
-                    Variable var = symbol as Variable;                    
-                    List<ISymbol[]> varProductions = productions[var];
-                    ISet<Terminal> varFirstSet = new HashSet<Terminal>();
-
-                    foreach (ISymbol[] varProduction in varProductions)
-                    {
-                        varFirstSet.UnionWith(First(varProduction, debug:false));
-                    }
-
-                    firstSet.UnionWith(varFirstSet);
-                    if (!varFirstSet.Contains(Terminal.epsilon))
-                        break;
-                }
+                first[var] = new HashSet<Terminal>();
+                foreach (ISymbol[] production in productions[var])
+                    if (production[0] is Terminal)
+                        first[var].Add(production[0] as Terminal);
+                Console.WriteLine("CFG: First " + var + " = " + SymbolsToString(first[var]));
             }
 
-            if (debug)
-                Console.WriteLine("CFG: First " + SymbolsToString(production) + "\n\t= " + SymbolsToString(firstSet));
+            Console.WriteLine("CFG: Initial step done");
+
+            bool converged = false;
+            while (!converged)
+            {
+                converged = true;
+                foreach (Variable var in nonterminals)
+                {
+                    foreach (ISymbol[] production in productions[var])
+                    {
+                        int before = first[var].Count;
+
+                        first[var].UnionWith(First(production));
+
+                        int after = first[var].Count;
+
+                        if (after > before) converged = false;
+                    }                 
+                }
+            }
+            Console.WriteLine("CFG: first sets converged");
+        }
+
+        public ISet<Terminal> First(params ISymbol[] production)
+        {
+            ISet<Terminal> firstSet = new HashSet<Terminal>();
+            ISymbol x = production[0];
+            if (x == Terminal.epsilon)
+                firstSet.Add(Terminal.epsilon);
+            else if (x is Terminal)
+                firstSet.Add(x as Terminal);
+            else if (production.Length == 1)
+                firstSet.UnionWith(first[x]);
+            else if (!first[x].Contains(Terminal.epsilon))
+                firstSet.UnionWith(first[x]);
+            else // epsilon in FIRST(x)
+            {
+                firstSet.UnionWith(first[x]);
+                firstSet.Remove(Terminal.epsilon);
+                firstSet.UnionWith(First(production.Skip(1).ToArray()));
+            }
+
+            Console.WriteLine("CFG: First " + SymbolsToString(production) + "\n\t= " + SymbolsToString(firstSet));
 
             return firstSet;
+        }
+
+        private void ComputeFollowSets()
+        {
+
         }
 
         public ISet<Terminal> Follow(Variable startVar)
@@ -184,8 +221,8 @@ namespace InterpreterProject
                                         }
                                     }
                                     else
-                                    { 
-                                        vFollowSet.UnionWith(First(varProduction.Skip(i), debug:false)); 
+                                    {
+                                        vFollowSet.UnionWith(First(varProduction.Skip(i).ToArray())); 
                                     }
                                 }
                             }
@@ -198,7 +235,7 @@ namespace InterpreterProject
             
             followSet.Remove(Terminal.epsilon);
 
-            Console.WriteLine("CFG: Follow " + startVar.name + " = " + SymbolsToString(followSet));
+            //Console.WriteLine("CFG: Follow " + startVar.name + " = " + SymbolsToString(followSet));
 
             return followSet;
         }

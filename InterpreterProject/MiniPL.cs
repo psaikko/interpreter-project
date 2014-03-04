@@ -15,6 +15,8 @@ namespace InterpreterProject
         Dictionary<String, CFG.Variable> vars = new Dictionary<string, CFG.Variable>();
         CFG grammar;
 
+        Dictionary<CFG.Variable, Dictionary<CFG.Terminal, CFG.ISymbol[]>> parseTable;
+
         public static MiniPL GetInstance()
         {
             if (instance == null)
@@ -100,7 +102,7 @@ namespace InterpreterProject
             terms["binary_operator"] = new CFG.Terminal(tts["binary_op"]);
             terms["unary_operator"] = new CFG.Terminal(tts["unary_op"]);
 
-            grammar = new CFG(vars["program"], terms.Values);
+            grammar = new CFG(vars["program"], terms.Values, vars.Values);
 
             grammar.AddProductionRule(vars["program"], new CFG.ISymbol[] { vars["statements"] });
             grammar.AddProductionRule(vars["statements"], new CFG.ISymbol[] { vars["statements_head"], vars["statements_tail"] });
@@ -132,6 +134,8 @@ namespace InterpreterProject
             grammar.AddProductionRule(vars["operand"], new CFG.ISymbol[] { terms["string"] });
             grammar.AddProductionRule(vars["operand"], new CFG.ISymbol[] { terms["identifier"] });
             grammar.AddProductionRule(vars["operand"], new CFG.ISymbol[] { terms["("], vars["expression"], terms[")"] });
+
+            parseTable = grammar.CreateLL1ParseTable();
         }
 
         public Dictionary<string, TokenType> GetTokenTypes()
