@@ -16,7 +16,12 @@ namespace InterpreterProject
         private Queue<Token> tokenBuffer = new Queue<Token>();
 
         private Token lastToken = null;
+
         private string charBuffer = "";
+        private int row = 0;
+        private int col = 0;
+        private int lastRow = 0;
+        private int lastCol = 0;
 
         public TokenAutomaton(Node initNode)
         {
@@ -24,17 +29,44 @@ namespace InterpreterProject
             this.position = initNode;
         }
 
+        private void StoreToken(TokenType type)
+        {
+            lastToken = type.CreateToken(charBuffer, row, col);
+            lastRow = row;
+            lastCol = col;
+        }
+
+
+        private Token TakeToken()
+        {
+            Token t = lastToken;
+            lastToken = null;
+            row = lastRow;
+            col = lastCol;
+            return t;
+        }
+
         public void FeedCharacter(char c)
         {
             charBuffer += c;
+
+            if (c == '\n')
+            {
+                row++; col = 0;
+            }
+            else
+            {
+                col++;
+            }
+
             Console.WriteLine(String.Format("AUTOMATON accumulated: \"{0}\"", charBuffer));
 
             if (lastToken == null)
             {
                 if (charBuffer[0] == EOF)
-                    lastToken = TokenType.EOF.CreateToken(charBuffer);
+                    StoreToken(TokenType.EOF);
                 else
-                    lastToken = TokenType.ERROR.CreateToken(charBuffer);
+                    StoreToken(TokenType.ERROR);
             }    
 
             if (position.HasTransition(c))
@@ -42,20 +74,20 @@ namespace InterpreterProject
                 position = position.GetNext(c);
                 if (position.IsAcceptingState())
                 {
-                    lastToken = position.acceptedTokenType.CreateToken(charBuffer);
+                    StoreToken(position.acceptedTokenType);
                 }           
             }
             else
             {
-                int tokenLength = lastToken.lexeme.Length;
-                tokenBuffer.Enqueue(lastToken);
+                Token match = TakeToken();
+                tokenBuffer.Enqueue(match);
 
-                Console.WriteLine("AUTOMATON recognize token "+lastToken);
+                Console.WriteLine("AUTOMATON recognize token " + match);
 
                 position = start;
-                lastToken = null;
-                string overflow = charBuffer.Remove(0, tokenLength);
+                string overflow = charBuffer.Remove(0, match.lexeme.Length);
                 charBuffer = "";
+
                 foreach (char ch in overflow)
                     FeedCharacter(ch);
             }
@@ -90,6 +122,4 @@ namespace InterpreterProject
             }
         }
     }
-
-
 }

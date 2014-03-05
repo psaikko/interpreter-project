@@ -11,7 +11,7 @@ namespace InterpreterProject
         public readonly TokenType tokenType;
         public readonly String lexeme;
 
-        public Token(TokenType type, String lexeme)
+        public Token(TokenType type, String lexeme, int row, int position)
         {
             this.tokenType = type;
             this.lexeme = lexeme;

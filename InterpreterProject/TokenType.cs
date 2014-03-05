@@ -25,9 +25,9 @@ namespace InterpreterProject
             regex.DefineTokenClass(this);
         }
 
-        public Token CreateToken(String lexeme)
+        public Token CreateToken(String lexeme, int row, int position)
         {
-            return new Token(this, lexeme);
+            return new Token(this, lexeme, row, position);
         }
 
         public TokenAutomaton Automaton()
