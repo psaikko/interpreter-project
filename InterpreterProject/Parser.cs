@@ -25,6 +25,8 @@ namespace InterpreterProject
 
             INode root = new Tree(start);
             Stack<INode> treeStack = new Stack<INode>();
+            treeStack.Push(new Leaf(CFG.Terminal.EOF));
+            treeStack.Push(root);
 
             IEnumerator<Token> ts = tokens.GetEnumerator();
 
@@ -90,6 +92,7 @@ namespace InterpreterProject
                                 treeChild = new Tree(production[i] as CFG.Variable);
                             }
                             subtree.children.Insert(0, treeChild);
+
                             treeStack.Push(treeChild); 
                             s.Push(production[i]);
                         }
@@ -98,6 +101,29 @@ namespace InterpreterProject
             }
 
             // TODO: debug print tree
+
+            Stack<INode> q = new Stack<INode>();
+            Stack<int> dq = new Stack<int>();
+            q.Push(root);
+            dq.Push(0);
+
+            while (q.Count > 0)
+            {
+                INode node = q.Pop();
+                int depth = dq.Pop();
+                string indent = "";
+                for (int i = 0; i < depth; i++) indent += "\t";
+                Console.WriteLine(indent + node.ToString());
+                if (node is Tree)
+                {
+                    Tree t = node as Tree;
+                    foreach(INode next in t.children)
+                    {
+                        q.Push(next);
+                        dq.Push(depth + 1);
+                    }
+                }
+            }
 
             return true;
         }
@@ -133,10 +159,15 @@ namespace InterpreterProject
 
         private class Tree : INode
         {
-            public List<INode> children;
+            public List<INode> children = new List<INode>();
             public CFG.Variable var;
             public Tree(CFG.Variable var) { this.var = var; }
             public CFG.ISymbol GetSymbol() { return var; }
+
+            public override string ToString()
+            {
+                return var.ToString();
+            }
         }
 
         private class Leaf : INode
@@ -145,6 +176,11 @@ namespace InterpreterProject
             public Token token;
             public Leaf(CFG.Terminal term) { this.term = term; }
             public CFG.ISymbol GetSymbol() { return term; }
+
+            public override string ToString()
+            {
+                return term.ToString() + (token == null ? "" : " " + token.ToString());
+            }
         }
     }
 }
