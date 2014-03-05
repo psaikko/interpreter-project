@@ -164,10 +164,135 @@ namespace InterpreterProject
             return new Parser(parseTable, vars["program"]);
         }
 
-
         public CFG GetGrammar()
         {
             return grammar;
         }
+
+        public AST TrimParseTree(Parser.Tree parseTree)
+        {
+            // first remove unnecessary symbols ; : .. ( ) := and epsilons
+            Stack<Parser.Tree> treeStack = new Stack<Parser.Tree>();
+            treeStack.Push(parseTree);
+            String[] pruneTokens = {"(",")",";",":","..",":=","var","in","for","end"};
+
+            while (treeStack.Count > 0)
+            {
+                Parser.Tree currentNode = treeStack.Pop();
+                IList<Parser.INode> pruneList = new List<Parser.INode>();
+                foreach (Parser.INode node in currentNode.children)
+                {
+                    if (node is Parser.Tree)
+                    {
+                        treeStack.Push(node as Parser.Tree);
+                    }                        
+                    else
+                    {
+                        Parser.Leaf leaf = node as Parser.Leaf;
+                        if (leaf.token == null || pruneTokens.Contains(leaf.token.lexeme))
+                        {
+                            pruneList.Add(node);
+                        } 
+                    }
+                }
+                foreach (Parser.INode node in pruneList)
+                    currentNode.children.Remove(node);
+            }
+
+            // remove any tree nodes with no children
+            treeStack = new Stack<Parser.Tree>();
+            treeStack.Push(parseTree);
+
+            while (treeStack.Count > 0)
+            {
+                Parser.Tree currentNode = treeStack.Pop();
+                IList<Parser.INode> pruneList = new List<Parser.INode>();
+                foreach (Parser.INode node in currentNode.children)
+                {
+                    if (node is Parser.Tree)
+                    {
+                        Parser.Tree subtree = node as Parser.Tree;
+                        if (subtree.children.Count == 0)
+                            pruneList.Add(node);
+                        else
+                            treeStack.Push(subtree);
+                    }
+                }
+                foreach (Parser.INode node in pruneList)
+                    currentNode.children.Remove(node);
+            }
+
+            // refactor
+            // STMTS->STMTS_HEAD STMTS_TAIL to STMTS->(STMT)+
+            // DECL->"var" <IDENT> ":" <TYPE> ASSIGN to  DECL->"var" <IDENT> ":" <TYPE> [":=" <EXPR>] 
+            // EXPR->UNARY|OPND BINARY to EXPR-> unary_op OPND | OPND | OPND binary_op OPND
+
+            CFG.Variable[] pruneVariables = new CFG.Variable[] { 
+                vars["statements_head"], vars["statements_tail"], vars["unary_operation"], 
+                vars["binary_operation"], vars["declaration_assignment"], vars["operand"] };
+
+            bool converged = false;
+            while (!converged)
+            {
+                converged = true;
+                treeStack = new Stack<Parser.Tree>();
+                treeStack.Push(parseTree);
+
+                while (treeStack.Count > 0)
+                {
+                    Parser.Tree currentNode = treeStack.Pop();
+                    List<Parser.INode> pruneList = new List<Parser.INode>();
+                    List<List<Parser.INode>> replaceList = new List<List<Parser.INode>>();
+                    foreach (Parser.INode node in currentNode.children)
+                    {
+                        if (node is Parser.Tree)
+                        {
+                            Parser.Tree subtree = node as Parser.Tree;
+                            if (pruneVariables.Contains(subtree.var))
+                            {
+                                pruneList.Add(subtree);
+                                replaceList.Add(subtree.children);
+                                foreach (Parser.INode subtreeNode in subtree.children)
+                                {
+                                    if (subtreeNode is Parser.Tree)
+                                        treeStack.Push(subtreeNode as Parser.Tree);
+                                }
+                            }
+                            else
+                            {
+                                treeStack.Push(subtree);
+                            }
+                        }
+                    }
+
+                    for (int i = 0; i < pruneList.Count; i++)
+                    {
+                        converged = false;
+                        int index = currentNode.children.IndexOf(pruneList[i]);
+                        currentNode.children.RemoveAt(index);
+                        currentNode.children.InsertRange(index, replaceList[i]);
+                    }
+                }
+            }
+                       
+            // gather type info
+            // check for use of uninitialized identifiers
+
+            // static type checks for assignment, operations
+
+            Console.WriteLine(parseTree);
+
+            return null;
+        }
+
+        public void ExecuteProgram(AST program)
+        {
+            throw new NotImplementedException();
+        }
+
+        public class AST
+        {
+
+        }   
     }
 }

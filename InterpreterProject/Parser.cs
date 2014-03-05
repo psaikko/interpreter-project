@@ -17,13 +17,13 @@ namespace InterpreterProject
             this.start = start;
         }
 
-        public bool Parse(IEnumerable<Token> tokens)
+        public Tree Parse(IEnumerable<Token> tokens)
         {
             Stack<CFG.ISymbol> s = new Stack<CFG.ISymbol>();
             s.Push(CFG.Terminal.EOF);
             s.Push(start);
 
-            INode root = new Tree(start);
+            Tree root = new Tree(start);
             Stack<INode> treeStack = new Stack<INode>();
             treeStack.Push(new Leaf(CFG.Terminal.EOF));
             treeStack.Push(root);
@@ -60,7 +60,7 @@ namespace InterpreterProject
                     {
                         Console.WriteLine("PARSE: Terminal mismatch");
                         Console.WriteLine("PARSE: Error");
-                        return false;
+                        return null;
                     }
                 }
                 else // top of stack is a nonterminal
@@ -74,58 +74,35 @@ namespace InterpreterProject
                     {
                         Console.WriteLine("PARSE: No such production");
                         Console.WriteLine("PARSE: Error");
-                        return false;
+                        return null;
                     }
                     else
                     {
-                        // add leaves to tree
                         Console.WriteLine("PARSE: Using production " + SymbolsToString(production));
                         for (int i = production.Length - 1; i >= 0; i--)
-                        {                  
+                        //for (int i = 0; i < production.Length; i++ )
+                        {
                             INode treeChild;
                             if (production[i] is CFG.Terminal)
                             {
                                 treeChild = new Leaf(production[i] as CFG.Terminal);
-                            } 
-                            else 
+                            }
+                            else
                             {
                                 treeChild = new Tree(production[i] as CFG.Variable);
                             }
                             subtree.children.Insert(0, treeChild);
-
-                            treeStack.Push(treeChild); 
+                            //subtree.children.Add(treeChild);
+                            treeStack.Push(treeChild);
                             s.Push(production[i]);
                         }
                     }
                 }
             }
 
-            // TODO: debug print tree
+            Console.WriteLine(root);
 
-            Stack<INode> q = new Stack<INode>();
-            Stack<int> dq = new Stack<int>();
-            q.Push(root);
-            dq.Push(0);
-
-            while (q.Count > 0)
-            {
-                INode node = q.Pop();
-                int depth = dq.Pop();
-                string indent = "";
-                for (int i = 0; i < depth; i++) indent += "\t";
-                Console.WriteLine(indent + node.ToString());
-                if (node is Tree)
-                {
-                    Tree t = node as Tree;
-                    foreach(INode next in t.children)
-                    {
-                        q.Push(next);
-                        dq.Push(depth + 1);
-                    }
-                }
-            }
-
-            return true;
+            return root;
         }
 
         private CFG.ISymbol[] tableGet(CFG.Variable var, Token token)
@@ -152,12 +129,12 @@ namespace InterpreterProject
         }
 
 
-        private interface INode 
+        public interface INode 
         { 
             CFG.ISymbol GetSymbol();
         }
 
-        private class Tree : INode
+        public class Tree : INode
         {
             public List<INode> children = new List<INode>();
             public CFG.Variable var;
@@ -166,11 +143,41 @@ namespace InterpreterProject
 
             public override string ToString()
             {
-                return var.ToString();
+                String s = "";
+
+                Stack<INode> nodeStack = new Stack<INode>();
+                Stack<int> depthStack = new Stack<int>();
+                nodeStack.Push(this);
+                depthStack.Push(0);
+
+                while (nodeStack.Count > 0)
+                {
+                    INode node = nodeStack.Pop();
+                    int depth = depthStack.Pop();
+                    string indent = "";
+                    for (int i = 0; i < depth; i++) indent += "  ";
+                    if (node is Leaf)
+                    {
+                        s += indent + node.ToString() + '\n';
+                    }
+                    else
+                    {
+                        Tree t = node as Tree;
+                        s += indent + t.var + '\n';
+                        for (int i = t.children.Count - 1; i >= 0; i--)
+                        {
+                            INode next = t.children[i];
+                            nodeStack.Push(next);
+                            depthStack.Push(depth + 1);
+                        }
+                    }
+                }
+
+                return s;
             }
         }
 
-        private class Leaf : INode
+        public class Leaf : INode
         {
             public CFG.Terminal term;
             public Token token;
@@ -179,7 +186,7 @@ namespace InterpreterProject
 
             public override string ToString()
             {
-                return term.ToString() + (token == null ? "" : " " + token.ToString());
+                return (token == null ? term.ToString() : token.ToString());
             }
         }
     }
