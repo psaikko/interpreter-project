@@ -134,7 +134,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Assert.IsTrue(ps.Parse(sc.Tokenize(text)));
+            Assert.AreNotEqual(null, ps.Parse(sc.Tokenize(text)));
         }
 
         [TestMethod]
@@ -154,7 +154,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Assert.IsTrue(ps.Parse(sc.Tokenize(text)));
+            Assert.AreNotEqual(null, ps.Parse(sc.Tokenize(text)));
         }
 
         [TestMethod]
@@ -175,7 +175,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Assert.IsTrue(ps.Parse(sc.Tokenize(text)));
+            Assert.AreNotEqual(null, ps.Parse(sc.Tokenize(text)));
         }
     }
 }

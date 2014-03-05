@@ -20,8 +20,10 @@ namespace InterpreterProject
         private string charBuffer = "";
         private int row = 0;
         private int col = 0;
-        private int lastRow = 0;
-        private int lastCol = 0;
+        private int endRow = 0;
+        private int endCol = 0;
+        private int startRow = 0;
+        private int startCol = 0;
 
         public TokenAutomaton(Node initNode)
         {
@@ -31,9 +33,9 @@ namespace InterpreterProject
 
         private void StoreToken(TokenType type)
         {
-            lastToken = type.CreateToken(charBuffer, row, col);
-            lastRow = row;
-            lastCol = col;
+            lastToken = type.CreateToken(charBuffer, startRow, startCol);
+            endRow = row;
+            endCol = col;
         }
 
 
@@ -41,8 +43,10 @@ namespace InterpreterProject
         {
             Token t = lastToken;
             lastToken = null;
-            row = lastRow;
-            col = lastCol;
+            row = endRow;
+            col = endCol;
+            startRow = endRow;
+            startCol = endCol;
             return t;
         }
 
