@@ -39,7 +39,7 @@ namespace InterpreterProjectTest
 
             firstSet = grammar.First(vars["statements_tail"]);
             Assert.IsTrue(firstSet.SetEquals(new Terminal[] { 
-                terms["var"], terms["identifier"], terms["for"], terms["read"], terms["print"], terms["assert"], Terminal.epsilon }));
+                terms["var"], terms["identifier"], terms["for"], terms["read"], terms["print"], terms["assert"], Terminal.EPSILON }));
 
             firstSet = grammar.First(vars["statement"]);
             Assert.IsTrue(firstSet.SetEquals(new Terminal[] { 
@@ -51,7 +51,7 @@ namespace InterpreterProjectTest
 
             firstSet = grammar.First(vars["declaration_assignment"]);
             Assert.IsTrue(firstSet.SetEquals(new Terminal[] { 
-                terms[":="], Terminal.epsilon }));
+                terms[":="], Terminal.EPSILON }));
 
             firstSet = grammar.First(vars["expression"]);
             Assert.IsTrue(firstSet.SetEquals(new Terminal[] { 
@@ -63,7 +63,7 @@ namespace InterpreterProjectTest
 
             firstSet = grammar.First(vars["binary_operation"]);
             Assert.IsTrue(firstSet.SetEquals(new Terminal[] { 
-                terms["binary_operator"], Terminal.epsilon }));
+                terms["binary_operator"], Terminal.EPSILON }));
 
             firstSet = grammar.First(vars["operand"]);
             Assert.IsTrue(firstSet.SetEquals(new Terminal[] { 

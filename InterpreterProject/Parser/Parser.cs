@@ -44,7 +44,7 @@ namespace InterpreterProject
                     Terminal term = s.Pop() as Terminal;
                     Leaf leaf = treeStack.Pop() as Leaf;
 
-                    if (term == Terminal.epsilon)
+                    if (term == Terminal.EPSILON)
                     {
                         Console.WriteLine("PARSE: disregard epsilon");
                         continue;

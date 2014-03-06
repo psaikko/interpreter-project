@@ -79,7 +79,7 @@ namespace InterpreterProject
 
                         foreach (Terminal term in productionFirst)
                         {
-                            if (term != Terminal.epsilon)
+                            if (term != Terminal.EPSILON)
                             {
                                 if (parseTable.Get(var, term) != null) // LL(1) violation
                                 {
@@ -94,7 +94,7 @@ namespace InterpreterProject
                                 }
                             }
                         }
-                        if (productionFirst.Contains(Terminal.epsilon))
+                        if (productionFirst.Contains(Terminal.EPSILON))
                         {
                             foreach (Terminal term in Follow(var))
                             {
@@ -169,18 +169,18 @@ namespace InterpreterProject
         {
             ISet<Terminal> firstSet = new HashSet<Terminal>();
             ISymbol x = production[0];
-            if (x == Terminal.epsilon)
-                firstSet.Add(Terminal.epsilon);
+            if (x == Terminal.EPSILON)
+                firstSet.Add(Terminal.EPSILON);
             else if (x is Terminal)
                 firstSet.Add(x as Terminal);
             else if (production.Length == 1)
                 firstSet.UnionWith(first[x]);
-            else if (!first[x].Contains(Terminal.epsilon))
+            else if (!first[x].Contains(Terminal.EPSILON))
                 firstSet.UnionWith(first[x]);
             else // epsilon in FIRST(x)
             {
                 firstSet.UnionWith(first[x]);
-                firstSet.Remove(Terminal.epsilon);
+                firstSet.Remove(Terminal.EPSILON);
                 firstSet.UnionWith(First(production.Skip(1).ToArray()));
             }
 
@@ -234,10 +234,10 @@ namespace InterpreterProject
                                 {
                                     ISymbol[] w = prod.Skip(i+1).ToArray();
                                     ISet<Terminal> fw = First(w);
-                                    if (fw.Contains(Terminal.epsilon))
+                                    if (fw.Contains(Terminal.EPSILON))
                                     {
                                         follow[A].UnionWith(follow[B]);
-                                        fw.Remove(Terminal.epsilon);
+                                        fw.Remove(Terminal.EPSILON);
                                     }
                                     follow[A].UnionWith(fw);
                                 }

@@ -109,7 +109,7 @@ namespace InterpreterProject
             grammar.AddProductionRule(vars["statements"], new ISymbol[] { vars["statements_head"], vars["statements_tail"] });
             grammar.AddProductionRule(vars["statements_head"], new ISymbol[] { vars["statement"], terms[";"] });
             grammar.AddProductionRule(vars["statements_tail"], new ISymbol[] { vars["statements_head"], vars["statements_tail"] });
-            grammar.AddProductionRule(vars["statements_tail"], new ISymbol[] { Terminal.epsilon });
+            grammar.AddProductionRule(vars["statements_tail"], new ISymbol[] { Terminal.EPSILON });
 
             grammar.AddProductionRule(vars["statement"], new ISymbol[] { vars["declaration"] });
             grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["identifier"], terms[":="], vars["expression"] });
@@ -121,7 +121,7 @@ namespace InterpreterProject
 
             grammar.AddProductionRule(vars["declaration"], new ISymbol[] { terms["var"], terms["identifier"], terms[":"], terms["type"], vars["declaration_assignment"] });
             grammar.AddProductionRule(vars["declaration_assignment"], new ISymbol[] { terms[":="], vars["expression"] });
-            grammar.AddProductionRule(vars["declaration_assignment"], new ISymbol[] { Terminal.epsilon });
+            grammar.AddProductionRule(vars["declaration_assignment"], new ISymbol[] { Terminal.EPSILON });
 
             grammar.AddProductionRule(vars["expression"], new ISymbol[] { vars["unary_operation"] });
             grammar.AddProductionRule(vars["expression"], new ISymbol[] { vars["operand"], vars["binary_operation"] });
@@ -129,7 +129,7 @@ namespace InterpreterProject
             grammar.AddProductionRule(vars["unary_operation"], new ISymbol[] { terms["unary_operator"], vars["operand"] });
 
             grammar.AddProductionRule(vars["binary_operation"], new ISymbol[] { terms["binary_operator"], vars["operand"] });
-            grammar.AddProductionRule(vars["binary_operation"], new ISymbol[] { Terminal.epsilon });
+            grammar.AddProductionRule(vars["binary_operation"], new ISymbol[] { Terminal.EPSILON });
 
             grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["integer"] });
             grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["string"] });
@@ -227,11 +227,10 @@ namespace InterpreterProject
             // STMTS->STMTS_HEAD STMTS_TAIL to STMTS->(STMT)+
             // DECL->"var" <IDENT> ":" <TYPE> ASSIGN to  DECL->"var" <IDENT> ":" <TYPE> [":=" <EXPR>] 
             // EXPR->UNARY|OPND BINARY to EXPR-> unary_op OPND | OPND | OPND binary_op OPND
-            // OPND-><INT>|<STRING>|<IDENT>|<EXPR> -> <INT>|<STRING>|<IDENT>|<EXPR>
+            // OPND-><INT>|<STRING>|<IDENT>|<EXPR> -> just <INT>|<STRING>|<IDENT>|<EXPR>
             Nonterminal[] pruneVariables = new Nonterminal[] { 
                 vars["statements_head"], vars["statements_tail"], vars["unary_operation"], 
                 vars["binary_operation"], vars["declaration_assignment"], vars["operand"] };
-
 
             // todo: refactor while to inside stack loop
             bool converged = false;
@@ -277,12 +276,12 @@ namespace InterpreterProject
                     }
                 }
             }
-                       
+             
+            // TODO
             // gather type info
             // check for use of uninitialized identifiers
 
             // static type checks for assignment, operations
-
 
             // scopes: mini-pl only has single global scope but need to check that 
             // for-loop control variables not assigned to inside for loop
@@ -303,46 +302,8 @@ namespace InterpreterProject
         {
             public Parser.Tree AST;
             public Dictionary<string, Token> declarations = new Dictionary<string, Token>();
-            
+            public List<IError> errors;
              
-        }
-
-        public interface IError
-        {
-
-        }
-
-        public class LexicalError : IError
-        {
-            public Token t;
-
-            public LexicalError(Token t)
-            {
-                this.t = t;
-            }
-        }
-
-        public class SyntaxError : IError
-        {
-            public Terminal actual;
-            public List<Terminal> expected;
-
-            public SyntaxError(Terminal term)
-            {
-                this.actual = term;
-            }
-        }
-
-        public class SemanticError : IError
-        {
-
-        }
-
-        public class RuntimeError : IError
-        {
-
-        }
-
-    
+        }   
     }
 }

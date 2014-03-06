@@ -8,7 +8,7 @@ namespace InterpreterProject
 {
     public class Terminal : ISymbol
     {
-        public static readonly Terminal epsilon = new Terminal("");
+        public static readonly Terminal EPSILON = new Terminal("");
         public static readonly Terminal EOF = new Terminal(TokenType.EOF);
 
         public readonly TokenType tokenType = null;

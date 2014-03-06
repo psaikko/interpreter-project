@@ -56,8 +56,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MiniPL\IError.cs" />
+    <Compile Include="MiniPL\LexicalError.cs" />
+    <Compile Include="MiniPL\SemanticError.cs" />
+    <Compile Include="MiniPL\SyntaxError.cs" />
     <Compile Include="Parser\CFG.cs" />
-    <Compile Include="MiniPL.cs" />
+    <Compile Include="MiniPL\MiniPL.cs" />
     <Compile Include="Parser\ISymbol.cs" />
     <Compile Include="Parser\Nonterminal.cs" />
     <Compile Include="Parser\Parser.cs" />
