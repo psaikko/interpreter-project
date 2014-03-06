@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject
 {
-    public class MiniPL : ILanguage
+    public class MiniPL
     {
         static MiniPL instance;
 
@@ -16,7 +16,7 @@ namespace InterpreterProject
         Dictionary<String, Nonterminal> vars = new Dictionary<string, Nonterminal>();
         CFG grammar;
 
-        Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> parseTable;
+        ParseTable parseTable;
 
         public static MiniPL GetInstance()
         {

@@ -13,15 +13,14 @@ namespace InterpreterProjectTest
         public void Parser_MiniPL_LL1ParseTableGenerationTest()
         {
             CFG grammar = MiniPL.GetInstance().GetGrammar();
-            Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> parseTable =
-                grammar.CreateLL1ParseTable();
+            ParseTable parseTable = grammar.CreateLL1ParseTable();
             Assert.AreNotEqual(null, parseTable);
         }
 
         [TestMethod]
         public void Parser_MiniPL_LL1FirstSetsTest()
         {
-            ILanguage miniPL = MiniPL.GetInstance();
+            MiniPL miniPL = MiniPL.GetInstance();
             CFG grammar = miniPL.GetGrammar();
             Dictionary<string, Nonterminal> vars = miniPL.GetGrammarNonterminals();
             Dictionary<string, Terminal> terms = miniPL.GetGrammarTerminals();
@@ -74,7 +73,7 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Parser_MiniPL_LL1FollowSetsTest()
         {
-            ILanguage miniPL = MiniPL.GetInstance();
+            MiniPL miniPL = MiniPL.GetInstance();
             CFG grammar = miniPL.GetGrammar();
             Dictionary<string, Nonterminal> vars = miniPL.GetGrammarNonterminals();
             Dictionary<string, Terminal> terms = miniPL.GetGrammarTerminals();
@@ -130,7 +129,7 @@ namespace InterpreterProjectTest
             string text = "var X : int := 4 + (6 * 2);\n" +
                           "print X;";
 
-            ILanguage miniPL = MiniPL.GetInstance();
+            MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
@@ -150,7 +149,7 @@ namespace InterpreterProjectTest
                           "end for;\n" +
                           "assert (x = nTimes);";
 
-            ILanguage miniPL = MiniPL.GetInstance();
+            MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
@@ -171,7 +170,7 @@ namespace InterpreterProjectTest
                           "print \"The result is: \";\n" +
                           "print f;";
 
-            ILanguage miniPL = MiniPL.GetInstance();
+            MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 

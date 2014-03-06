@@ -8,12 +8,12 @@ namespace InterpreterProject
 {
     public class Parser
     {
-        Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> table;
+        ParseTable table;
         Nonterminal start;
 
-        public Parser(Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> parseTable, Nonterminal start)
+        public Parser(ParseTable table, Nonterminal start)
         {
-            this.table = parseTable;
+            this.table = table;
             this.start = start;
         }
 
@@ -68,7 +68,7 @@ namespace InterpreterProject
                     Nonterminal var = s.Pop() as Nonterminal;
                     Tree subtree = treeStack.Pop() as Tree;
 
-                    ISymbol[] production = tableGet(var, ts.Current);
+                    ISymbol[] production = table.Get(var, ts.Current);
 
                     if (production == null)
                     {
@@ -103,17 +103,6 @@ namespace InterpreterProject
             Console.WriteLine(root);
 
             return root;
-        }
-
-        private ISymbol[] tableGet(Nonterminal var, Token token)
-        {
-            Dictionary<Terminal, ISymbol[]> tableRow = table[var];
-
-            foreach (Terminal term in tableRow.Keys)
-                if (term.Matches(token))
-                    return tableRow[term];
-
-            return null;
         }
 
         private string SymbolsToString(IEnumerable<ISymbol> production)

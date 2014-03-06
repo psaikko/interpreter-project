@@ -58,21 +58,17 @@ namespace InterpreterProject
             return productionRules;
         }
 
-        public Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> CreateLL1ParseTable()
+        public ParseTable CreateLL1ParseTable()
         {
             ComputeFirstSets();
             ComputeFollowSets();
 
             Console.WriteLine("=========================================================");
 
-            Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> LL1ParseTable =
-                new Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>>();
+            ParseTable parseTable = new ParseTable();
 
             foreach (Nonterminal var in productions.Keys)
             {
-                LL1ParseTable.Add(var, new Dictionary<Terminal, ISymbol[]>());
-                foreach (Terminal t in terminals) LL1ParseTable[var].Add(t, null);
-
                 foreach (ISymbol[] varProduction in productions[var])
                 {
                     //if (varProduction[0] != Terminal.epsilon)
@@ -85,16 +81,16 @@ namespace InterpreterProject
                         {
                             if (term != Terminal.epsilon)
                             {
-                                if (LL1ParseTable[var][term] != null) // LL(1) violation
+                                if (parseTable.Get(var, term) != null) // LL(1) violation
                                 {
                                     Console.WriteLine("CFG: LL(1) violation at (First) [" + var + "," + term + "]");
-                                    Console.WriteLine("\tWas: " + SymbolsToString(LL1ParseTable[var][term]));
+                                    Console.WriteLine("\tWas: " + SymbolsToString(parseTable.Get(var, term)));
                                     Console.WriteLine("\tNew: " + SymbolsToString(varProduction));
                                     return null;
                                 }
                                 else
                                 {
-                                    LL1ParseTable[var][term] = varProduction;
+                                    parseTable.Add(var, term, varProduction);
                                 }
                             }
                         }
@@ -102,16 +98,16 @@ namespace InterpreterProject
                         {
                             foreach (Terminal term in Follow(var))
                             {
-                                if (LL1ParseTable[var][term] != null) // LL(1) violation
+                                if (parseTable.Get(var, term) != null) // LL(1) violation
                                 {
                                     Console.WriteLine("CFG: LL(1) violation at (Follow) [" + var + "," + term + "]");
-                                    Console.WriteLine("\tWas: " + SymbolsToString(LL1ParseTable[var][term]));
+                                    Console.WriteLine("\tWas: " + SymbolsToString(parseTable.Get(var, term)));
                                     Console.WriteLine("\tNew: " + SymbolsToString(varProduction));
                                     return null;
                                 }
                                 else
                                 {
-                                    LL1ParseTable[var][term] = varProduction;
+                                    parseTable.Add(var, term, varProduction);
                                 }
                             }
                         }
@@ -123,12 +119,12 @@ namespace InterpreterProject
             {
                 foreach (Terminal term in terminals)
                 {
-                    if (LL1ParseTable[var][term] != null)
-                        Console.WriteLine("CFG: LL(1) Table[" + var + "][" + term + "] = " + SymbolsToString(LL1ParseTable[var][term]));
+                    if (parseTable.Get(var, term) != null)
+                        Console.WriteLine("CFG: LL(1) Table[" + var + "][" + term + "] = " + SymbolsToString(parseTable.Get(var, term)));
                 }
             }
 
-            return LL1ParseTable;
+            return parseTable;
         }
 
         private void ComputeFirstSets()

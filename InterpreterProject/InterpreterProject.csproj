@@ -57,11 +57,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Parser\CFG.cs" />
-    <Compile Include="ILanguage.cs" />
     <Compile Include="MiniPL.cs" />
     <Compile Include="Parser\ISymbol.cs" />
     <Compile Include="Parser\Nonterminal.cs" />
     <Compile Include="Parser\Parser.cs" />
+    <Compile Include="Parser\ParseTable.cs" />
     <Compile Include="Parser\Terminal.cs" />
     <Compile Include="Scanner\TokenAutomaton.cs" />
     <Compile Include="Program.cs" />
