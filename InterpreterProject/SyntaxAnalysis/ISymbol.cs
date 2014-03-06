@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterpreterProject
+namespace InterpreterProject.SyntaxAnalysis
 {
-    public class SemanticError : IError
+    public interface ISymbol
     {
     }
 }

@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using InterpreterProject;
 using System.Collections.Generic;
+using InterpreterProject.LexicalAnalysis;
+using InterpreterProject.SyntaxAnalysis;
 
 namespace InterpreterProjectTest
 {

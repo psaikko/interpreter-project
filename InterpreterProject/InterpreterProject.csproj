@@ -56,25 +56,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MiniPL\IError.cs" />
-    <Compile Include="MiniPL\LexicalError.cs" />
-    <Compile Include="MiniPL\SemanticError.cs" />
-    <Compile Include="MiniPL\SyntaxError.cs" />
-    <Compile Include="Parser\CFG.cs" />
-    <Compile Include="MiniPL\MiniPL.cs" />
-    <Compile Include="Parser\ISymbol.cs" />
-    <Compile Include="Parser\Nonterminal.cs" />
-    <Compile Include="Parser\Parser.cs" />
-    <Compile Include="Parser\ParseTable.cs" />
-    <Compile Include="Parser\Terminal.cs" />
-    <Compile Include="Scanner\TokenAutomaton.cs" />
+    <Compile Include="Languages\IError.cs" />
+    <Compile Include="Languages\LexicalError.cs" />
+    <Compile Include="Languages\SemanticError.cs" />
+    <Compile Include="Languages\SyntaxError.cs" />
+    <Compile Include="SyntaxAnalysis\CFG.cs" />
+    <Compile Include="Languages\MiniPL.cs" />
+    <Compile Include="SyntaxAnalysis\ISymbol.cs" />
+    <Compile Include="SyntaxAnalysis\Nonterminal.cs" />
+    <Compile Include="SyntaxAnalysis\Parser.cs" />
+    <Compile Include="SyntaxAnalysis\ParseTable.cs" />
+    <Compile Include="SyntaxAnalysis\Terminal.cs" />
+    <Compile Include="LexicalAnalysis\TokenAutomaton.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Scanner\Regex.cs" />
-    <Compile Include="Scanner\Scanner.cs" />
-    <Compile Include="Scanner\SetEqualityComparer.cs" />
-    <Compile Include="Scanner\Token.cs" />
-    <Compile Include="Scanner\TokenType.cs" />
+    <Compile Include="LexicalAnalysis\Regex.cs" />
+    <Compile Include="LexicalAnalysis\Scanner.cs" />
+    <Compile Include="LexicalAnalysis\SetEqualityComparer.cs" />
+    <Compile Include="LexicalAnalysis\Token.cs" />
+    <Compile Include="LexicalAnalysis\TokenType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

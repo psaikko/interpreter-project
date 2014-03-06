@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterpreterProject
+namespace InterpreterProject.SyntaxAnalysis
 {
     public class Nonterminal : ISymbol
     {

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InterpreterProject.LexicalAnalysis;
 
-namespace InterpreterProject
+namespace InterpreterProject.SyntaxAnalysis
 {
     public class Terminal : ISymbol
     {

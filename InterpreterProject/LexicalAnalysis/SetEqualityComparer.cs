@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterpreterProject
+namespace InterpreterProject.LexicalAnalysis
 {
     class SetEqualityComparer<T> : IEqualityComparer<ISet<T>>
     {

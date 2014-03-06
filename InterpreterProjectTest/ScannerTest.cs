@@ -1,7 +1,9 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using InterpreterProject;
+using InterpreterProject.LexicalAnalysis;
+using InterpreterProject.SyntaxAnalysis;
+using InterpreterProject.Languages;
 
 namespace InterpreterProjectTest
 {

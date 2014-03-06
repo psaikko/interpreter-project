@@ -1,14 +1,15 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using InterpreterProject;
 using System.Collections.Generic;
+using InterpreterProject.LexicalAnalysis;
+using InterpreterProject.SyntaxAnalysis;
+using InterpreterProject.Languages;
 
 namespace InterpreterProjectTest
 {
     [TestClass]
     public class ParserTest
     {
-
         [TestMethod]
         public void Parser_MiniPL_LL1ParseTableGenerationTest()
         {
