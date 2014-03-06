@@ -56,18 +56,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CFG.cs" />
+    <Compile Include="Parser\CFG.cs" />
     <Compile Include="ILanguage.cs" />
     <Compile Include="MiniPL.cs" />
-    <Compile Include="Parser.cs" />
-    <Compile Include="TokenAutomaton.cs" />
+    <Compile Include="Parser\ISymbol.cs" />
+    <Compile Include="Parser\Nonterminal.cs" />
+    <Compile Include="Parser\Parser.cs" />
+    <Compile Include="Parser\Terminal.cs" />
+    <Compile Include="Scanner\TokenAutomaton.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Regex.cs" />
-    <Compile Include="Scanner.cs" />
-    <Compile Include="SetEqualityComparer.cs" />
-    <Compile Include="Token.cs" />
-    <Compile Include="TokenType.cs" />
+    <Compile Include="Scanner\Regex.cs" />
+    <Compile Include="Scanner\Scanner.cs" />
+    <Compile Include="Scanner\SetEqualityComparer.cs" />
+    <Compile Include="Scanner\Token.cs" />
+    <Compile Include="Scanner\TokenType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

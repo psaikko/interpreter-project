@@ -10,9 +10,9 @@ namespace InterpreterProject
     {
         Dictionary<string, TokenType> GetTokenTypes();
 
-        Dictionary<string, CFG.Terminal> GetGrammarTerminals();
+        Dictionary<string, Terminal> GetGrammarTerminals();
 
-        Dictionary<string, CFG.Variable> GetGrammarNonterminals();
+        Dictionary<string, Nonterminal> GetGrammarNonterminals();
 
         CFG GetGrammar();
 

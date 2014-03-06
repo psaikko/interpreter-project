@@ -37,7 +37,7 @@ namespace InterpreterProject
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
-            Parser.Tree parseTree = ps.Parse(sc.Tokenize(text3));
+            Parser.Tree parseTree = ps.Parse(sc.Tokenize(text2));
             miniPL.TrimParseTree(parseTree);
             Console.ReadLine();
         }

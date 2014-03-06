@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,11 +12,11 @@ namespace InterpreterProject
         static MiniPL instance;
 
         Dictionary<String, TokenType> tts = new Dictionary<string, TokenType>();
-        Dictionary<String, CFG.Terminal> terms = new Dictionary<string, CFG.Terminal>();
-        Dictionary<String, CFG.Variable> vars = new Dictionary<string, CFG.Variable>();
+        Dictionary<String, Terminal> terms = new Dictionary<string, Terminal>();
+        Dictionary<String, Nonterminal> vars = new Dictionary<string, Nonterminal>();
         CFG grammar;
 
-        Dictionary<CFG.Variable, Dictionary<CFG.Terminal, CFG.ISymbol[]>> parseTable;
+        Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> parseTable;
 
         public static MiniPL GetInstance()
         {
@@ -68,72 +69,72 @@ namespace InterpreterProject
             tts["identifier"] = new TokenType("identifier", reIdentifier);
 
             // Define nonterminal variables of CFG
-            vars["program"] = new CFG.Variable("PROG");
-            vars["statements"] = new CFG.Variable("STMTS");
-            vars["statements_head"] = new CFG.Variable("STMTS_HEAD");
-            vars["statements_tail"] = new CFG.Variable("STMTS_TAIL");
-            vars["statement"] = new CFG.Variable("STMT");
-            vars["declaration"] = new CFG.Variable("DECL");
-            vars["declaration_assignment"] = new CFG.Variable("DECL_ASSIGN");
-            vars["expression"] = new CFG.Variable("EXPR");
-            vars["unary_operation"] = new CFG.Variable("UNARY_OP");
-            vars["binary_operation"] = new CFG.Variable("BINARY_OP");
-            vars["operand"] = new CFG.Variable("OPND");
+            vars["program"] = new Nonterminal("PROG");
+            vars["statements"] = new Nonterminal("STMTS");
+            vars["statements_head"] = new Nonterminal("STMTS_HEAD");
+            vars["statements_tail"] = new Nonterminal("STMTS_TAIL");
+            vars["statement"] = new Nonterminal("STMT");
+            vars["declaration"] = new Nonterminal("DECL");
+            vars["declaration_assignment"] = new Nonterminal("DECL_ASSIGN");
+            vars["expression"] = new Nonterminal("EXPR");
+            vars["unary_operation"] = new Nonterminal("UNARY_OP");
+            vars["binary_operation"] = new Nonterminal("BINARY_OP");
+            vars["operand"] = new Nonterminal("OPND");
 
             // Define terminal variables of CFG
-            terms["identifier"] = new CFG.Terminal(tts["identifier"]);
-            terms["assert"] = new CFG.Terminal("assert");
-            terms["print"] = new CFG.Terminal("print");
-            terms["read"] = new CFG.Terminal("read");
-            terms["for"] = new CFG.Terminal("for");
-            terms["in"] = new CFG.Terminal("in");
-            terms["end"] = new CFG.Terminal("end");
-            terms["do"] = new CFG.Terminal("do");
-            terms["var"] = new CFG.Terminal("var");
-            terms["type"] = new CFG.Terminal(tts["type"]);
-            terms["string"] = new CFG.Terminal(tts["string"]);
-            terms["integer"] = new CFG.Terminal(tts["integer"]);
-            terms[")"] = new CFG.Terminal(")");
-            terms["("] = new CFG.Terminal("(");
-            terms[".."] = new CFG.Terminal("..");
-            terms[":="] = new CFG.Terminal(":=");
-            terms[":"] = new CFG.Terminal(":");
-            terms[";"] = new CFG.Terminal(";");
-            terms["binary_operator"] = new CFG.Terminal(tts["binary_op"]);
-            terms["unary_operator"] = new CFG.Terminal(tts["unary_op"]);
+            terms["identifier"] = new Terminal(tts["identifier"]);
+            terms["assert"] = new Terminal("assert");
+            terms["print"] = new Terminal("print");
+            terms["read"] = new Terminal("read");
+            terms["for"] = new Terminal("for");
+            terms["in"] = new Terminal("in");
+            terms["end"] = new Terminal("end");
+            terms["do"] = new Terminal("do");
+            terms["var"] = new Terminal("var");
+            terms["type"] = new Terminal(tts["type"]);
+            terms["string"] = new Terminal(tts["string"]);
+            terms["integer"] = new Terminal(tts["integer"]);
+            terms[")"] = new Terminal(")");
+            terms["("] = new Terminal("(");
+            terms[".."] = new Terminal("..");
+            terms[":="] = new Terminal(":=");
+            terms[":"] = new Terminal(":");
+            terms[";"] = new Terminal(";");
+            terms["binary_operator"] = new Terminal(tts["binary_op"]);
+            terms["unary_operator"] = new Terminal(tts["unary_op"]);
 
             grammar = new CFG(vars["program"], terms.Values, vars.Values);
 
-            grammar.AddProductionRule(vars["program"], new CFG.ISymbol[] { vars["statements"] });
-            grammar.AddProductionRule(vars["statements"], new CFG.ISymbol[] { vars["statements_head"], vars["statements_tail"] });
-            grammar.AddProductionRule(vars["statements_head"], new CFG.ISymbol[] { vars["statement"], terms[";"] });
-            grammar.AddProductionRule(vars["statements_tail"], new CFG.ISymbol[] { vars["statements_head"], vars["statements_tail"] });
-            grammar.AddProductionRule(vars["statements_tail"], new CFG.ISymbol[] { CFG.Terminal.epsilon });
+            grammar.AddProductionRule(vars["program"], new ISymbol[] { vars["statements"] });
+            grammar.AddProductionRule(vars["statements"], new ISymbol[] { vars["statements_head"], vars["statements_tail"] });
+            grammar.AddProductionRule(vars["statements_head"], new ISymbol[] { vars["statement"], terms[";"] });
+            grammar.AddProductionRule(vars["statements_tail"], new ISymbol[] { vars["statements_head"], vars["statements_tail"] });
+            grammar.AddProductionRule(vars["statements_tail"], new ISymbol[] { Terminal.epsilon });
 
-            grammar.AddProductionRule(vars["statement"], new CFG.ISymbol[] { vars["declaration"] });
-            grammar.AddProductionRule(vars["statement"], new CFG.ISymbol[] { terms["identifier"], terms[":="], vars["expression"] });
-            grammar.AddProductionRule(vars["statement"], new CFG.ISymbol[] { terms["for"], terms["identifier"], terms["in"], vars["expression"], terms[".."], vars["expression"], terms["do"],
+            grammar.AddProductionRule(vars["statement"], new ISymbol[] { vars["declaration"] });
+            grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["identifier"], terms[":="], vars["expression"] });
+            grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["for"], terms["identifier"], terms["in"], vars["expression"], terms[".."], vars["expression"], terms["do"],
                                                                                    vars["statements"], terms["end"], terms["for"] });
-            grammar.AddProductionRule(vars["statement"], new CFG.ISymbol[] { terms["read"], terms["identifier"] });
-            grammar.AddProductionRule(vars["statement"], new CFG.ISymbol[] { terms["print"], vars["expression"] });
-            grammar.AddProductionRule(vars["statement"], new CFG.ISymbol[] { terms["assert"], terms["("], vars["expression"], terms[")"] });
+            grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["read"], terms["identifier"] });
+            grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["print"], vars["expression"] });
+            grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["assert"], terms["("], vars["expression"], terms[")"] });
 
-            grammar.AddProductionRule(vars["declaration"], new CFG.ISymbol[] { terms["var"], terms["identifier"], terms[":"], terms["type"], vars["declaration_assignment"] });
-            grammar.AddProductionRule(vars["declaration_assignment"], new CFG.ISymbol[] { terms[":="], vars["expression"] });
-            grammar.AddProductionRule(vars["declaration_assignment"], new CFG.ISymbol[] { CFG.Terminal.epsilon });
+            grammar.AddProductionRule(vars["declaration"], new ISymbol[] { terms["var"], terms["identifier"], terms[":"], terms["type"], vars["declaration_assignment"] });
+            grammar.AddProductionRule(vars["declaration_assignment"], new ISymbol[] { terms[":="], vars["expression"] });
+            grammar.AddProductionRule(vars["declaration_assignment"], new ISymbol[] { Terminal.epsilon });
 
-            grammar.AddProductionRule(vars["expression"], new CFG.ISymbol[] { vars["unary_operation"] });
-            grammar.AddProductionRule(vars["expression"], new CFG.ISymbol[] { vars["operand"], vars["binary_operation"] });
+            grammar.AddProductionRule(vars["expression"], new ISymbol[] { vars["unary_operation"] });
+            grammar.AddProductionRule(vars["expression"], new ISymbol[] { vars["operand"], vars["binary_operation"] });
 
-            grammar.AddProductionRule(vars["unary_operation"], new CFG.ISymbol[] { terms["unary_operator"], vars["operand"] });
+            grammar.AddProductionRule(vars["unary_operation"], new ISymbol[] { terms["unary_operator"], vars["operand"] });
 
-            grammar.AddProductionRule(vars["binary_operation"], new CFG.ISymbol[] { terms["binary_operator"], vars["operand"] });
-            grammar.AddProductionRule(vars["binary_operation"], new CFG.ISymbol[] { CFG.Terminal.epsilon });
+            grammar.AddProductionRule(vars["binary_operation"], new ISymbol[] { terms["binary_operator"], vars["operand"] });
+            grammar.AddProductionRule(vars["binary_operation"], new ISymbol[] { Terminal.epsilon });
 
-            grammar.AddProductionRule(vars["operand"], new CFG.ISymbol[] { terms["integer"] });
-            grammar.AddProductionRule(vars["operand"], new CFG.ISymbol[] { terms["string"] });
-            grammar.AddProductionRule(vars["operand"], new CFG.ISymbol[] { terms["identifier"] });
-            grammar.AddProductionRule(vars["operand"], new CFG.ISymbol[] { terms["("], vars["expression"], terms[")"] });
+            grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["integer"] });
+            grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["string"] });
+            grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["identifier"] });
+            grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["("], vars["expression"], terms[")"] });
 
             parseTable = grammar.CreateLL1ParseTable();
         }
@@ -143,12 +144,12 @@ namespace InterpreterProject
             return tts;
         }
 
-        public Dictionary<string, CFG.Variable> GetGrammarNonterminals()
+        public Dictionary<string, Nonterminal> GetGrammarNonterminals()
         {
             return vars;
         }
 
-        public Dictionary<string, CFG.Terminal> GetGrammarTerminals()
+        public Dictionary<string, Terminal> GetGrammarTerminals()
         {
             return terms;
         }
@@ -169,7 +170,7 @@ namespace InterpreterProject
             return grammar;
         }
 
-        public AST TrimParseTree(Parser.Tree parseTree)
+        public Program TrimParseTree(Parser.Tree parseTree)
         {
             // first remove unnecessary symbols ; : .. ( ) := and epsilons
             Stack<Parser.Tree> treeStack = new Stack<Parser.Tree>();
@@ -226,11 +227,13 @@ namespace InterpreterProject
             // STMTS->STMTS_HEAD STMTS_TAIL to STMTS->(STMT)+
             // DECL->"var" <IDENT> ":" <TYPE> ASSIGN to  DECL->"var" <IDENT> ":" <TYPE> [":=" <EXPR>] 
             // EXPR->UNARY|OPND BINARY to EXPR-> unary_op OPND | OPND | OPND binary_op OPND
-
-            CFG.Variable[] pruneVariables = new CFG.Variable[] { 
+            // OPND-><INT>|<STRING>|<IDENT>|<EXPR> -> <INT>|<STRING>|<IDENT>|<EXPR>
+            Nonterminal[] pruneVariables = new Nonterminal[] { 
                 vars["statements_head"], vars["statements_tail"], vars["unary_operation"], 
                 vars["binary_operation"], vars["declaration_assignment"], vars["operand"] };
 
+
+            // todo: refactor while to inside stack loop
             bool converged = false;
             while (!converged)
             {
@@ -280,19 +283,66 @@ namespace InterpreterProject
 
             // static type checks for assignment, operations
 
+
+            // scopes: mini-pl only has single global scope but need to check that 
+            // for-loop control variables not assigned to inside for loop
+
             Console.WriteLine(parseTree);
 
             return null;
         }
 
-        public void ExecuteProgram(AST program)
+        public void ExecuteProgram(Program program, TextReader stdin, TextWriter stdout)
         {
-            throw new NotImplementedException();
+            
+            
+            throw new NotImplementedException();            
         }
 
-        public class AST
+        public class Program
+        {
+            public Parser.Tree AST;
+            public Dictionary<string, Token> declarations = new Dictionary<string, Token>();
+            
+             
+        }
+
+        public interface IError
         {
 
-        }   
+        }
+
+        public class LexicalError : IError
+        {
+            public Token t;
+
+            public LexicalError(Token t)
+            {
+                this.t = t;
+            }
+        }
+
+        public class SyntaxError : IError
+        {
+            public Terminal actual;
+            public List<Terminal> expected;
+
+            public SyntaxError(Terminal term)
+            {
+                this.actual = term;
+            }
+        }
+
+        public class SemanticError : IError
+        {
+
+        }
+
+        public class RuntimeError : IError
+        {
+
+        }
+
+    
     }
 }

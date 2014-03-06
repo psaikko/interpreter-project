@@ -8,15 +8,15 @@ namespace InterpreterProject
 {
     public class CFG
     {
-        Dictionary<Variable, List<ISymbol[]>> productions = new Dictionary<Variable, List<ISymbol[]>>();
-        Variable startSymbol;
+        Dictionary<Nonterminal, List<ISymbol[]>> productions = new Dictionary<Nonterminal, List<ISymbol[]>>();
+        Nonterminal startSymbol;
         ICollection<Terminal> terminals;
-        ICollection<Variable> nonterminals;
+        ICollection<Nonterminal> nonterminals;
 
         Dictionary<ISymbol, ISet<Terminal>> first = new Dictionary<ISymbol, ISet<Terminal>>();
-        Dictionary<Variable, ISet<Terminal>> follow = new Dictionary<Variable, ISet<Terminal>>();
+        Dictionary<Nonterminal, ISet<Terminal>> follow = new Dictionary<Nonterminal, ISet<Terminal>>();
  
-        public CFG(Variable start, ICollection<Terminal> terminals, ICollection<Variable> nonterminals)
+        public CFG(Nonterminal start, ICollection<Terminal> terminals, ICollection<Nonterminal> nonterminals)
         {
             this.startSymbol = start;
             this.terminals = terminals.ToList();
@@ -36,7 +36,7 @@ namespace InterpreterProject
             return s;
         }
 
-        public void AddProductionRule(Variable v, ISymbol[] result)
+        public void AddProductionRule(Nonterminal v, ISymbol[] result)
         {
             if (productions.ContainsKey(v))
             {
@@ -51,24 +51,24 @@ namespace InterpreterProject
             }
         }
 
-        public List<ISymbol[]> GetProductionRules(Variable v)
+        public List<ISymbol[]> GetProductionRules(Nonterminal v)
         {
             List<ISymbol[]> productionRules= null;
             productions.TryGetValue(v, out productionRules);
             return productionRules;
         }
 
-        public Dictionary<Variable, Dictionary<Terminal, ISymbol[]>> CreateLL1ParseTable()
+        public Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> CreateLL1ParseTable()
         {
             ComputeFirstSets();
             ComputeFollowSets();
 
             Console.WriteLine("=========================================================");
 
-            Dictionary<Variable, Dictionary<Terminal, ISymbol[]>> LL1ParseTable =
-                new Dictionary<Variable, Dictionary<Terminal, ISymbol[]>>();
+            Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> LL1ParseTable =
+                new Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>>();
 
-            foreach (Variable var in productions.Keys)
+            foreach (Nonterminal var in productions.Keys)
             {
                 LL1ParseTable.Add(var, new Dictionary<Terminal, ISymbol[]>());
                 foreach (Terminal t in terminals) LL1ParseTable[var].Add(t, null);
@@ -119,7 +119,7 @@ namespace InterpreterProject
                 }
             }
 
-            foreach (Variable var in nonterminals)
+            foreach (Nonterminal var in nonterminals)
             {
                 foreach (Terminal term in terminals)
                 {
@@ -135,7 +135,7 @@ namespace InterpreterProject
         {
             Console.WriteLine("=========================================================");
             Console.WriteLine("CFG: Computing first sets");
-            foreach (Variable var in nonterminals)
+            foreach (Nonterminal var in nonterminals)
             {
                 first[var] = new HashSet<Terminal>();
                 foreach (ISymbol[] production in productions[var])
@@ -151,7 +151,7 @@ namespace InterpreterProject
             {
                 converged = true;
                 Console.WriteLine("--iteration--");
-                foreach (Variable var in nonterminals)
+                foreach (Nonterminal var in nonterminals)
                 {
                     foreach (ISymbol[] production in productions[var])
                     {
@@ -195,12 +195,12 @@ namespace InterpreterProject
         {
             Console.WriteLine("=========================================================");
             Console.WriteLine("CFG: Computing follow sets");
-            foreach (Variable A in nonterminals)
+            foreach (Nonterminal A in nonterminals)
             {
                 follow[A] = new HashSet<Terminal>();
                 if (A == startSymbol)
                     follow[A].Add(Terminal.EOF);
-                foreach (Variable B in nonterminals)
+                foreach (Nonterminal B in nonterminals)
                 {
                     foreach (ISymbol[] prod in productions[B])
                     {
@@ -220,15 +220,15 @@ namespace InterpreterProject
             {
                 converged = true;
                 Console.WriteLine("--iteration--");
-                foreach (Variable B in nonterminals)
+                foreach (Nonterminal B in nonterminals)
                 {
                     foreach (ISymbol[] prod in productions[B])
                     {
                         for (int i = 0; i < prod.Length; i++)
                         {
-                            if (prod[i] is Variable)
+                            if (prod[i] is Nonterminal)
                             {
-                                Variable A = prod[i] as Variable;
+                                Nonterminal A = prod[i] as Nonterminal;
                                 int tmp = follow[A].Count;
                                 if (i == prod.Length - 1)
                                 {                          
@@ -256,68 +256,17 @@ namespace InterpreterProject
                         }
                     }  
                 }
-                foreach (Variable A in nonterminals)
+                foreach (Nonterminal A in nonterminals)
                     Console.WriteLine("CFG: Follow " + A + " = " + SymbolsToString(follow[A]));
             }
 
             Console.WriteLine("CFG: follow sets converged");
         }
 
-        public ISet<Terminal> Follow(Variable startVar)
+        public ISet<Terminal> Follow(Nonterminal startVar)
         {
             return follow[startVar];
         }
 
-        public interface ISymbol { }
-
-        public class Terminal : ISymbol
-        {
-            public static readonly Terminal epsilon = new Terminal("");
-            public static readonly Terminal EOF = new Terminal(TokenType.EOF); 
-
-            public readonly TokenType tokenType = null;
-            public readonly string lexeme = null;
-
-            public Terminal(TokenType tokenType)
-            {
-                this.tokenType = tokenType;
-            }
-
-            public Terminal(string lexeme)
-            {
-                this.lexeme = lexeme;
-            }
-
-            public bool Matches(Token t)
-            {
-                if (tokenType != null)
-                    return t.tokenType == tokenType;
-                else
-                    return t.lexeme == lexeme;
-            }
-
-            public override string ToString()
-            {
-                if (tokenType != null)
-                    return "<" + tokenType.name + ">";
-                else
-                    return "\"" + lexeme + "\"";
-            }
-        }
-
-        public class Variable : ISymbol
-        {
-            public readonly string name;
-
-            public Variable(string name)
-            {
-                this.name = name;
-            }
-
-            public override string ToString()
-            {
-                return name;
-            }
-        }
     }
 }

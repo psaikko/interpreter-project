@@ -8,10 +8,10 @@ namespace InterpreterProject
 {
     public class Parser
     {
-        Dictionary<CFG.Variable, Dictionary<CFG.Terminal, CFG.ISymbol[]>> table;
-        CFG.Variable start;
+        Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> table;
+        Nonterminal start;
 
-        public Parser(Dictionary<CFG.Variable, Dictionary<CFG.Terminal, CFG.ISymbol[]>> parseTable, CFG.Variable start)
+        public Parser(Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> parseTable, Nonterminal start)
         {
             this.table = parseTable;
             this.start = start;
@@ -19,13 +19,13 @@ namespace InterpreterProject
 
         public Tree Parse(IEnumerable<Token> tokens)
         {
-            Stack<CFG.ISymbol> s = new Stack<CFG.ISymbol>();
-            s.Push(CFG.Terminal.EOF);
+            Stack<ISymbol> s = new Stack<ISymbol>();
+            s.Push(Terminal.EOF);
             s.Push(start);
 
             Tree root = new Tree(start);
             Stack<INode> treeStack = new Stack<INode>();
-            treeStack.Push(new Leaf(CFG.Terminal.EOF));
+            treeStack.Push(new Leaf(Terminal.EOF));
             treeStack.Push(root);
 
             IEnumerator<Token> ts = tokens.GetEnumerator();
@@ -39,12 +39,12 @@ namespace InterpreterProject
                 Console.WriteLine("PARSE: expecting " + s.Peek());
                 Console.WriteLine("PARSE: token " + ts.Current);
 
-                if (s.Peek() is CFG.Terminal)
+                if (s.Peek() is Terminal)
                 {
-                    CFG.Terminal term = s.Pop() as CFG.Terminal;
+                    Terminal term = s.Pop() as Terminal;
                     Leaf leaf = treeStack.Pop() as Leaf;
 
-                    if (term == CFG.Terminal.epsilon)
+                    if (term == Terminal.epsilon)
                     {
                         Console.WriteLine("PARSE: disregard epsilon");
                         continue;
@@ -65,10 +65,10 @@ namespace InterpreterProject
                 }
                 else // top of stack is a nonterminal
                 {
-                    CFG.Variable var = s.Pop() as CFG.Variable;
+                    Nonterminal var = s.Pop() as Nonterminal;
                     Tree subtree = treeStack.Pop() as Tree;
 
-                    CFG.ISymbol[] production = tableGet(var, ts.Current);
+                    ISymbol[] production = tableGet(var, ts.Current);
 
                     if (production == null)
                     {
@@ -83,13 +83,13 @@ namespace InterpreterProject
                         //for (int i = 0; i < production.Length; i++ )
                         {
                             INode treeChild;
-                            if (production[i] is CFG.Terminal)
+                            if (production[i] is Terminal)
                             {
-                                treeChild = new Leaf(production[i] as CFG.Terminal);
+                                treeChild = new Leaf(production[i] as Terminal);
                             }
                             else
                             {
-                                treeChild = new Tree(production[i] as CFG.Variable);
+                                treeChild = new Tree(production[i] as Nonterminal);
                             }
                             subtree.children.Insert(0, treeChild);
                             //subtree.children.Add(treeChild);
@@ -105,23 +105,23 @@ namespace InterpreterProject
             return root;
         }
 
-        private CFG.ISymbol[] tableGet(CFG.Variable var, Token token)
+        private ISymbol[] tableGet(Nonterminal var, Token token)
         {
-            Dictionary<CFG.Terminal, CFG.ISymbol[]> tableRow = table[var];
+            Dictionary<Terminal, ISymbol[]> tableRow = table[var];
 
-            foreach (CFG.Terminal term in tableRow.Keys)
+            foreach (Terminal term in tableRow.Keys)
                 if (term.Matches(token))
                     return tableRow[term];
 
             return null;
         }
 
-        private string SymbolsToString(IEnumerable<CFG.ISymbol> production)
+        private string SymbolsToString(IEnumerable<ISymbol> production)
         {
             if (production == null) return "null";
 
             string s = "";
-            foreach (CFG.ISymbol symbol in production)
+            foreach (ISymbol symbol in production)
             {
                 s += symbol + " ";
             }
@@ -131,15 +131,15 @@ namespace InterpreterProject
 
         public interface INode 
         { 
-            CFG.ISymbol GetSymbol();
+            ISymbol GetSymbol();
         }
 
         public class Tree : INode
         {
             public List<INode> children = new List<INode>();
-            public CFG.Variable var;
-            public Tree(CFG.Variable var) { this.var = var; }
-            public CFG.ISymbol GetSymbol() { return var; }
+            public Nonterminal var;
+            public Tree(Nonterminal var) { this.var = var; }
+            public ISymbol GetSymbol() { return var; }
 
             public override string ToString()
             {
@@ -179,10 +179,10 @@ namespace InterpreterProject
 
         public class Leaf : INode
         {
-            public CFG.Terminal term;
+            public Terminal term;
             public Token token;
-            public Leaf(CFG.Terminal term) { this.term = term; }
-            public CFG.ISymbol GetSymbol() { return term; }
+            public Leaf(Terminal term) { this.term = term; }
+            public ISymbol GetSymbol() { return term; }
 
             public override string ToString()
             {
