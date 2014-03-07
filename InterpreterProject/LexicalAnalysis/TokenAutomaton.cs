@@ -8,6 +8,8 @@ namespace InterpreterProject.LexicalAnalysis
 {
     public class TokenAutomaton
     {
+        static bool log = false;
+
         public const char EOF = '\0';
 
         private Node start;
@@ -63,7 +65,7 @@ namespace InterpreterProject.LexicalAnalysis
                 col++;
             }
 
-            Console.WriteLine(String.Format("AUTOMATON accumulated: \"{0}\"", charBuffer));
+            if (log) Console.WriteLine(String.Format("AUTOMATON accumulated: \"{0}\"", charBuffer));
 
             if (lastToken == null)
             {
@@ -77,16 +79,14 @@ namespace InterpreterProject.LexicalAnalysis
             {
                 position = position.GetNext(c);
                 if (position.IsAcceptingState())
-                {
-                    StoreToken(position.acceptedTokenType);
-                }           
+                    StoreToken(position.acceptedTokenType);        
             }
             else
             {
                 Token match = TakeToken();
                 tokenBuffer.Enqueue(match);
 
-                Console.WriteLine("AUTOMATON recognize token " + match);
+                if (log) Console.WriteLine("AUTOMATON recognize token " + match);
 
                 position = start;
                 string overflow = charBuffer.Remove(0, match.lexeme.Length);

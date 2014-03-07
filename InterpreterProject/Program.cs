@@ -13,35 +13,21 @@ namespace InterpreterProject
     {
         static void Main(string[] args)
         {
-            string text1 = "var X : int := 4 + (6 * 2);\n" +
-                           "print X;";
-
-            string text2 = "var nTimes : int := 0;\n" +
-                           "print \"How many times?\";\n" +
-                           "read nTimes;\n" +
-                           "var x : int;\n" +
-                           "for x in 0..nTimes-1 do\n" +
-                           "     print x;\n" +
-                           "     print \" : Hello, World!\n\";\n" +
-                           "end for;\n" +
-                           "assert (x = nTimes);";
-
-            string text3 = "print \"Give a number\";\n" +
-                           "var n : int;\n" +
-                           "read n;\n" +
-                           "var f : int := 1;\n" +
-                           "var i : int;\n" +
-                           "for i in 1..n do\n" +
-                           "    f := f * i;\n" +
-                           "end for;\n" +
-                           "print \"The result is: \";\n" +
-                           "print f;";
+            string text = "var nTimes : int := -0;\n" + // no unary negative
+                          "print \"How many times?\";\n" +
+                          "read nTimes + 1;\n" + // read expr
+                          "x : int;\n" + // declaration without var
+                          "for x in 0..nTimes-1 do\n" +
+                          "     print x;\n" +
+                          "     print \" : Hello, World!\n\";\n" +
+                          "end for;\n" +
+                          "assert (x = nTimes); - "; // stray -
 
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
-            Parser.ParseTree parseTree = ps.Parse(sc.Tokenize(text2));
-            miniPL.TrimParseTree(parseTree);
+
+            Console.WriteLine(ps.Parse(sc.Tokenize(text)).errors.Count);
             Console.ReadLine();
         }
     }

@@ -165,7 +165,7 @@ namespace InterpreterProject.Languages
 
         public Parser GetParser()
         {
-            return new Parser(parseTable, vars["program"]);
+            return new Parser(parseTable, vars["program"], terms[";"]);
         }
 
         public CFG GetGrammar()
