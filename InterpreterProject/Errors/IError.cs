@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 using InterpreterProject.LexicalAnalysis;
 using InterpreterProject.SyntaxAnalysis;
 
-namespace InterpreterProject.Languages
+namespace InterpreterProject.Errors
 {
-    public class SemanticError : IError
+    public interface IError
     {
-        public string GetMessage()
-        {
-            throw new NotImplementedException();
-        }
+        string GetMessage();
     }
 }

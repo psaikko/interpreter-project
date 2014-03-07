@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using InterpreterProject.LexicalAnalysis;
 using InterpreterProject.SyntaxAnalysis;
+using InterpreterProject.Errors;
 
 namespace InterpreterProject.Languages
 {

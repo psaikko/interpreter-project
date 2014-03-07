@@ -206,5 +206,39 @@ namespace InterpreterProjectTest
 
             Assert.AreNotEqual(null, ps.Parse(sc.Tokenize(text)));
         }
+
+        [TestMethod]
+        public void Parser_LexicalErrorTest()
+        {
+            // check that the parser can disregard error tokens and log them as errors
+
+            string text = "]var X :[ int := 4 +' (6 * 2);\n" +
+                          "print X###;";
+
+            MiniPL miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+            Parser.ParseTree ptree = ps.Parse(sc.Tokenize(text));
+
+            Assert.AreEqual(6, ptree.errors.Count);
+
+            Assert.AreNotEqual(null, ptree);
+            Assert.AreEqual(18, ptree.SymbolCount(s => s is Terminal));
+            Assert.AreEqual(2, ptree.SymbolCount(s => (s is Terminal) && (s as Terminal) == Terminal.EPSILON));
+            Assert.AreEqual(3, ptree.SymbolCount(s => (s is Terminal) && (s as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+            Assert.AreEqual(2, ptree.SymbolCount(s => (s is Terminal) && (s as Terminal).tokenType == miniPL.GetTokenTypes()["binary_op"]));
+            Assert.AreEqual(21, ptree.SymbolCount(s => s is Nonterminal));
+            Assert.AreEqual(3, ptree.SymbolCount(s => (s is Nonterminal) && (s as Nonterminal) == miniPL.GetGrammarNonterminals()["binary_operation"]));
+            Assert.AreEqual(2, ptree.SymbolCount(s => (s is Nonterminal) && (s as Nonterminal) == miniPL.GetGrammarNonterminals()["statement"]));
+            Assert.IsTrue(ptree.DepthContains(12, s => (s is Terminal) && (s as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+            Assert.IsTrue(ptree.DepthContains(11, s => (s is Terminal) && (s as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+            Assert.IsTrue(ptree.DepthContains(8, s => (s is Terminal) && (s as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+        }
+
+        [TestMethod]
+        public void Parser_SyntaxErrorTest()
+        {
+
+        }
     }
 }

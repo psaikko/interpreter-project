@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InterpreterProject.Errors;
 using InterpreterProject.LexicalAnalysis;
 
 namespace InterpreterProject.SyntaxAnalysis
@@ -29,6 +30,8 @@ namespace InterpreterProject.SyntaxAnalysis
             treeStack.Push(new Leaf(Terminal.EOF));
             treeStack.Push(root);
 
+            ParseTree parseTree = new ParseTree(root);
+
             IEnumerator<Token> ts = tokens.GetEnumerator();
 
             ts.MoveNext();
@@ -39,6 +42,14 @@ namespace InterpreterProject.SyntaxAnalysis
                 Console.WriteLine("PARSE: Stack " + SymbolsToString(s));
                 Console.WriteLine("PARSE: expecting " + s.Peek());
                 Console.WriteLine("PARSE: token " + ts.Current);
+
+                if (ts.Current.tokenType == TokenType.ERROR)
+                {
+                    Console.WriteLine("PARSE: skipping error token");
+                    parseTree.errors.Add(new LexicalError(ts.Current));
+                    ts.MoveNext();
+                    continue;
+                }
 
                 if (s.Peek() is Terminal)
                 {
@@ -103,7 +114,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
             Console.WriteLine(root);
 
-            return new ParseTree(root);
+            return parseTree;
         }
 
         private string SymbolsToString(IEnumerable<ISymbol> production)
@@ -127,6 +138,8 @@ namespace InterpreterProject.SyntaxAnalysis
         public class ParseTree
         {
             public Tree root;
+
+            public List<IError> errors = new List<IError>(); 
 
             public ParseTree(Tree root)
             {

@@ -6,21 +6,20 @@ using System.Threading.Tasks;
 using InterpreterProject.LexicalAnalysis;
 using InterpreterProject.SyntaxAnalysis;
 
-namespace InterpreterProject.Languages
+namespace InterpreterProject.Errors
 {
-    public class SyntaxError : IError
+    public class LexicalError : IError
     {
-        public Terminal actual;
-        public List<Terminal> expected;
+        public Token t;
 
-        public SyntaxError(Terminal term)
+        public LexicalError(Token t)
         {
-            this.actual = term;
+            this.t = t;
         }
 
         public string GetMessage()
         {
-            throw new NotImplementedException();
+            return String.Format("Lexical error: unexpected character '{0}' at row {1} position {2}", t.lexeme, t.row, t.col);
         }
     }
 }

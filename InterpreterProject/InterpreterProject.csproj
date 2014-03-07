@@ -56,10 +56,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Languages\IError.cs" />
-    <Compile Include="Languages\LexicalError.cs" />
-    <Compile Include="Languages\SemanticError.cs" />
-    <Compile Include="Languages\SyntaxError.cs" />
+    <Compile Include="Errors\IError.cs" />
+    <Compile Include="Errors\LexicalError.cs" />
+    <Compile Include="Errors\SemanticError.cs" />
+    <Compile Include="Errors\SyntaxError.cs" />
     <Compile Include="SyntaxAnalysis\CFG.cs" />
     <Compile Include="Languages\MiniPL.cs" />
     <Compile Include="SyntaxAnalysis\ISymbol.cs" />
