@@ -125,6 +125,34 @@ namespace InterpreterProjectTest
         }
 
         [TestMethod]
+        public void Parser_ParseTreeTest()
+        {
+            string text = "var X : int := 4 + (6 * 2);\n" +
+                          "print X;";
+
+            MiniPL miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+            Parser.ParseTree ptree = ps.Parse(sc.Tokenize(text));         
+
+            // compare contents of tree to hand-drawn parse tree
+
+            Assert.AreNotEqual(null, ptree);
+            // 16 "real terminals", 2 epsilon
+            Assert.AreEqual(18, ptree.SymbolCount(s => s is Terminal));
+            Assert.AreEqual(2, ptree.SymbolCount(s => (s is Terminal) && (s as Terminal) == Terminal.EPSILON));
+            Assert.AreEqual(3, ptree.SymbolCount(s => (s is Terminal) && (s as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+            Assert.AreEqual(2, ptree.SymbolCount(s => (s is Terminal) && (s as Terminal).tokenType == miniPL.GetTokenTypes()["binary_op"]));
+            Assert.AreEqual(21, ptree.SymbolCount(s => s is Nonterminal));
+            // two actual binary operations, one -> epsilon
+            Assert.AreEqual(3, ptree.SymbolCount(s => (s is Nonterminal) && (s as Nonterminal) == miniPL.GetGrammarNonterminals()["binary_operation"]));
+            Assert.AreEqual(2, ptree.SymbolCount(s => (s is Nonterminal) && (s as Nonterminal) == miniPL.GetGrammarNonterminals()["statement"]));
+            Assert.IsTrue(ptree.DepthContains(12, s => (s is Terminal) && (s as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+            Assert.IsTrue(ptree.DepthContains(11, s => (s is Terminal) && (s as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+            Assert.IsTrue(ptree.DepthContains(8, s => (s is Terminal) && (s as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+        }
+
+        [TestMethod]
         public void Parser_MiniPLTest1()
         {
             string text = "var X : int := 4 + (6 * 2);\n" +
@@ -134,7 +162,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Assert.AreNotEqual(null, ps.Parse(sc.Tokenize(text)));
+            Parser.ParseTree ptree = ps.Parse(sc.Tokenize(text));          
         }
 
         [TestMethod]
@@ -155,6 +183,7 @@ namespace InterpreterProjectTest
             Parser ps = miniPL.GetParser();
 
             Assert.AreNotEqual(null, ps.Parse(sc.Tokenize(text)));
+
         }
 
         [TestMethod]

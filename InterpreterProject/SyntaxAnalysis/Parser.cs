@@ -18,7 +18,7 @@ namespace InterpreterProject.SyntaxAnalysis
             this.start = start;
         }
 
-        public Tree Parse(IEnumerable<Token> tokens)
+        public ParseTree Parse(IEnumerable<Token> tokens)
         {
             Stack<ISymbol> s = new Stack<ISymbol>();
             s.Push(Terminal.EOF);
@@ -59,6 +59,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     }
                     else
                     {
+                        // TODO: add error
                         Console.WriteLine("PARSE: Terminal mismatch");
                         Console.WriteLine("PARSE: Error");
                         return null;
@@ -73,6 +74,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
                     if (production == null)
                     {
+                        // TODO: add error
                         Console.WriteLine("PARSE: No such production");
                         Console.WriteLine("PARSE: Error");
                         return null;
@@ -81,7 +83,6 @@ namespace InterpreterProject.SyntaxAnalysis
                     {
                         Console.WriteLine("PARSE: Using production " + SymbolsToString(production));
                         for (int i = production.Length - 1; i >= 0; i--)
-                        //for (int i = 0; i < production.Length; i++ )
                         {
                             INode treeChild;
                             if (production[i] is Terminal)
@@ -93,7 +94,6 @@ namespace InterpreterProject.SyntaxAnalysis
                                 treeChild = new Tree(production[i] as Nonterminal);
                             }
                             subtree.children.Insert(0, treeChild);
-                            //subtree.children.Add(treeChild);
                             treeStack.Push(treeChild);
                             s.Push(production[i]);
                         }
@@ -103,7 +103,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
             Console.WriteLine(root);
 
-            return root;
+            return new ParseTree(root);
         }
 
         private string SymbolsToString(IEnumerable<ISymbol> production)
@@ -122,6 +122,65 @@ namespace InterpreterProject.SyntaxAnalysis
         public interface INode 
         { 
             ISymbol GetSymbol();
+        }
+
+        public class ParseTree
+        {
+            public Tree root;
+
+            public ParseTree(Tree root)
+            {
+                this.root = root;
+            }
+
+            public int SymbolCount(Predicate<ISymbol> pred)
+            {
+                int count = 0;
+                Stack<INode> nodeStack = new Stack<INode>();
+                nodeStack.Push(root);
+                while (nodeStack.Count > 0)
+                {
+                    INode current = nodeStack.Pop();
+                    if (pred(current.GetSymbol()))
+                        count++;
+                    if (current is Tree)
+                    {
+                        Tree subtree = current as Tree;
+                        foreach (INode child in subtree.children)
+                            nodeStack.Push(child);
+                    }
+                }
+                return count;
+            }
+
+            public bool DepthContains(int depth, Predicate<ISymbol> pred)
+            {
+                Stack<INode> nodeStack = new Stack<INode>();
+                Stack<int> depthStack = new Stack<int>();
+                nodeStack.Push(root);
+                depthStack.Push(0);
+                while (nodeStack.Count > 0)
+                {
+                    INode currentNode = nodeStack.Pop();
+                    int currentDepth = depthStack.Pop();
+                    if (currentDepth < depth)
+                    {
+                        if (currentNode is Tree)
+                        {
+                            Tree subtree = currentNode as Tree;
+                            foreach (INode child in subtree.children)
+                            {
+                                nodeStack.Push(child);
+                                depthStack.Push(currentDepth + 1);
+                            }
+                        }
+                    }
+                    else if (currentDepth == depth)
+                        if (pred(currentNode.GetSymbol()))
+                            return true;
+                }
+                return false;
+            }
         }
 
         public class Tree : INode

@@ -172,11 +172,11 @@ namespace InterpreterProject.Languages
             return grammar;
         }
 
-        public Program TrimParseTree(Parser.Tree parseTree)
+        public Program TrimParseTree(Parser.ParseTree parseTree)
         {
             // first remove unnecessary symbols ; : .. ( ) := and epsilons
             Stack<Parser.Tree> treeStack = new Stack<Parser.Tree>();
-            treeStack.Push(parseTree);
+            treeStack.Push(parseTree.root);
             String[] pruneTokens = {"(",")",";",":","..",":=","var","in","for","end"};
 
             while (treeStack.Count > 0)
@@ -192,7 +192,7 @@ namespace InterpreterProject.Languages
                     else
                     {
                         Parser.Leaf leaf = node as Parser.Leaf;
-                        if (leaf.token == null || pruneTokens.Contains(leaf.token.lexeme))
+                        if (pruneTokens.Contains(leaf.token.lexeme))
                         {
                             pruneList.Add(node);
                         } 
@@ -204,7 +204,7 @@ namespace InterpreterProject.Languages
 
             // remove any tree nodes with no children
             treeStack = new Stack<Parser.Tree>();
-            treeStack.Push(parseTree);
+            treeStack.Push(parseTree.root);
 
             while (treeStack.Count > 0)
             {
@@ -240,7 +240,7 @@ namespace InterpreterProject.Languages
             {
                 converged = true;
                 treeStack = new Stack<Parser.Tree>();
-                treeStack.Push(parseTree);
+                treeStack.Push(parseTree.root);
 
                 while (treeStack.Count > 0)
                 {
