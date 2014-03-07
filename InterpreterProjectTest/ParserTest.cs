@@ -162,7 +162,9 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Parser.ParseTree ptree = ps.Parse(sc.Tokenize(text));          
+            Parser.ParseTree ptree = ps.Parse(sc.Tokenize(text));
+
+            Assert.AreEqual(0, ps.Parse(sc.Tokenize(text)).errors.Count);
         }
 
         [TestMethod]
@@ -182,8 +184,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Assert.AreNotEqual(null, ps.Parse(sc.Tokenize(text)));
-
+            Assert.AreEqual(0, ps.Parse(sc.Tokenize(text)).errors.Count);
         }
 
         [TestMethod]
@@ -204,7 +205,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Assert.AreNotEqual(null, ps.Parse(sc.Tokenize(text)));
+            Assert.AreEqual(0, ps.Parse(sc.Tokenize(text)).errors.Count);
         }
 
         [TestMethod]
@@ -238,7 +239,21 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Parser_SyntaxErrorTest()
         {
+            string text = "var nTimes : int := -0;\n" + // no unary negative
+                          "print \"How many times?\";\n" +
+                          "read nTimes + 1;\n" + // read expr
+                          "x : int;\n" + // declaration without var
+                          "for x in 0..nTimes-1 do\n" +
+                          "     print x;\n" +
+                          "     print \" : Hello, World!\n\";\n" +
+                          "end for;\n" +
+                          "assert (x = nTimes); - "; // stray -
 
+            MiniPL miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+
+            Assert.AreEqual(4, ps.Parse(sc.Tokenize(text)).errors.Count);
         }
     }
 }
