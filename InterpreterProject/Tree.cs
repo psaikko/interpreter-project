@@ -106,9 +106,6 @@ namespace InterpreterProject
 
             while (treeStack.Count > 0)
             {
-                //Console.WriteLine("AAAAAAAAAAaaaaaaaaaaaa");
-
-
                 Tree<T> currentNode = treeStack.Pop();
                 List<INode<T>> pruneList = new List<INode<T>>();
                 List<List<INode<T>>> replaceList = new List<List<INode<T>>>();
@@ -167,8 +164,11 @@ namespace InterpreterProject
                 yield return currentNode;
                 
                 if (currentNode is Tree<T>)
-                    foreach (INode<T> child in (currentNode as Tree<T>).children)
-                        nodeStack.Push(child);
+                {
+                    Tree<T> subtree = currentNode as Tree<T>;
+                    for (int i = subtree.children.Count - 1; i >= 0; i--)
+                        nodeStack.Push(subtree.children[i]);
+                }                        
             }
         }
     }

@@ -19,13 +19,13 @@ namespace InterpreterProject.LexicalAnalysis
 
         public int CompareTo(Position other)
         {
-            if (this.row > other.row)
-                return -1;
             if (this.row < other.row)
-                return 1;
-            if (this.col > other.col)
                 return -1;
+            if (this.row > other.row)
+                return 1;
             if (this.col < other.col)
+                return -1;
+            if (this.col > other.col)
                 return 1;
             return 0;
         }

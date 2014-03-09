@@ -54,6 +54,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScannerTest.cs" />
     <Compile Include="ParserTest.cs" />
+    <Compile Include="SemanticTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\InterpreterProject\InterpreterProject.csproj">

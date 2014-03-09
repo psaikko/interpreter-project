@@ -221,18 +221,40 @@ namespace InterpreterProject.Languages
                     {
                         Leaf<Parser.IParseValue> idLeaf = (subtree.children[0] as Leaf<Parser.IParseValue>);
                         Leaf<Parser.IParseValue> typeLeaf = (subtree.children[1] as Leaf<Parser.IParseValue>);
+                        Token idToken = (idLeaf.GetValue() as Parser.TerminalValue).token;
+                        Token typeToken = (typeLeaf.GetValue() as Parser.TerminalValue).token;
 
-                        string identifier = (idLeaf.GetValue() as Parser.TerminalValue).token.lexeme;
-                        Token t = (typeLeaf.GetValue() as Parser.TerminalValue).token;
+                        string identifier = idToken.lexeme;
+                        Position pos = idToken.pos;
+                        string type = typeToken.lexeme;
                         if (prog.declarations.ContainsKey(identifier))
-                            prog.errors.Add(new SemanticError(t, identifier + " multiply defined"));
+                            prog.errors.Add(new SemanticError(idToken, identifier + " multiply defined"));
                         else
-                            prog.declarations.Add(identifier, t);
+                            prog.declarations[identifier] = new Declaration(identifier, pos, type);
                     }
                 }
             }
 
-            // static type checks for assignment, operations
+            // check that variables are defined before use
+            foreach (INode<Parser.IParseValue> node in parseTree.Nodes())
+            {
+                if (node is Leaf<Parser.IParseValue>)
+                {
+                    Leaf<Parser.IParseValue> leaf = node as Leaf<Parser.IParseValue>;
+                    Parser.TerminalValue leafValue = node.GetValue() as Parser.TerminalValue;
+                    Token leafToken = leafValue.token;
+                    if (leafToken.tokenType == tts["identifier"])
+                    {
+                        string identifier = leafToken.lexeme;
+                        Position idPosition = leafToken.pos;
+
+                        if (!prog.declarations.ContainsKey(identifier))
+                            prog.errors.Add(new SemanticError(leafToken, identifier + " never defined"));
+                        else if (idPosition.CompareTo(prog.declarations[identifier].position) < 0)  
+                            prog.errors.Add(new SemanticError(leafToken, identifier + " not defined before use"));
+                    }
+                }
+            }
 
             // scopes: mini-pl only has single global scope but need to check that 
             // for-loop control variables not assigned to inside for loop
@@ -242,11 +264,23 @@ namespace InterpreterProject.Languages
             return prog;
         }
 
+        public class Declaration
+        {
+            public string identifier;
+            public Position position;
+            public string type;
+            public Declaration(string identifier, Position position, string type)
+            {
+                this.identifier = identifier;
+                this.position = position;
+                this.type = type;
+            }
+        }
 
         public class Program
         {
             public Tree<Parser.IParseValue> AST;
-            public Dictionary<string, Token> declarations = new Dictionary<string, Token>();
+            public Dictionary<string, Declaration> declarations = new Dictionary<string, Declaration>();
             public List<IError> errors = new List<IError>();    
     
             public bool Execute(TextReader stdin, TextWriter stdout)
