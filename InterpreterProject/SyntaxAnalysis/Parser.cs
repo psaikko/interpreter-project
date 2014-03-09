@@ -147,7 +147,6 @@ namespace InterpreterProject.SyntaxAnalysis
             return s;
         }
 
-
         public interface INode 
         { 
             ISymbol GetSymbol();
@@ -211,6 +210,11 @@ namespace InterpreterProject.SyntaxAnalysis
                             return true;
                 }
                 return false;
+            }
+
+            public override string ToString()
+            {
+                return root.ToString();
             }
         }
 

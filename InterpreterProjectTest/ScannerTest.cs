@@ -361,8 +361,8 @@ namespace InterpreterProjectTest
 
             for (int i = 0; i < tokens.Count; i++)
             {
-                Assert.AreEqual(expectedRows[i], tokens[i].row);
-                Assert.AreEqual(expectedCols[i], tokens[i].col);
+                Assert.AreEqual(expectedRows[i], tokens[i].pos.row);
+                Assert.AreEqual(expectedCols[i], tokens[i].pos.col);
             }
         }
     }

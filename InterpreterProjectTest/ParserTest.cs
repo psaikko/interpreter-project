@@ -255,5 +255,12 @@ namespace InterpreterProjectTest
 
             Assert.AreEqual(4, ps.Parse(sc.Tokenize(text)).errors.Count);
         }
+
+        [TestMethod]
+        public void Parser_SemanticErrorTest()
+        {
+            Assert.Fail();
+
+        }
     }
 }

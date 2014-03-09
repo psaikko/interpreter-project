@@ -193,7 +193,8 @@ namespace InterpreterProject.Languages
                     else
                     {
                         Parser.Leaf leaf = node as Parser.Leaf;
-                        if (pruneTokens.Contains(leaf.token.lexeme))
+                        if (leaf.term == Terminal.EPSILON ||
+                            pruneTokens.Contains(leaf.token.lexeme))
                         {
                             pruneList.Add(node);
                         } 
@@ -281,8 +282,33 @@ namespace InterpreterProject.Languages
             }
              
             // TODO
-            // gather type info
-            // check for use of uninitialized identifiers
+
+            // find declarations
+            treeStack = new Stack<Parser.Tree>();
+            treeStack.Push(parseTree.root);
+
+            while (treeStack.Count > 0)
+            {
+                Parser.Tree currentNode = treeStack.Pop();
+                foreach (Parser.INode node in currentNode.children)
+                {
+                    if (node is Parser.Tree)
+                    {
+                        Parser.Tree subtree = node as Parser.Tree;
+                        if (subtree.var == vars["declaration"])
+                        {
+                            string indentifier = (subtree.children[0].GetSymbol() as Terminal).lexeme;
+                            string type = (subtree.children[1].GetSymbol() as Terminal).lexeme;
+                            Position pos = (subtree.children[1] as Parser.Leaf).token.pos;
+                        }
+                        else
+                        {
+                            treeStack.Push(subtree);
+                        }
+                    }
+                }
+            }
+
 
             // static type checks for assignment, operations
 

@@ -19,7 +19,7 @@ namespace InterpreterProject.Errors
 
         public string GetMessage()
         {
-            return String.Format("Lexical error: unexpected character '{0}' at row {1} position {2}", t.lexeme, t.row, t.col);
+            return String.Format("Lexical error: unexpected character '{0}' at row {1}", t.lexeme, t.pos);
         }
     }
 }

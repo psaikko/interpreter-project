@@ -13,21 +13,22 @@ namespace InterpreterProject
     {
         static void Main(string[] args)
         {
-            string text = "var nTimes : int := -0;\n" + // no unary negative
+            string text = "var nTimes : int := 0;\n" +
                           "print \"How many times?\";\n" +
-                          "read nTimes + 1;\n" + // read expr
-                          "x : int;\n" + // declaration without var
+                          "read nTimes;\n" + 
+                          "var x : int;\n" +
                           "for x in 0..nTimes-1 do\n" +
                           "     print x;\n" +
                           "     print \" : Hello, World!\n\";\n" +
                           "end for;\n" +
-                          "assert (x = nTimes); - "; // stray -
+                          "assert (x = nTimes);";
 
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Console.WriteLine(ps.Parse(sc.Tokenize(text)).errors.Count);
+            Parser.ParseTree pt =  ps.Parse(sc.Tokenize(text));
+            miniPL.TrimParseTree(pt);
             Console.ReadLine();
         }
     }
