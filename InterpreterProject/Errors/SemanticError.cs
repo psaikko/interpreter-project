@@ -10,9 +10,18 @@ namespace InterpreterProject.Errors
 {
     public class SemanticError : IError
     {
+        public Token t;
+        public string description;
+
+        public SemanticError(Token t, string description)
+        {
+            this.t = t;
+            this.description = description;
+        }
+
         public string GetMessage()
         {
-            throw new NotImplementedException();
+            return String.Format("Semantic error: {0} at {1}", description, t.pos);
         }
     }
 }

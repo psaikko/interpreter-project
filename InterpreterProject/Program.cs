@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using InterpreterProject.LexicalAnalysis;
 using InterpreterProject.SyntaxAnalysis;
 using InterpreterProject.Languages;
+using InterpreterProject.Errors;
 
 namespace InterpreterProject
 {
@@ -13,22 +14,17 @@ namespace InterpreterProject
     {
         static void Main(string[] args)
         {
-            string text = "var nTimes : int := 0;\n" +
-                          "print \"How many times?\";\n" +
-                          "read nTimes;\n" + 
-                          "var x : int;\n" +
-                          "for x in 0..nTimes-1 do\n" +
-                          "     print x;\n" +
-                          "     print \" : Hello, World!\n\";\n" +
-                          "end for;\n" +
-                          "assert (x = nTimes);";
+            string text = "var X : int := 4 + (6 * 2);\n" +
+                          "print X;";
 
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Parser.ParseTree pt =  ps.Parse(sc.Tokenize(text));
-            miniPL.TrimParseTree(pt);
+            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
+
+            List<IError> errors = ps.GetErrors();
+
             Console.ReadLine();
         }
     }

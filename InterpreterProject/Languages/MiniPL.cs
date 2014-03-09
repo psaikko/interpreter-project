@@ -173,59 +173,23 @@ namespace InterpreterProject.Languages
             return grammar;
         }
 
-        public Program TrimParseTree(Parser.ParseTree parseTree)
+        public Program TrimParseTree(Tree<Parser.IParseValue> parseTree)
         {
+
             // first remove unnecessary symbols ; : .. ( ) := and epsilons
-            Stack<Parser.Tree> treeStack = new Stack<Parser.Tree>();
-            treeStack.Push(parseTree.root);
             String[] pruneTokens = {"(",")",";",":","..",":=","var","in","for","end"};
 
-            while (treeStack.Count > 0)
-            {
-                Parser.Tree currentNode = treeStack.Pop();
-                IList<Parser.INode> pruneList = new List<Parser.INode>();
-                foreach (Parser.INode node in currentNode.children)
-                {
-                    if (node is Parser.Tree)
-                    {
-                        treeStack.Push(node as Parser.Tree);
-                    }                        
-                    else
-                    {
-                        Parser.Leaf leaf = node as Parser.Leaf;
-                        if (leaf.term == Terminal.EPSILON ||
-                            pruneTokens.Contains(leaf.token.lexeme))
-                        {
-                            pruneList.Add(node);
-                        } 
-                    }
-                }
-                foreach (Parser.INode node in pruneList)
-                    currentNode.children.Remove(node);
-            }
+            Predicate<Parser.IParseValue> isUnnecessaryTerminal = 
+                v => (v is Parser.TerminalValue) ? pruneTokens.Contains((v as Parser.TerminalValue).token.lexeme) : false;
+
+            parseTree.RemoveNodesByValue(isUnnecessaryTerminal);
 
             // remove any tree nodes with no children
-            treeStack = new Stack<Parser.Tree>();
-            treeStack.Push(parseTree.root);
+            Predicate<INode<Parser.IParseValue>> isEmptyNonterminal =
+                v => (v is Tree<Parser.IParseValue>) ? (v as Tree<Parser.IParseValue>).children.Count == 0 : false;
 
-            while (treeStack.Count > 0)
-            {
-                Parser.Tree currentNode = treeStack.Pop();
-                IList<Parser.INode> pruneList = new List<Parser.INode>();
-                foreach (Parser.INode node in currentNode.children)
-                {
-                    if (node is Parser.Tree)
-                    {
-                        Parser.Tree subtree = node as Parser.Tree;
-                        if (subtree.children.Count == 0)
-                            pruneList.Add(node);
-                        else
-                            treeStack.Push(subtree);
-                    }
-                }
-                foreach (Parser.INode node in pruneList)
-                    currentNode.children.Remove(node);
-            }
+            parseTree.RemoveNodes(isEmptyNonterminal);
+
 
             // refactor
             // STMTS->STMTS_HEAD STMTS_TAIL to STMTS->(STMT)+
@@ -236,79 +200,36 @@ namespace InterpreterProject.Languages
                 vars["statements_head"], vars["statements_tail"], vars["unary_operation"], 
                 vars["binary_operation"], vars["declaration_assignment"], vars["operand"] };
 
-            // todo: refactor while to inside stack loop
-            bool converged = false;
-            while (!converged)
-            {
-                converged = true;
-                treeStack = new Stack<Parser.Tree>();
-                treeStack.Push(parseTree.root);
+            Predicate<Parser.IParseValue> isUnnecessaryNonterminal =
+                v => (v is Parser.NonterminalValue) ? pruneVariables.Contains((v as Parser.NonterminalValue).var) : false;
 
-                while (treeStack.Count > 0)
-                {
-                    Parser.Tree currentNode = treeStack.Pop();
-                    List<Parser.INode> pruneList = new List<Parser.INode>();
-                    List<List<Parser.INode>> replaceList = new List<List<Parser.INode>>();
-                    foreach (Parser.INode node in currentNode.children)
-                    {
-                        if (node is Parser.Tree)
-                        {
-                            Parser.Tree subtree = node as Parser.Tree;
-                            if (pruneVariables.Contains(subtree.var))
-                            {
-                                pruneList.Add(subtree);
-                                replaceList.Add(subtree.children);
-                                foreach (Parser.INode subtreeNode in subtree.children)
-                                {
-                                    if (subtreeNode is Parser.Tree)
-                                        treeStack.Push(subtreeNode as Parser.Tree);
-                                }
-                            }
-                            else
-                            {
-                                treeStack.Push(subtree);
-                            }
-                        }
-                    }
+            parseTree.RemoveNodesByValue(isUnnecessaryNonterminal);
 
-                    for (int i = 0; i < pruneList.Count; i++)
-                    {
-                        converged = false;
-                        int index = currentNode.children.IndexOf(pruneList[i]);
-                        currentNode.children.RemoveAt(index);
-                        currentNode.children.InsertRange(index, replaceList[i]);
-                    }
-                }
-            }
-             
+            Program prog = new Program();
+            prog.AST = parseTree;
+
             // TODO
 
             // find declarations
-            treeStack = new Stack<Parser.Tree>();
-            treeStack.Push(parseTree.root);
-
-            while (treeStack.Count > 0)
+            foreach (INode<Parser.IParseValue> node in parseTree.Nodes())
             {
-                Parser.Tree currentNode = treeStack.Pop();
-                foreach (Parser.INode node in currentNode.children)
+                if (node is Tree<Parser.NonterminalValue>)
                 {
-                    if (node is Parser.Tree)
+                    Tree<Parser.NonterminalValue> subtree = node as Tree<Parser.NonterminalValue>;
+                    if (subtree.GetValue().var == vars["declaration"])
                     {
-                        Parser.Tree subtree = node as Parser.Tree;
-                        if (subtree.var == vars["declaration"])
-                        {
-                            string indentifier = (subtree.children[0].GetSymbol() as Terminal).lexeme;
-                            string type = (subtree.children[1].GetSymbol() as Terminal).lexeme;
-                            Position pos = (subtree.children[1] as Parser.Leaf).token.pos;
-                        }
+                        Leaf<Parser.TerminalValue> idLeaf = (subtree.children[0] as Leaf<Parser.TerminalValue>);
+                        Leaf<Parser.TerminalValue> typeLeaf = (subtree.children[1] as Leaf<Parser.TerminalValue>);
+
+                        string identifier = idLeaf.GetValue().token.lexeme;
+                        Token t = typeLeaf.GetValue().token;
+                        if (prog.declarations.ContainsKey(identifier))
+                            prog.errors.Add(new SemanticError(t, identifier + " multiply defined"));
                         else
-                        {
-                            treeStack.Push(subtree);
-                        }
+                            prog.declarations.Add(identifier, t);
                     }
                 }
             }
-
 
             // static type checks for assignment, operations
 
@@ -320,19 +241,25 @@ namespace InterpreterProject.Languages
             return null;
         }
 
-        public void ExecuteProgram(Program program, TextReader stdin, TextWriter stdout)
-        {
-            
-            
-            throw new NotImplementedException();            
-        }
 
         public class Program
         {
-            public Parser.Tree AST;
+            public Tree<Parser.IParseValue> AST;
             public Dictionary<string, Token> declarations = new Dictionary<string, Token>();
-            public List<IError> errors;
-             
+            public List<IError> errors = new List<IError>();    
+    
+            public bool Execute(TextReader stdin, TextWriter stdout)
+            {
+                if (errors.Count > 0)
+                {
+                    foreach (IError err in errors)
+                        stdout.WriteLine(err.GetMessage());
+                    return false;
+                }
+                
+
+                throw new NotImplementedException();
+            }
         }   
     }
 }
