@@ -179,8 +179,8 @@ namespace InterpreterProject.Languages
             // first remove unnecessary symbols ; : .. ( ) := and epsilons
             String[] pruneTokens = {"(",")",";",":","..",":=","var","in","for","end"};
 
-            Predicate<Parser.IParseValue> isUnnecessaryTerminal = 
-                v => (v is Parser.TerminalValue) ? pruneTokens.Contains((v as Parser.TerminalValue).token.lexeme) : false;
+            Predicate<Parser.IParseValue> isUnnecessaryTerminal =
+                v => (v is Parser.TerminalValue) ? (v as Parser.TerminalValue).token == null || pruneTokens.Contains((v as Parser.TerminalValue).token.lexeme) : false;
 
             parseTree.RemoveNodesByValue(isUnnecessaryTerminal);
 
@@ -210,19 +210,20 @@ namespace InterpreterProject.Languages
 
             // TODO
 
-            // find declarations
+            // find declarations, produce errors if identifier declared multiple times
             foreach (INode<Parser.IParseValue> node in parseTree.Nodes())
             {
-                if (node is Tree<Parser.NonterminalValue>)
+                if (node is Tree<Parser.IParseValue>)
                 {
-                    Tree<Parser.NonterminalValue> subtree = node as Tree<Parser.NonterminalValue>;
-                    if (subtree.GetValue().var == vars["declaration"])
+                    Tree<Parser.IParseValue> subtree = node as Tree<Parser.IParseValue>;
+                    Parser.NonterminalValue subtreeValue = node.GetValue() as Parser.NonterminalValue;
+                    if (subtreeValue.var == vars["declaration"])
                     {
-                        Leaf<Parser.TerminalValue> idLeaf = (subtree.children[0] as Leaf<Parser.TerminalValue>);
-                        Leaf<Parser.TerminalValue> typeLeaf = (subtree.children[1] as Leaf<Parser.TerminalValue>);
+                        Leaf<Parser.IParseValue> idLeaf = (subtree.children[0] as Leaf<Parser.IParseValue>);
+                        Leaf<Parser.IParseValue> typeLeaf = (subtree.children[1] as Leaf<Parser.IParseValue>);
 
-                        string identifier = idLeaf.GetValue().token.lexeme;
-                        Token t = typeLeaf.GetValue().token;
+                        string identifier = (idLeaf.GetValue() as Parser.TerminalValue).token.lexeme;
+                        Token t = (typeLeaf.GetValue() as Parser.TerminalValue).token;
                         if (prog.declarations.ContainsKey(identifier))
                             prog.errors.Add(new SemanticError(t, identifier + " multiply defined"));
                         else
@@ -238,7 +239,7 @@ namespace InterpreterProject.Languages
 
             Console.WriteLine(parseTree);
 
-            return null;
+            return prog;
         }
 
 

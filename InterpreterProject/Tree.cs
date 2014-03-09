@@ -101,8 +101,14 @@ namespace InterpreterProject
         {
             Stack<Tree<T>> treeStack = new Stack<Tree<T>>();
 
+            treeStack.Push(this);
+
+
             while (treeStack.Count > 0)
             {
+                //Console.WriteLine("AAAAAAAAAAaaaaaaaaaaaa");
+
+
                 Tree<T> currentNode = treeStack.Pop();
                 List<INode<T>> pruneList = new List<INode<T>>();
                 List<List<INode<T>>> replaceList = new List<List<INode<T>>>();
@@ -111,6 +117,7 @@ namespace InterpreterProject
                 {
                     if (pred(node))
                     {
+                        
                         pruneList.Add(node);
                         if (node is Tree<T>)
                             replaceList.Add((node as Tree<T>).children);
@@ -120,7 +127,6 @@ namespace InterpreterProject
                 }
 
                 bool backtrack = false; // if we remove a child that is a subtree
-
 
                 for (int i = 0; i < pruneList.Count; i++)
                 {
