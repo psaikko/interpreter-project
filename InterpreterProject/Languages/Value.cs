@@ -10,6 +10,18 @@ namespace InterpreterProject.Languages
 
     public class Value
     {
+        private static readonly string[] escapeStrings = 
+            new string[] { "\\a", "\\b", "\\f", "\\n", "\\r", "\\t", "\\v", "\\\\", "\\'", "\\\"", "\\0" };
+        private static readonly string[] escapeChars = 
+            new string[] { "\a", "\b", "\f", "\n", "\r", "\t", "\v", "\\", "\'", "\"", "\0" };
+
+        private static string Unescape(string s)
+        {
+            for (int i = 0; i < escapeStrings.Length; i++)
+                s = s.Replace(escapeStrings[i], escapeChars[i]);
+            return s;
+        }
+
         public static ValueType TypeFromString(string s)
         {
             ValueType type;
@@ -47,7 +59,7 @@ namespace InterpreterProject.Languages
             switch (typeString)
             {
                 case "string":
-                    this.value = valueString;
+                    this.value = Unescape(valueString.Substring(1, valueString.Length - 2));
                     break;
                 case "int":
                     this.value = Int32.Parse(valueString);
@@ -59,18 +71,18 @@ namespace InterpreterProject.Languages
                     throw new Exception("UNEXPECTED TYPE STRING");
             }        
         }
-        public Value(ValueType type, string value)
+        public Value(ValueType type, string valueString)
         {
             switch (type)
             {
                 case ValueType.String:
-                    this.value = value;
+                    this.value = Unescape(valueString.Substring(1, valueString.Length - 2));
                     break;
                 case ValueType.Integer:
-                    this.value = Int32.Parse(value);
+                    this.value = Int32.Parse(valueString);
                     break;
                 case ValueType.Boolean:
-                    this.value = Int32.Parse(value) != 0;
+                    this.value = Int32.Parse(valueString) != 0;
                     break;
             }
         }
@@ -99,7 +111,7 @@ namespace InterpreterProject.Languages
         }
         public Value(string value)
         {
-            this.value = value;
+            this.value = Unescape(value.Substring(1, value.Length - 2));
         }
 
         public int IntValue()
