@@ -58,7 +58,7 @@ namespace InterpreterProjectTest
 
             firstSet = grammar.First(vars["expression"]);
             Assert.IsTrue(firstSet.SetEquals(new Terminal[] { 
-                terms["unary_operator"], terms["integer"], terms["string"], terms["identifier"], terms["("] }));
+                terms["unary_operator"], terms["int"], terms["string"], terms["identifier"], terms["("] }));
 
             firstSet = grammar.First(vars["unary_operation"]);
             Assert.IsTrue(firstSet.SetEquals(new Terminal[] { 
@@ -70,7 +70,7 @@ namespace InterpreterProjectTest
 
             firstSet = grammar.First(vars["operand"]);
             Assert.IsTrue(firstSet.SetEquals(new Terminal[] { 
-                terms["integer"], terms["string"], terms["identifier"], terms["("] }));
+                terms["int"], terms["string"], terms["identifier"], terms["("] }));
         }
 
         [TestMethod]
@@ -146,7 +146,7 @@ namespace InterpreterProjectTest
             Assert.AreEqual(2, ptree.SymbolCount(
                 s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal) == Terminal.EPSILON));
             Assert.AreEqual(3, ptree.SymbolCount(
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
             Assert.AreEqual(2, ptree.SymbolCount(
                 s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["binary_op"]));
             Assert.AreEqual(21, ptree.SymbolCount(
@@ -156,12 +156,12 @@ namespace InterpreterProjectTest
                 s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == miniPL.GetGrammarNonterminals()["binary_operation"]));
             Assert.AreEqual(2, ptree.SymbolCount(
                 s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == miniPL.GetGrammarNonterminals()["statement"]));
-            Assert.IsTrue(ptree.DepthContains(12, 
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
-            Assert.IsTrue(ptree.DepthContains(11, 
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
-            Assert.IsTrue(ptree.DepthContains(8, 
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+            Assert.IsTrue(ptree.DepthContains(12,
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
+            Assert.IsTrue(ptree.DepthContains(11,
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
+            Assert.IsTrue(ptree.DepthContains(8,
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
         }
 
         [TestMethod]
@@ -250,7 +250,7 @@ namespace InterpreterProjectTest
             Assert.AreEqual(2, ptree.SymbolCount(
                 s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal) == Terminal.EPSILON));
             Assert.AreEqual(3, ptree.SymbolCount(
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
             Assert.AreEqual(2, ptree.SymbolCount(
                 s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["binary_op"]));
             Assert.AreEqual(21, ptree.SymbolCount(
@@ -260,11 +260,11 @@ namespace InterpreterProjectTest
             Assert.AreEqual(2, ptree.SymbolCount(
                 s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == miniPL.GetGrammarNonterminals()["statement"]));
             Assert.IsTrue(ptree.DepthContains(12,
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
             Assert.IsTrue(ptree.DepthContains(11,
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
             Assert.IsTrue(ptree.DepthContains(8,
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["integer"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
         }
 
         [TestMethod]

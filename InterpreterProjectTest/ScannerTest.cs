@@ -218,8 +218,8 @@ namespace InterpreterProjectTest
                           "print X;";
 
             string[] expectedTokens = { "var", "X", ":", "int", ":=", "4", "+", "(", "6", "*", "2", ")", ";", "print", "X", ";" };
-            string[] expectedTypeNames = { "keyword", "identifier", "colon", "type", "assignment", "integer", "binary op", "left paren",
-                                           "integer", "binary op", "integer", "right paren", "semicolon", "keyword", "identifier", "semicolon"};
+            string[] expectedTypeNames = { "keyword", "identifier", "colon", "type", "assignment", "int", "binary op", "left paren",
+                                           "int", "binary op", "int", "right paren", "semicolon", "keyword", "identifier", "semicolon"};
 
             Scanner sc = MiniPL.GetInstance().GetScanner();
             List<Token> tokens = new List<Token>(sc.Tokenize(text, yieldEOF:false));
@@ -254,11 +254,11 @@ namespace InterpreterProjectTest
                                         "end","for",";",
                                         "assert","(","x","=","nTimes",")",";" };
 
-            string[] expectedTypeNames = { "keyword", "identifier", "colon", "type", "assignment", "integer", "semicolon",
+            string[] expectedTypeNames = { "keyword", "identifier", "colon", "type", "assignment", "int", "semicolon",
                                            "keyword","string","semicolon",
                                            "keyword","identifier","semicolon",
                                            "keyword","identifier","colon","type", "semicolon",
-                                           "keyword","identifier","keyword","integer","dots","identifier","binary op","integer","keyword",
+                                           "keyword","identifier","keyword","int","dots","identifier","binary op","int","keyword",
                                            "keyword","identifier","semicolon",
                                            "keyword","string","semicolon",
                                            "keyword","keyword","semicolon",
@@ -301,9 +301,9 @@ namespace InterpreterProjectTest
             string[] expectedTypeNames = { "keyword", "string", "semicolon",
                                            "keyword", "identifier", "colon", "type", "semicolon",
                                            "keyword", "identifier", "semicolon",
-                                           "keyword", "identifier", "colon", "type", "assignment", "integer", "semicolon",
+                                           "keyword", "identifier", "colon", "type", "assignment", "int", "semicolon",
                                            "keyword", "identifier", "colon", "type", "semicolon",
-                                           "keyword", "identifier", "keyword", "integer", "dots", "identifier", "keyword",
+                                           "keyword", "identifier", "keyword", "int", "dots", "identifier", "keyword",
                                            "identifier", "assignment", "identifier", "binary op", "identifier", "semicolon",
                                            "keyword", "keyword", "semicolon",
                                            "keyword", "string", "semicolon",

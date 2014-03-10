@@ -32,7 +32,7 @@ namespace InterpreterProjectTest
             Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
             List<IError> errors = ps.GetErrors();
 
-            MiniPL.Program prog = miniPL.TrimParseTree(ptree);
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree);
 
             Assert.AreEqual(3, prog.declarations.Count);
         }
@@ -48,8 +48,8 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
             Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
-
-            MiniPL.Program prog = miniPL.TrimParseTree(ptree);
+            
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree);
 
             foreach (IError err in prog.errors)
                 Console.WriteLine(err.GetMessage());
@@ -68,14 +68,12 @@ namespace InterpreterProjectTest
             Parser ps = miniPL.GetParser();
             Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
 
-            MiniPL.Program prog = miniPL.TrimParseTree(ptree);
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree);
 
             foreach (IError err in prog.errors)
                 Console.WriteLine(err.GetMessage());
 
             Assert.AreEqual(1, prog.errors.Count);
         }
-
-
     }
 }

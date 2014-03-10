@@ -10,7 +10,7 @@ namespace InterpreterProject
     {
         private T value;
         public Leaf(T value) { this.value = value; }
-        public T GetValue() { return value; }
+        public virtual T GetValue() { return value; }
 
         public override string ToString()
         {

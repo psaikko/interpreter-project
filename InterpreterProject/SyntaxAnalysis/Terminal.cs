@@ -13,7 +13,7 @@ namespace InterpreterProject.SyntaxAnalysis
         public static readonly Terminal EOF = new Terminal(TokenType.EOF);
 
         public readonly TokenType tokenType = null;
-        public readonly string lexeme = null;
+        public readonly string matchedString = null;
 
         public Terminal(TokenType tokenType)
         {
@@ -22,7 +22,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
         public Terminal(string lexeme)
         {
-            this.lexeme = lexeme;
+            this.matchedString = lexeme;
         }
 
         public bool Matches(Token t)
@@ -30,7 +30,7 @@ namespace InterpreterProject.SyntaxAnalysis
             if (tokenType != null)
                 return t.tokenType == tokenType;
             else
-                return t.lexeme == lexeme;
+                return t.lexeme == matchedString;
         }
 
         public override string ToString()
@@ -38,7 +38,7 @@ namespace InterpreterProject.SyntaxAnalysis
             if (tokenType != null)
                 return "<" + tokenType.name + ">";
             else
-                return "\"" + lexeme + "\"";
+                return "\"" + matchedString + "\"";
         }
     }
 }

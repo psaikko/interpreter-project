@@ -56,7 +56,7 @@ namespace InterpreterProject.Languages
             Regex reInteger = Regex.Range('0', '9').Plus();
 
             // Define token types
-            tts["integer"] = new TokenType("integer", reInteger);
+            tts["int"] = new TokenType("int", reInteger);
             tts["whitespace"] = new TokenType("whitespace", reWhitespace, priority: TokenType.Priority.Whitespace);
             tts["string"] = new TokenType("string", reString);
             tts["binary_op"] = new TokenType("binary op", reBinaryOperator);
@@ -96,7 +96,7 @@ namespace InterpreterProject.Languages
             terms["var"] = new Terminal("var");
             terms["type"] = new Terminal(tts["type"]);
             terms["string"] = new Terminal(tts["string"]);
-            terms["integer"] = new Terminal(tts["integer"]);
+            terms["int"] = new Terminal(tts["int"]);
             terms[")"] = new Terminal(")");
             terms["("] = new Terminal("(");
             terms[".."] = new Terminal("..");
@@ -134,7 +134,7 @@ namespace InterpreterProject.Languages
             grammar.AddProductionRule(vars["binary_operation"], new ISymbol[] { terms["binary_operator"], vars["operand"] });
             grammar.AddProductionRule(vars["binary_operation"], new ISymbol[] { Terminal.EPSILON });
 
-            grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["integer"] });
+            grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["int"] });
             grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["string"] });
             grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["identifier"] });
             grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["("], vars["expression"], terms[")"] });
@@ -173,9 +173,8 @@ namespace InterpreterProject.Languages
             return grammar;
         }
 
-        public Program TrimParseTree(Tree<Parser.IParseValue> parseTree)
+        public Runnable ProcessParseTree(Tree<Parser.IParseValue> parseTree)
         {
-
             // first remove unnecessary symbols ; : .. ( ) := and epsilons
             String[] pruneTokens = {"(",")",";",":","..",":=","var","in","for","end"};
 
@@ -205,12 +204,11 @@ namespace InterpreterProject.Languages
 
             parseTree.RemoveNodesByValue(isUnnecessaryNonterminal);
 
-            Program prog = new Program();
-            prog.AST = parseTree;
+            Runnable prog = new Runnable();
 
-            // TODO
+            Console.WriteLine(parseTree);
 
-            // find declarations, produce errors if identifier declared multiple times
+            // find declarations, produce errors if identifier declared multiple times         
             foreach (INode<Parser.IParseValue> node in parseTree.Nodes())
             {
                 if (node is Tree<Parser.IParseValue>)
@@ -225,12 +223,27 @@ namespace InterpreterProject.Languages
                         Token typeToken = (typeLeaf.GetValue() as Parser.TerminalValue).token;
 
                         string identifier = idToken.lexeme;
-                        Position pos = idToken.pos;
-                        string type = typeToken.lexeme;
+                        ValueType type = Value.TypeFromString(typeToken.lexeme);
+
+                        Statement.DeclarationStmt declaration;
+                        switch (subtree.children.Count)
+                        {
+                            case 2: // simple declaration
+                                declaration = new Statement.DeclarationStmt(identifier, type, idToken);
+                                break;
+                            case 3: // declaration with assignment
+                                Leaf<Parser.IParseValue> valueLeaf = (subtree.children[2] as Leaf<Parser.IParseValue>);
+                                Expression expr = Expression.FromTreeNode(subtree.children[2], terms, vars);
+                                declaration = new Statement.DeclarationStmt(identifier, type, idToken, expr);
+                                break;
+                            default:
+                                throw new Exception("BAD AST STRUCTURE");
+                        }
+
                         if (prog.declarations.ContainsKey(identifier))
-                            prog.errors.Add(new SemanticError(idToken, identifier + " multiply defined"));
+                            prog.errors.Add(new SemanticError(idToken, identifier+" multiply defined"));
                         else
-                            prog.declarations[identifier] = new Declaration(identifier, pos, type);
+                            prog.declarations[identifier] = declaration;                                     
                     }
                 }
             }
@@ -250,50 +263,57 @@ namespace InterpreterProject.Languages
 
                         if (!prog.declarations.ContainsKey(identifier))
                             prog.errors.Add(new SemanticError(leafToken, identifier + " never defined"));
-                        else if (idPosition.CompareTo(prog.declarations[identifier].position) < 0)  
+                        else if (idPosition.CompareTo(prog.declarations[identifier].token.pos) < 0)  
                             prog.errors.Add(new SemanticError(leafToken, identifier + " not defined before use"));
                     }
                 }
             }
 
-            // scopes: mini-pl only has single global scope but need to check that 
             // for-loop control variables not assigned to inside for loop
 
-            Console.WriteLine(parseTree);
+
+
+            // add statements to runnable
+
+            Tree<Parser.IParseValue> statementListNode = parseTree.children[0] as Tree<Parser.IParseValue>;
+            foreach (INode<Parser.IParseValue> statementNode in statementListNode.children)
+                prog.statements.Add(Statement.FromTreeNode(statementNode, terms, vars));
 
             return prog;
-        }
+        }        
 
-        public class Declaration
+        public class Runnable
         {
-            public string identifier;
-            public Position position;
-            public string type;
-            public Declaration(string identifier, Position position, string type)
-            {
-                this.identifier = identifier;
-                this.position = position;
-                this.type = type;
-            }
-        }
-
-        public class Program
-        {
-            public Tree<Parser.IParseValue> AST;
-            public Dictionary<string, Declaration> declarations = new Dictionary<string, Declaration>();
+            public List<Statement> statements = new List<Statement>();
+            public Dictionary<string, Statement.DeclarationStmt> declarations = new Dictionary<string, Statement.DeclarationStmt>();
+            public Dictionary<string, Value> values = new Dictionary<string, Value>();
             public List<IError> errors = new List<IError>();    
     
             public bool Execute(TextReader stdin, TextWriter stdout)
             {
+
                 if (errors.Count > 0)
                 {
                     foreach (IError err in errors)
                         stdout.WriteLine(err.GetMessage());
                     return false;
                 }
-                
 
-                throw new NotImplementedException();
+                Console.WriteLine("Start execution");
+
+                foreach (Statement stmt in statements)
+                {                                    
+                    RuntimeError err = stmt.Execute(this, stdin, stdout);
+                    if (err != null)
+                    {
+                        stdout.WriteLine(err.GetMessage());
+                        return false;
+                    }
+                }
+
+                Console.WriteLine("\nStop execution");
+
+                return true;
             }
         }   
     }

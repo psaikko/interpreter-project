@@ -58,9 +58,13 @@
   <ItemGroup>
     <Compile Include="Errors\IError.cs" />
     <Compile Include="Errors\LexicalError.cs" />
+    <Compile Include="Errors\RuntimeError.cs" />
     <Compile Include="Errors\SemanticError.cs" />
     <Compile Include="Errors\SyntaxError.cs" />
     <Compile Include="INode.cs" />
+    <Compile Include="Languages\Expression.cs" />
+    <Compile Include="Languages\Statement.cs" />
+    <Compile Include="Languages\Value.cs" />
     <Compile Include="Leaf.cs" />
     <Compile Include="LexicalAnalysis\Position.cs" />
     <Compile Include="SyntaxAnalysis\CFG.cs" />
