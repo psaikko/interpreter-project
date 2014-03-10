@@ -111,7 +111,7 @@ namespace InterpreterProject.Languages
         }
         public Value(string value)
         {
-            this.value = Unescape(value.Substring(1, value.Length - 2));
+            this.value = value;
         }
 
         public int IntValue()

@@ -14,8 +14,7 @@ namespace InterpreterProject
     {
         static void Main(string[] args)
         {
-            string text = "var X : int := 4 + (6 * 2);\n" +
-                          "print X;";
+            string text = "var name : string; print \"name?! \"; read name; print \"Hello \"; print name; print \"\\n\";";
 
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
@@ -25,7 +24,6 @@ namespace InterpreterProject
 
             MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree);
             prog.Execute(Console.In, Console.Out);
-
 
             Console.ReadLine();
         }

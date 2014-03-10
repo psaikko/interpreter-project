@@ -109,8 +109,8 @@ namespace InterpreterProject.Languages
                             Leaf<Parser.IParseValue> secondChild = 
                                 subtree.children[1] as Leaf<Parser.IParseValue>;
                             if (secondChild == null) throw new Exception("MALFORMED AST");
-                            Parser.TerminalValue secondTerm = 
-                                firstChild.GetValue() as Parser.TerminalValue;
+                            Parser.TerminalValue secondTerm =
+                                secondChild.GetValue() as Parser.TerminalValue;
                             if (secondTerm == null) throw new Exception("MALFORMED AST");
                             return new ReadStmt(secondTerm.token.lexeme, firstTerm.token);
                         default:
@@ -150,7 +150,7 @@ namespace InterpreterProject.Languages
                     if (!Int32.TryParse(input, out inputInt)) return new RuntimeError(token, "expected to read integer");
                     context.values[identifier] = new Value(inputInt);
                 }
-                else if (context.declarations[identifier].type == ValueType.Integer)
+                else if (context.declarations[identifier].type == ValueType.String)
                 {
                     context.values[identifier] = new Value(input);
                 }
