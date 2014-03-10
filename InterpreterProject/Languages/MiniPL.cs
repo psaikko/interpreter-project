@@ -176,7 +176,7 @@ namespace InterpreterProject.Languages
         public Runnable ProcessParseTree(Tree<Parser.IParseValue> parseTree)
         {
             // first remove unnecessary symbols ; : .. ( ) := and epsilons
-            String[] pruneTokens = {"(",")",";",":","..",":=","var","in","for","end"};
+            String[] pruneTokens = {"(",")",";",":","..",":=","var","in","for","end","do"};
 
             Predicate<Parser.IParseValue> isUnnecessaryTerminal =
                 v => (v is Parser.TerminalValue) ? (v as Parser.TerminalValue).token == null || pruneTokens.Contains((v as Parser.TerminalValue).token.lexeme) : false;
