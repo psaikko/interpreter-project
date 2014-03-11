@@ -57,7 +57,7 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Execute_ForTest()
         {
-            string program = "var i : int; for i in 0..10 do print i; end for;";
+            string program = "var i : int; for i in 0..9 do print i; end for;";
             string input = "";
             string output = RunWithInput(program, input);
             Console.WriteLine(output);
@@ -152,6 +152,51 @@ namespace InterpreterProjectTest
             string input = "";
             string output = RunWithInput(program, input);
             Assert.AreEqual("", output);
+        }
+
+        [TestMethod]
+        public void Execute_SampleProgram1Test()
+        {
+            string program = "var X : int := 4 + (6 * 2);\n" +
+                             "print X;";
+            string input = "";
+            string output = RunWithInput(program, input);
+            Assert.AreEqual("16", output);
+        }
+
+        [TestMethod]
+        public void Execute_SampleProgram2Test()
+        {
+            string program = "var nTimes : int := 0;\n" +
+                             "print \"How many times?\";\n" +
+                             "read nTimes;\n" +
+                             "var x : int;\n" +
+                             "for x in 0..nTimes-1 do\n" +
+                             "     print x;\n" +
+                             "     print \" : Hello, World!\n\";\n" +
+                             "end for;\n" +
+                             "assert (x = (nTimes-1));";
+            string input = "3";
+            string output = RunWithInput(program, input);
+            Assert.AreEqual("How many times?0 : Hello, World!\n1 : Hello, World!\n2 : Hello, World!\n", output);
+        }
+
+        [TestMethod]
+        public void Execute_SampleProgram3Test()
+        {
+            string program = "print \"Give a number\";\n" +
+                             "var n : int;\n" +
+                             "read n;\n" +
+                             "var f : int := 1;\n" +
+                             "var i : int;\n" +
+                             "for i in 1..n do\n" +
+                             "    f := f * i;\n" +
+                             "end for;\n" +
+                             "print \"The result is: \";\n" +
+                             "print f;";
+            string input = "4";
+            string output = RunWithInput(program, input);
+            Assert.AreEqual("Give a numberThe result is: 24", output);
         }
     }
 }
