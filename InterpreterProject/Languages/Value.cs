@@ -124,7 +124,10 @@ namespace InterpreterProject.Languages
         }
         public bool BooleanValue()
         {
-            return (bool)value;
+            if (Type() == ValueType.Boolean)
+                return (bool)value;
+            else
+                return 0 != (int)value;
         }
     } 
 }
