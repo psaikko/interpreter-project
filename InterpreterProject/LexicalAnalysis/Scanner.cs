@@ -9,7 +9,7 @@ namespace InterpreterProject.LexicalAnalysis
 {
     public class Scanner
     {
-        static bool log = false;
+        static bool log = true;
 
         TokenAutomaton automaton;
         
@@ -36,12 +36,16 @@ namespace InterpreterProject.LexicalAnalysis
                 }
             }
 
+            if (log) Console.WriteLine("SCANNER: feeding EOF");
             automaton.FeedCharacter(TokenAutomaton.EOF);
 
-            while ((t = automaton.GetToken()) != null && IsRelevant(t, yieldEOF))
+            while ((t = automaton.GetToken()) != null)
             {
-                if (log) Console.WriteLine("SCANNER: yield token " + t);
-                yield return t;
+                if (IsRelevant(t, yieldEOF))
+                {
+                    if (log) Console.WriteLine("SCANNER: yield token " + t);
+                    yield return t;
+                }             
             }
         }
 
