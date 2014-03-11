@@ -267,7 +267,7 @@ namespace InterpreterProject.Languages
                 int start = startVal.Evaluate(context).IntValue();
                 int end = endVal.Evaluate(context).IntValue();
 
-                for (int i = start; i < end; i++)
+                for (int i = start; i <= end; i++)
                 {
                     context.values[identifier] = new Value(i);
                     foreach (Statement stmt in block)
