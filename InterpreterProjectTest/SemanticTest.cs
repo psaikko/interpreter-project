@@ -30,9 +30,8 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
             Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
-            List<IError> errors = ps.GetErrors();
 
-            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree);
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
 
             Assert.AreEqual(3, prog.declarations.Count);
         }
@@ -47,9 +46,17 @@ namespace InterpreterProjectTest
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
-            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
-            
-            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree);
+
+            List<Token> tokens = new List<Token>();
+            foreach (Token t in sc.Tokenize(text))
+            {
+                tokens.Add(t);
+                Console.WriteLine(t);
+            }
+
+            Tree<Parser.IParseValue> ptree = ps.Parse(tokens);
+
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
 
             foreach (IError err in prog.errors)
                 Console.WriteLine(err.GetMessage());
@@ -68,7 +75,7 @@ namespace InterpreterProjectTest
             Parser ps = miniPL.GetParser();
             Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
 
-            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree);
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
 
             foreach (IError err in prog.errors)
                 Console.WriteLine(err.GetMessage());
