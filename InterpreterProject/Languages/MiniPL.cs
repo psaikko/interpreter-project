@@ -173,8 +173,20 @@ namespace InterpreterProject.Languages
             return grammar;
         }
 
-        public Runnable ProcessParseTree(Tree<Parser.IParseValue> parseTree)
+        public Runnable ProcessParseTree(Tree<Parser.IParseValue> parseTree, IEnumerable<IError> parseErrors)
         {
+            Runnable prog = new Runnable();
+            bool isValidParseTree = true;
+            foreach (IError err in parseErrors)
+            {
+                prog.errors.Add(err);
+                if (err is SyntaxError)
+                    isValidParseTree = false;
+            }
+            // can't construct AST if parse tree is bad
+            if (!isValidParseTree)
+                return prog;
+
             // first remove unnecessary symbols ; : .. ( ) := and epsilons
             String[] pruneTokens = {"(",")",";",":","..",":=","var","in","for","end","do"};
 
@@ -204,7 +216,7 @@ namespace InterpreterProject.Languages
 
             parseTree.RemoveNodesByValue(isUnnecessaryNonterminal);
 
-            Runnable prog = new Runnable();
+            
 
             Console.WriteLine(parseTree);
 
@@ -311,7 +323,7 @@ namespace InterpreterProject.Languages
                     }
                 }
 
-                Console.WriteLine("\nStop execution");
+                Console.WriteLine("Stop execution");
 
                 return true;
             }
