@@ -124,7 +124,16 @@ namespace InterpreterProject.SyntaxAnalysis
         }
 
         private void Synchronize(Stack<ISymbol> symbolStack, IEnumerator<Token> tokenStream)
-        {            
+        {           
+            // unexpected end of file - no sync possible
+            if (tokenStream.Current.tokenType == TokenType.EOF)
+            {
+                while (symbolStack.Count > 0)
+                    symbolStack.Pop();
+                Console.WriteLine("PARSE: Unexpected EOF");
+                return;
+            }
+
             while (!syncTerm.Matches(tokenStream.Current))
             {
                 Console.WriteLine("PARSE: Discarding token " + tokenStream.Current);
