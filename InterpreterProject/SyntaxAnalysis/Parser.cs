@@ -82,13 +82,20 @@ namespace InterpreterProject.SyntaxAnalysis
                         Console.WriteLine("PARSE: Error");
                         Console.WriteLine("PARSE: Panic mode");
                         errors.Add(new SyntaxError(tokenStream.Current));
-                        Synchronize(symbolStack, tokenStream);     
+                        Synchronize(symbolStack, treeStack, tokenStream);     
                     }
                 }
                 else // top of stack is a nonterminal
                 {
                     Nonterminal var = symbolStack.Pop() as Nonterminal;
-                    Tree<IParseValue> subtree = treeStack.Pop() as Tree<IParseValue>;
+                    INode<IParseValue> popped = treeStack.Pop();
+                    Tree<IParseValue> subtree = popped as Tree<IParseValue>;
+
+                    // or maybe we've encountered some syntax error that has caused a strange state ...
+                    if (subtree == null)
+                    {
+                        
+                    }
 
                     ISymbol[] production = table.Get(var, tokenStream.Current);
 
@@ -98,7 +105,7 @@ namespace InterpreterProject.SyntaxAnalysis
                         Console.WriteLine("PARSE: Error");
                         Console.WriteLine("PARSE: Panic mode");
                         errors.Add(new SyntaxError(tokenStream.Current));
-                        Synchronize(symbolStack, tokenStream);
+                        Synchronize(symbolStack, treeStack, tokenStream);
                     }
                     else
                     {
@@ -123,7 +130,7 @@ namespace InterpreterProject.SyntaxAnalysis
             return parseTree;
         }
 
-        private void Synchronize(Stack<ISymbol> symbolStack, IEnumerator<Token> tokenStream)
+        private void Synchronize(Stack<ISymbol> symbolStack, Stack<INode<IParseValue>> treeStack, IEnumerator<Token> tokenStream)
         {           
             // unexpected end of file - no sync possible
             if (tokenStream.Current.tokenType == TokenType.EOF)
@@ -145,6 +152,7 @@ namespace InterpreterProject.SyntaxAnalysis
             {
                 Console.WriteLine("PARSE: Discarding symbol " + symbolStack.Peek());
                 symbolStack.Pop();
+                treeStack.Pop();
             }             
         }
 
