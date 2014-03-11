@@ -191,23 +191,23 @@ namespace InterpreterProject.Languages
                     case '+':
                         if (rhs.Type(context) != ValueType.Integer || lhs.Type(context) != ValueType.Integer)
                             throw new Exception("TYPECHECKING FAILED");
-                        return new Value(rhs.Evaluate(context).IntValue() + lhs.Evaluate(context).IntValue());
+                        return new Value(lhs.Evaluate(context).IntValue() + rhs.Evaluate(context).IntValue());
                     case '-':
                         if (rhs.Type(context) != ValueType.Integer || lhs.Type(context) != ValueType.Integer)
                             throw new Exception("TYPECHECKING FAILED");
-                        return new Value(rhs.Evaluate(context).IntValue() - lhs.Evaluate(context).IntValue());
+                        return new Value(lhs.Evaluate(context).IntValue() - rhs.Evaluate(context).IntValue());
                     case '*':
                         if (rhs.Type(context) != ValueType.Integer || lhs.Type(context) != ValueType.Integer)
                             throw new Exception("TYPECHECKING FAILED");
-                        return new Value(rhs.Evaluate(context).IntValue() * lhs.Evaluate(context).IntValue());
+                        return new Value(lhs.Evaluate(context).IntValue() * rhs.Evaluate(context).IntValue());
                     case '/':
                         if (rhs.Type(context) != ValueType.Integer || lhs.Type(context) != ValueType.Integer)
                             throw new Exception("TYPECHECKING FAILED");
-                        return new Value(rhs.Evaluate(context).IntValue() / lhs.Evaluate(context).IntValue());
+                        return new Value(lhs.Evaluate(context).IntValue() / rhs.Evaluate(context).IntValue());
                     case '<':
                         if (rhs.Type(context) != ValueType.Integer || lhs.Type(context) != ValueType.Integer)
                             throw new Exception("TYPECHECKING FAILED");
-                        return new Value(rhs.Evaluate(context).IntValue() < lhs.Evaluate(context).IntValue());
+                        return new Value(lhs.Evaluate(context).IntValue() < rhs.Evaluate(context).IntValue());
                     case '=':
                         if (rhs.Type(context) != lhs.Type(context))
                             throw new Exception("TYPECHECKING FAILED");
