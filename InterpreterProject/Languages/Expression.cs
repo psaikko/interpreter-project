@@ -35,7 +35,10 @@ namespace InterpreterProject.Languages
                 {
                     case 1:
                         INode<Parser.IParseValue> child = subtree.children[0];
-                        return ExprFromLeaf(child as Leaf<Parser.IParseValue>);
+                        if (child is Leaf<Parser.IParseValue>) // identifier or literal
+                            return ExprFromLeaf(child as Leaf<Parser.IParseValue>);
+                        else // another expr
+                            return FromTreeNode(child, terms, vars);
                     case 2:
                         {
                             INode<Parser.IParseValue> op = subtree.children[0];
