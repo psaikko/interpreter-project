@@ -284,10 +284,13 @@ namespace InterpreterProject.Languages
 
 
             // add statements to runnable
-
             Tree<Parser.IParseValue> statementListNode = parseTree.children[0] as Tree<Parser.IParseValue>;
             foreach (INode<Parser.IParseValue> statementNode in statementListNode.children)
                 prog.statements.Add(Statement.FromTreeNode(statementNode, terms, vars));
+
+            // typecheck each statement
+            foreach (Statement stmt in prog.statements)
+                stmt.TypeCheck(prog);
 
             return prog;
         }        

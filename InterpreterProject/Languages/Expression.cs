@@ -108,7 +108,7 @@ namespace InterpreterProject.Languages
 
             override public void TypeCheck(MiniPL.Runnable context)
             {
-                throw new NotImplementedException();
+                // nothing to check
             }
         }
 
@@ -133,7 +133,7 @@ namespace InterpreterProject.Languages
 
             override public void TypeCheck(MiniPL.Runnable context)
             {
-                throw new NotImplementedException();
+                // nothing to check
             }
         }
 
@@ -167,7 +167,10 @@ namespace InterpreterProject.Languages
 
             override public void TypeCheck(MiniPL.Runnable context)
             {
-                throw new NotImplementedException();
+                expr.TypeCheck(context);
+                if (expr.Type(context) != ValueType.Boolean &&
+                    expr.Type(context) != ValueType.Integer)
+                    context.errors.Add(new SemanticError(token, "bad type for '!' operation"));
             }
         }
 
@@ -189,9 +192,11 @@ namespace InterpreterProject.Languages
                 switch (op)
                 {
                     case '+':
-                        if (rhs.Type(context) != ValueType.Integer || lhs.Type(context) != ValueType.Integer)
-                            throw new Exception("TYPECHECKING FAILED");
-                        return new Value(lhs.Evaluate(context).IntValue() + rhs.Evaluate(context).IntValue());
+                        if (rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer)                            
+                            return new Value(lhs.Evaluate(context).IntValue() + rhs.Evaluate(context).IntValue());
+                        if (rhs.Type(context) == ValueType.String && lhs.Type(context) == ValueType.String)
+                            return new Value(lhs.Evaluate(context).StringValue() + rhs.Evaluate(context).StringValue());
+                        throw new Exception("TYPECHECKING FAILED");
                     case '-':
                         if (rhs.Type(context) != ValueType.Integer || lhs.Type(context) != ValueType.Integer)
                             throw new Exception("TYPECHECKING FAILED");
@@ -219,9 +224,8 @@ namespace InterpreterProject.Languages
                                 return new Value(rhs.Evaluate(context).IntValue() == lhs.Evaluate(context).IntValue());
                             case ValueType.String:
                                 return new Value(rhs.Evaluate(context).StringValue() == lhs.Evaluate(context).StringValue());
-                            default:
-                                throw new Exception("SOMETHING WENT WRONG");
                         }
+                        break;
                     case '&':
                         if (rhs.Type(context) == ValueType.String ||
                             lhs.Type(context) == ValueType.String)
@@ -236,6 +240,8 @@ namespace InterpreterProject.Languages
                 switch (op)
                 {
                     case '+':
+                        ValueType t = lhs.Type(context);
+                        if (t == ValueType.String) return t;
                         return ValueType.Integer;
                     case '-':
                         return ValueType.Integer;
@@ -256,7 +262,40 @@ namespace InterpreterProject.Languages
 
             override public void TypeCheck(MiniPL.Runnable context)
             {
-                throw new NotImplementedException();
+                rhs.TypeCheck(context);
+                lhs.TypeCheck(context);
+                switch (op)
+                {
+                    case '+':
+                        if (!((rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer) ||
+                              (rhs.Type(context) == ValueType.String && lhs.Type(context) == ValueType.String)))
+                            context.errors.Add(new SemanticError(token, "bad operand types for '+' operation"));
+                        break;
+                    case '-':
+                        if (!(rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer))
+                            context.errors.Add(new SemanticError(token, "bad operand types for '-' operation"));
+                        break;
+                    case '*':
+                        if (!(rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer))
+                            context.errors.Add(new SemanticError(token, "bad operand types for '*' operation"));
+                        break;
+                    case '/':
+                        if (!(rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer))
+                            context.errors.Add(new SemanticError(token, "bad operand types for '/' operation"));
+                        break;
+                    case '<':
+                        if (!(rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer))
+                            context.errors.Add(new SemanticError(token, "bad operand types for '<' operation"));
+                        break;
+                    case '=':
+                        if (!(rhs.Type(context) == lhs.Type(context)))
+                            context.errors.Add(new SemanticError(token, "bad operand types for '=' operation"));
+                        break;
+                    case '&':
+                        if (rhs.Type(context) == ValueType.String || lhs.Type(context) == ValueType.String)
+                            context.errors.Add(new SemanticError(token, "bad operand types for '&' operation"));
+                        break;
+                }
             }
         }
     }

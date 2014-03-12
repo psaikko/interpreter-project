@@ -8,8 +8,6 @@ namespace InterpreterProject.LexicalAnalysis
 {
     public class TokenAutomaton
     {
-        static bool log = true;
-
         public const char EOF = '\0';
 
         private Node start;

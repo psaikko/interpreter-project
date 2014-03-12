@@ -23,11 +23,14 @@ namespace InterpreterProject.Languages
         {
             Tree<Parser.IParseValue> subtree = 
                 ASTNode as Tree<Parser.IParseValue>;
-            if (subtree == null) throw new Exception("EXPECTED TREE NODE");
+            if (subtree == null) 
+                throw new Exception("EXPECTED TREE NODE");
             Parser.NonterminalValue nt = 
                 subtree.GetValue() as Parser.NonterminalValue;
-            if (nt == null) throw new Exception("EXPECTED NONTERMINAL NODE");
-            if (nt.var != vars["statement"]) throw new Exception("EXPECTED STATEMENT NODE");
+            if (nt == null) 
+                throw new Exception("EXPECTED NONTERMINAL NODE");
+            if (nt.var != vars["statement"]) 
+                throw new Exception("EXPECTED STATEMENT NODE");
 
             if (subtree.children[0] is Tree<Parser.IParseValue>) // ----------------------------------- Declaration
             {
@@ -65,7 +68,8 @@ namespace InterpreterProject.Languages
                     subtree.children[0] as Leaf<Parser.IParseValue>;
                 Parser.TerminalValue firstTerm = 
                     firstChild.GetValue() as Parser.TerminalValue;
-                if (firstTerm == null) throw new Exception("MALFORMED AST");
+                if (firstTerm == null) 
+                    throw new Exception("MALFORMED AST");
                 if (firstTerm.term.tokenType != null &&
                     firstTerm.term.tokenType.name == "identifier") // --------------------------------- assignment or for
                 {
@@ -82,7 +86,8 @@ namespace InterpreterProject.Languages
                             subtree.children[3] as Tree<Parser.IParseValue>;
                         foreach (INode<Parser.IParseValue> blockSubtree in blockChild.children)
                             block.Add(Statement.FromTreeNode(blockSubtree, terms, vars));
-                        if (blockChild == null) throw new Exception("MALFORMED AST"); 
+                        if (blockChild == null) 
+                            throw new Exception("MALFORMED AST"); 
                         return new ForStmt(firstTerm.token.lexeme,
                             Expression.FromTreeNode(subtree.children[1], terms, vars),
                             Expression.FromTreeNode(subtree.children[2], terms, vars),
@@ -92,7 +97,8 @@ namespace InterpreterProject.Languages
                 }
                 else
                 {
-                    if (subtree.children.Count != 2) throw new Exception("MALFORMED AST");
+                    if (subtree.children.Count != 2) 
+                        throw new Exception("MALFORMED AST");
                     switch (firstTerm.token.lexeme)
                     {
                         case "assert": // ------------------------------------------------------------- assert                        
@@ -108,10 +114,12 @@ namespace InterpreterProject.Languages
                         case "read": // --------------------------------------------------------------- read
                             Leaf<Parser.IParseValue> secondChild = 
                                 subtree.children[1] as Leaf<Parser.IParseValue>;
-                            if (secondChild == null) throw new Exception("MALFORMED AST");
+                            if (secondChild == null) 
+                                throw new Exception("MALFORMED AST");
                             Parser.TerminalValue secondTerm =
                                 secondChild.GetValue() as Parser.TerminalValue;
-                            if (secondTerm == null) throw new Exception("MALFORMED AST");
+                            if (secondTerm == null) 
+                                throw new Exception("MALFORMED AST");
                             return new ReadStmt(secondTerm.token.lexeme, firstTerm.token);
                         default:
                             throw new Exception("UNEXPECTED STATEMENT TYPE");
@@ -162,7 +170,8 @@ namespace InterpreterProject.Languages
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
-
+                if (context.declarations[identifier].type == ValueType.Boolean)
+                    context.errors.Add(new SemanticError(token, "cannot read a boolean value"));
             }
         }
 
@@ -185,7 +194,9 @@ namespace InterpreterProject.Languages
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
-                
+                expr.TypeCheck(context);
+                if (expr.Type(context) == ValueType.String)
+                    context.errors.Add(new SemanticError(token, "cannot assert a string value"));
             }
         }
 
@@ -217,7 +228,9 @@ namespace InterpreterProject.Languages
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
-
+                expr.TypeCheck(context);
+                if (expr.Type(context) == ValueType.Boolean)
+                    context.errors.Add(new SemanticError(token, "cannot print a boolean value"));
             }
         }
 
@@ -241,8 +254,23 @@ namespace InterpreterProject.Languages
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
-                if (context.declarations[identifier].type != expr.Type(context))
-                    context.errors.Add(new SemanticError(token, "bad assignment"));
+                expr.TypeCheck(context);
+                switch (context.declarations[identifier].type)
+                {
+                    case ValueType.Boolean:
+                        if (expr.Type(context) == ValueType.String)
+                            context.errors.Add(new SemanticError(token, "cannot assign string value to boolean " + identifier));
+                        break;
+                    case ValueType.Integer:
+                        if (expr.Type(context) != ValueType.Integer)
+                            context.errors.Add(new SemanticError(token, "expected integer type value for " + identifier));
+                        break;
+                    case ValueType.String:
+                        if (expr.Type(context) != ValueType.String)
+                            context.errors.Add(new SemanticError(token, "expected string type value for " + identifier));
+                        break;
+                }
+                
             }
         }
 
@@ -281,6 +309,8 @@ namespace InterpreterProject.Languages
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
+                startVal.TypeCheck(context);
+                endVal.TypeCheck(context);
                 if (context.declarations[identifier].type != ValueType.Integer)
                     context.errors.Add(new SemanticError(token, "bad for-loop control type"));
                 if (startVal.Type(context) != ValueType.Integer)
@@ -319,12 +349,26 @@ namespace InterpreterProject.Languages
             }
 
             public override void TypeCheck(MiniPL.Runnable context)
-            {
-                if (initialValue != null && 
-                    type != initialValue.Type(context))
+            {                
+                if (initialValue != null)
                 {
-                    context.errors.Add(new SemanticError(token, "bad assignment"));
-                }                    
+                    initialValue.TypeCheck(context);
+                    switch(type)
+                    {
+                        case ValueType.Boolean:
+                            if (initialValue.Type(context) == ValueType.String)
+                                context.errors.Add(new SemanticError(token, "cannot assign string value to boolean "+identifier));
+                            break;
+                        case ValueType.Integer:
+                            if (initialValue.Type(context) != ValueType.Integer)
+                                context.errors.Add(new SemanticError(token, "expected integer type value for " + identifier));
+                            break;
+                        case ValueType.String:
+                            if (initialValue.Type(context) != ValueType.String)
+                                context.errors.Add(new SemanticError(token, "expected string type value for "+identifier));
+                            break;
+                    }
+                }
             }
         }
     }

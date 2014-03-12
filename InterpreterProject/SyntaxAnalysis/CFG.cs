@@ -271,7 +271,7 @@ namespace InterpreterProject.SyntaxAnalysis
                                 {
                                     if (Program.debug)
                                     {
-                                        Console.WriteLine("CFG: used rule "+B+" -> "+SymbolsToString(prod)+"for "+A);
+                                        Console.WriteLine("CFG: used rule " + B + " -> " + SymbolsToString(prod) + "for " + A);
                                         Console.WriteLine("CFG: Follow " + A + " = " + SymbolsToString(follow[A]));
                                         Console.WriteLine();
                                     }                                
