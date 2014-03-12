@@ -31,11 +31,15 @@ namespace InterpreterProject.Languages
         private MiniPL()
         {
             // Define regexes for tokens
-            Regex reBlockComment = Regex.Concat("/*").Concat(Regex.Not('*').Union(Regex.Char('*').Plus().Concat(Regex.Not('*', '/'))).Star())
-                                                     .Concat(Regex.Char('*').Plus().Concat(Regex.Char('/')));
+            //Regex reBlockComment = Regex.Concat("/*").Concat(Regex.Not('*').Union(Regex.Char('*').Plus().Concat(Regex.Not('*', '/'))).Star())
+            //                                         .Concat(Regex.Char('*').Plus().Concat(Regex.Char('/')));
+
+            Regex reBlockCommentStart = Regex.Concat("/*");
+            Regex reBlockCommentEnd = Regex.Concat("*/");
+
             Regex reLineComment = Regex.Concat("//").Concat(Regex.Not('\n').Star());
 
-            Regex reWhitespace = Regex.Union(" \t\n").Star().Union(reBlockComment).Union(reLineComment);
+            Regex reWhitespace = Regex.Union(" \t\n").Star().Union(reLineComment);
 
             Regex reString = Regex.Char('"').Concat(Regex.Char('\\').Concat(Regex.Any()).Union(Regex.Not('"', '\\')).Star()).Concat(Regex.Char('"'));
             Regex reBinaryOperator = Regex.Union("+-*/<=&");
@@ -56,6 +60,8 @@ namespace InterpreterProject.Languages
             Regex reInteger = Regex.Range('0', '9').Plus();
 
             // Define token types
+            tts["block_comment_start"] = new TokenType("block_comment_start", reBlockCommentStart);
+            tts["block_comment_end"] = new TokenType("block_comment_end", reBlockCommentEnd);
             tts["int"] = new TokenType("int", reInteger);
             tts["whitespace"] = new TokenType("whitespace", reWhitespace, priority: TokenType.Priority.Whitespace);
             tts["string"] = new TokenType("string", reString);
@@ -160,7 +166,7 @@ namespace InterpreterProject.Languages
         public Scanner GetScanner()
         {
             TokenAutomaton automaton = TokenType.CombinedAutomaton(tts.Values.ToArray());
-            return new Scanner(automaton); 
+            return new Scanner(automaton, tts["block_comment_start"], tts["block_comment_end"]); 
         }
 
         public Parser GetParser()

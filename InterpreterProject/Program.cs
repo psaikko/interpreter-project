@@ -13,7 +13,7 @@ namespace InterpreterProject
 {
     class Program
     {
-        public static bool debug = false;
+        public static bool debug = true;
 
         static void Main(string[] args)
         {

@@ -278,6 +278,7 @@ namespace InterpreterProjectTest
                           "     print x;\n" +
                           "     print \" : Hello, World!\n\";\n" +
                           "end for;\n" +
+                          " */ ;" + // stray block comment end
                           "assert (x = nTimes); - "; // stray -
 
             MiniPL miniPL = MiniPL.GetInstance();
@@ -287,7 +288,7 @@ namespace InterpreterProjectTest
             ps.Parse(sc.Tokenize(text));
             List<IError> errors = ps.GetErrors();
 
-            Assert.AreEqual(4, errors.Count);
+            Assert.AreEqual(5, errors.Count);
         }        
     }
 }

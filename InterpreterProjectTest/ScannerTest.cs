@@ -106,9 +106,126 @@ namespace InterpreterProjectTest
                           " */         \n" +
                           "bbb        ";
 
-            List<Token> tokens = GetTokens(automaton, text);
+            Scanner sc = new Scanner(automaton);
+            IEnumerable<Token> tokenEnumerable = sc.Tokenize(text, yieldEOF: false);
+            List<Token> tokens = new List<Token>(tokenEnumerable);
 
             string[] expectedTokens = { "bbb", "bbb", "bbb", "bbb", "bbb", "bbb", "bbb" };
+            Assert.AreEqual(expectedTokens.Length, tokens.Count);
+            for (int i = 0; i < expectedTokens.Length; i++)
+            {
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(ttB, tokens[i].tokenType);
+            }
+        }
+
+        [TestMethod]
+        public void Scanner_NestedCommentHackTest1()
+        {
+            Regex a = Regex.Char('a').Star();
+            Regex b = Regex.Char('b').Star();
+            // hacky solution that allows for nested comments
+            Regex reBlockCommentStart = Regex.Concat("/*");
+            Regex reBlockCommentEnd = Regex.Concat("*/");
+            Regex whitespace = Regex.Union(" \t\n").Star();
+            TokenType ttWhitespace = new TokenType("Whitespace", whitespace, priority: TokenType.Priority.Whitespace);
+            TokenType ttA = new TokenType("a*", a);
+            TokenType ttB = new TokenType("b*", b);
+            TokenType ttBlockCommentStart = new TokenType("block comment start", reBlockCommentStart);
+            TokenType ttBlockCommentEnd = new TokenType("block comment end", reBlockCommentEnd);
+            TokenAutomaton automaton = TokenType.CombinedAutomaton(ttA, ttB, ttBlockCommentStart, ttBlockCommentEnd, ttWhitespace);
+
+            string text = "/* aaa */   \n" +
+                          "bbb         \n" +
+                          "/* aaa */   \n" +
+                          "bbb         \n" +
+                          "/* aaa      \n" +
+                          "   aaa */   \n" +
+                          "bbb         \n" +
+                          "/*          \n" +
+                          " * aaa      \n" +
+                          " */         \n" +
+                          "bbb         \n" +
+                          "/***        \n" +
+                          " * aaa      \n" +
+                          " ***/       \n" +
+                          "bbb         \n" +
+                          "/*/ aaa */  \n" +
+                          "/*****/     \n" +
+                          "/*   */     \n" +
+                          "bbb         \n" +
+                          "/***        \n" +
+                          " * aaa      \n" +
+                          " */         \n" +
+                          "bbb        ";
+
+            Scanner sc = new Scanner(automaton, ttBlockCommentStart, ttBlockCommentEnd);
+            IEnumerable<Token> tokenEnumerable = sc.Tokenize(text, yieldEOF: false);
+            List<Token> tokens = new List<Token>(tokenEnumerable);
+
+            string[] expectedTokens = { "bbb", "bbb", "bbb", "bbb", "bbb", "bbb", "bbb" };
+            Assert.AreEqual(expectedTokens.Length, tokens.Count);
+            for (int i = 0; i < expectedTokens.Length; i++)
+            {
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(ttB, tokens[i].tokenType);
+            }
+        }
+
+        [TestMethod]
+        public void Scanner_NestedCommentHackTest2()
+        {
+            Regex a = Regex.Char('a').Star();
+            Regex b = Regex.Char('b').Star();
+            // hacky solution that allows for nested comments
+            Regex reBlockCommentStart = Regex.Concat("/*");
+            Regex reBlockCommentEnd = Regex.Concat("*/");
+            Regex whitespace = Regex.Union(" \t\n").Star();
+            TokenType ttWhitespace = new TokenType("Whitespace", whitespace, priority: TokenType.Priority.Whitespace);
+            TokenType ttA = new TokenType("a*", a);
+            TokenType ttB = new TokenType("b*", b);
+            TokenType ttBlockCommentStart = new TokenType("block comment start", reBlockCommentStart);
+            TokenType ttBlockCommentEnd = new TokenType("block comment end", reBlockCommentEnd);
+            TokenAutomaton automaton = TokenType.CombinedAutomaton(ttA, ttB, ttBlockCommentStart, ttBlockCommentEnd, ttWhitespace);
+
+            string text = "bbb /* aaa /* aaa /* aaa */ aaa */ aaa /* aaa */ */ bbb";
+
+            Scanner sc = new Scanner(automaton, ttBlockCommentStart, ttBlockCommentEnd);
+            IEnumerable<Token> tokenEnumerable = sc.Tokenize(text, yieldEOF: false);
+            List<Token> tokens = new List<Token>(tokenEnumerable);
+
+            string[] expectedTokens = { "bbb", "bbb" };
+            Assert.AreEqual(expectedTokens.Length, tokens.Count);
+            for (int i = 0; i < expectedTokens.Length; i++)
+            {
+                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(ttB, tokens[i].tokenType);
+            }
+        }
+
+        [TestMethod]
+        public void Scanner_NestedCommentHackTest3()
+        {
+            Regex a = Regex.Char('a').Star();
+            Regex b = Regex.Char('b').Star();
+            // hacky solution that allows for nested comments
+            Regex reBlockCommentStart = Regex.Concat("/*");
+            Regex reBlockCommentEnd = Regex.Concat("*/");
+            Regex whitespace = Regex.Union(" \t\n").Star();
+            TokenType ttWhitespace = new TokenType("Whitespace", whitespace, priority: TokenType.Priority.Whitespace);
+            TokenType ttA = new TokenType("a*", a);
+            TokenType ttB = new TokenType("b*", b);
+            TokenType ttBlockCommentStart = new TokenType("block comment start", reBlockCommentStart);
+            TokenType ttBlockCommentEnd = new TokenType("block comment end", reBlockCommentEnd);
+            TokenAutomaton automaton = TokenType.CombinedAutomaton(ttA, ttB, ttBlockCommentStart, ttBlockCommentEnd, ttWhitespace);
+
+            string text = "bbb /* aaa";
+
+            Scanner sc = new Scanner(automaton, ttBlockCommentStart, ttBlockCommentEnd);
+            IEnumerable<Token> tokenEnumerable = sc.Tokenize(text, yieldEOF: false);
+            List<Token> tokens = new List<Token>(tokenEnumerable);
+
+            string[] expectedTokens = { "bbb" };
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
@@ -354,6 +471,37 @@ namespace InterpreterProjectTest
                 0, 4, 7,
                 0, 6, 23,
                 0, 6, 7
+            };
+
+            Scanner sc = MiniPL.GetInstance().GetScanner();
+            List<Token> tokens = new List<Token>(sc.Tokenize(text, yieldEOF: false));
+
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                Assert.AreEqual(expectedRows[i], tokens[i].pos.row);
+                Assert.AreEqual(expectedCols[i], tokens[i].pos.col);
+            }
+        }
+
+        [TestMethod]
+        public void Scanner_MiniPL_NestedCommentTest()
+        {
+            string text = "print \"Give a number\";\n" +
+                          "var n : int; /* \n" +
+                          "read n;\n" +
+                          "var f : int := 1;\n" +
+                          "/* var i : int; */\n" +
+                          "/* for i in 1..n do\n" +
+                          "       f := f * i;\n" +
+                          "*/ end for;\n" +
+                          "print \"The result is: \";\n" +
+                          "print f;";
+
+            int[] expectedRows = new int[] { 0, 0, 0, 
+                1, 1, 1, 1, 1
+            };
+            int[] expectedCols = new int[] { 0, 6, 21,
+                0, 4, 6, 8, 11
             };
 
             Scanner sc = MiniPL.GetInstance().GetScanner();
