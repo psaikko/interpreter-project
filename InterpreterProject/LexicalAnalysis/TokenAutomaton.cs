@@ -40,7 +40,6 @@ namespace InterpreterProject.LexicalAnalysis
             endCol = col;
         }
 
-
         private Token TakeToken()
         {
             Token t = lastToken;
@@ -65,7 +64,7 @@ namespace InterpreterProject.LexicalAnalysis
                 col++;
             }
 
-            if (log) Console.WriteLine(String.Format("AUTOMATON accumulated: \"{0}\"", charBuffer));
+            if (Program.debug) Console.WriteLine(String.Format("AUTOMATON accumulated: \"{0}\"", charBuffer));
 
             if (lastToken == null)
             {
@@ -86,7 +85,7 @@ namespace InterpreterProject.LexicalAnalysis
                 Token match = TakeToken();
                 tokenBuffer.Enqueue(match);
 
-                if (log) Console.WriteLine("AUTOMATON recognize token " + match);
+                if (Program.debug) Console.WriteLine("AUTOMATON recognize token " + match);
 
                 position = start;
                 string overflow = charBuffer.Remove(0, match.lexeme.Length);

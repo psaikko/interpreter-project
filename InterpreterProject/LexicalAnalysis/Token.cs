@@ -19,14 +19,6 @@ namespace InterpreterProject.LexicalAnalysis
             this.pos = new Position(row, col);
         }
 
-        public static void PrintList(List<Token> tokens)
-        {
-            foreach (Token t in tokens)
-            {
-                Console.WriteLine(t);
-            }
-        }
-
         public override string ToString()
         {
             return "{" + tokenType.name + " : \"" + lexeme + "\"} @" + pos;

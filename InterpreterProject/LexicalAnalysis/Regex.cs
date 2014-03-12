@@ -358,20 +358,6 @@ namespace InterpreterProject.LexicalAnalysis
                 }
                 return reachable;
             }
-
-            public static void PrintSet(ISet<Node> nodes)
-            {
-                String s = "[ ";
-
-                foreach (Node n in nodes)
-                {
-                    s += (n.id + " ");
-                }
-
-                s += "]";
-
-                Console.WriteLine(s);
-            }
         }
     }
 }

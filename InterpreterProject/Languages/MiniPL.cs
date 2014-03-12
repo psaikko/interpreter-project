@@ -214,11 +214,9 @@ namespace InterpreterProject.Languages
             Predicate<Parser.IParseValue> isUnnecessaryNonterminal =
                 v => (v is Parser.NonterminalValue) ? pruneVariables.Contains((v as Parser.NonterminalValue).var) : false;
 
-            parseTree.RemoveNodesByValue(isUnnecessaryNonterminal);
+            parseTree.RemoveNodesByValue(isUnnecessaryNonterminal);           
 
-            
-
-            Console.WriteLine(parseTree);
+            if (Program.debug) Console.WriteLine(parseTree);
 
             // find declarations, produce errors if identifier declared multiple times         
             foreach (INode<Parser.IParseValue> node in parseTree.Nodes())
@@ -311,7 +309,7 @@ namespace InterpreterProject.Languages
                     return false;
                 }
 
-                Console.WriteLine("Start execution");
+                if (Program.debug) Console.WriteLine("Start execution");
 
                 foreach (Statement stmt in statements)
                 {                                    
@@ -323,7 +321,7 @@ namespace InterpreterProject.Languages
                     }
                 }
 
-                Console.WriteLine("Stop execution");
+                if (Program.debug) Console.WriteLine("Stop execution");
 
                 return true;
             }

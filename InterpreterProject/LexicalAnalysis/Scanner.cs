@@ -9,8 +9,6 @@ namespace InterpreterProject.LexicalAnalysis
 {
     public class Scanner
     {
-        static bool log = true;
-
         TokenAutomaton automaton;
         
         public Scanner(TokenAutomaton automaton)
@@ -26,24 +24,24 @@ namespace InterpreterProject.LexicalAnalysis
             while (!reader.EndOfStream)
             {
                 char c = (char) reader.Read();
-                if (log) Console.WriteLine(String.Format("SCANNER: feeding '{0}'", c));
+                if (Program.debug) Console.WriteLine(String.Format("SCANNER: feeding '{0}'", c));
                 automaton.FeedCharacter(c);
                 t = automaton.GetToken();
                 if (t != null && IsRelevant(t, yieldEOF))
                 {
-                    if (log) Console.WriteLine("SCANNER: yield token " + t);
+                    if (Program.debug) Console.WriteLine("SCANNER: yield token " + t);
                     yield return t;
                 }
             }
 
-            if (log) Console.WriteLine("SCANNER: feeding EOF");
+            if (Program.debug) Console.WriteLine("SCANNER: feeding EOF");
             automaton.FeedCharacter(TokenAutomaton.EOF);
 
             while ((t = automaton.GetToken()) != null)
             {
                 if (IsRelevant(t, yieldEOF))
                 {
-                    if (log) Console.WriteLine("SCANNER: yield token " + t);
+                    if (Program.debug) Console.WriteLine("SCANNER: yield token " + t);
                     yield return t;
                 }             
             }

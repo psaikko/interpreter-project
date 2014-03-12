@@ -31,12 +31,8 @@ namespace InterpreterProject.SyntaxAnalysis
             Tree<IParseValue> parseTree = new Tree<IParseValue>(new NonterminalValue(start));
             Stack<INode<IParseValue>> treeStack = new Stack<INode<IParseValue>>();
 
-            //INode<ISymbol> tmp = new TerminalNode(null, Terminal.EOF);
-
             treeStack.Push(new Leaf<IParseValue>(new TerminalValue(Terminal.EOF)));
             treeStack.Push(parseTree);
-
-            //Tree<ISymbol> parseTree = new Tree<ISymbol>(root);
 
             IEnumerator<Token> tokenStream = tokenSource.GetEnumerator();
 
@@ -44,14 +40,18 @@ namespace InterpreterProject.SyntaxAnalysis
 
             while (symbolStack.Count > 0)
             {
-                Console.WriteLine("=========================================================");
-                Console.WriteLine("PARSE: Stack " + SymbolsToString(symbolStack));
-                Console.WriteLine("PARSE: expecting " + symbolStack.Peek());
-                Console.WriteLine("PARSE: token " + tokenStream.Current);
+                if (Program.debug)
+                {
+                    Console.WriteLine("=========================================================");
+                    Console.WriteLine("PARSE: Stack " + SymbolsToString(symbolStack));
+                    Console.WriteLine("PARSE: expecting " + symbolStack.Peek());
+                    Console.WriteLine("PARSE: token " + tokenStream.Current);
+                }
 
                 if (tokenStream.Current.tokenType == TokenType.ERROR)
                 {
-                    Console.WriteLine("PARSE: skipping error token");
+                    if (Program.debug) 
+                        Console.WriteLine("PARSE: skipping error token");
                     errors.Add(new LexicalError(tokenStream.Current));
                     tokenStream.MoveNext();
                     continue;
@@ -64,23 +64,29 @@ namespace InterpreterProject.SyntaxAnalysis
 
                     if (term == Terminal.EPSILON)
                     {
-                        Console.WriteLine("PARSE: ignore epsilon");
+                        if (Program.debug) 
+                            Console.WriteLine("PARSE: ignore epsilon");
                         symbolStack.Pop();
                         treeStack.Pop();
                     }
                     else if (term.Matches(tokenStream.Current))
                     {
                         (leaf.GetValue() as TerminalValue).token = tokenStream.Current;
-                        Console.WriteLine("PARSE: Terminal match");
+                        if (Program.debug) 
+                            Console.WriteLine("PARSE: Terminal match");
                         tokenStream.MoveNext();
                         symbolStack.Pop();
                         treeStack.Pop();
                     }
                     else
                     {
-                        Console.WriteLine("PARSE: Terminal mismatch");
-                        Console.WriteLine("PARSE: Error");
-                        Console.WriteLine("PARSE: Panic mode");
+                        if (Program.debug)
+                        {
+                            Console.WriteLine("PARSE: Terminal mismatch");
+                            Console.WriteLine("PARSE: Error");
+                            Console.WriteLine("PARSE: Panic mode");
+                        }
+                        
                         errors.Add(new SyntaxError(tokenStream.Current));
                         Synchronize(symbolStack, treeStack, tokenStream);     
                     }
@@ -91,25 +97,24 @@ namespace InterpreterProject.SyntaxAnalysis
                     INode<IParseValue> popped = treeStack.Pop();
                     Tree<IParseValue> subtree = popped as Tree<IParseValue>;
 
-                    // or maybe we've encountered some syntax error that has caused a strange state ...
-                    if (subtree == null)
-                    {
-                        
-                    }
-
                     ISymbol[] production = table.Get(var, tokenStream.Current);
 
                     if (production == null)
                     {
-                        Console.WriteLine("PARSE: No such production");
-                        Console.WriteLine("PARSE: Error");
-                        Console.WriteLine("PARSE: Panic mode");
+                        if (Program.debug)
+                        {
+                            Console.WriteLine("PARSE: No such production");
+                            Console.WriteLine("PARSE: Error");
+                            Console.WriteLine("PARSE: Panic mode");
+                        }
+                        
                         errors.Add(new SyntaxError(tokenStream.Current));
                         Synchronize(symbolStack, treeStack, tokenStream);
                     }
                     else
                     {
-                        Console.WriteLine("PARSE: Using production " + SymbolsToString(production));
+                        if (Program.debug) 
+                            Console.WriteLine("PARSE: Using production " + SymbolsToString(production));
                         for (int i = production.Length - 1; i >= 0; i--)
                         {
                             INode<IParseValue> treeChild;
@@ -125,7 +130,8 @@ namespace InterpreterProject.SyntaxAnalysis
                 }
             }
 
-            Console.WriteLine(parseTree);
+            if (Program.debug) 
+                Console.WriteLine(parseTree);
 
             return parseTree;
         }
@@ -137,20 +143,24 @@ namespace InterpreterProject.SyntaxAnalysis
             {
                 while (symbolStack.Count > 0)
                     symbolStack.Pop();
-                Console.WriteLine("PARSE: Unexpected EOF");
+                if (Program.debug) 
+                    Console.WriteLine("PARSE: Unexpected EOF");
                 return;
             }
 
             while (!syncTerm.Matches(tokenStream.Current))
             {
-                Console.WriteLine("PARSE: Discarding token " + tokenStream.Current);
+                if (Program.debug) 
+                    Console.WriteLine("PARSE: Discarding token " + tokenStream.Current);
                 if (!tokenStream.MoveNext())
                     break; // no more token for us?
             }
-            Console.WriteLine(syncTerm);
+            if (Program.debug) 
+                Console.WriteLine(syncTerm);
             while (symbolStack.Count > 0 && symbolStack.Peek() != syncTerm)
             {
-                Console.WriteLine("PARSE: Discarding symbol " + symbolStack.Peek());
+                if (Program.debug) 
+                    Console.WriteLine("PARSE: Discarding symbol " + symbolStack.Peek());
                 symbolStack.Pop();
                 treeStack.Pop();
             }             
