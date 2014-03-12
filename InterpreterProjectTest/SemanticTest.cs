@@ -37,7 +37,7 @@ namespace InterpreterProjectTest
         }
 
         [TestMethod]
-        public void Semantics_MultipleDeclarationErrorTest()
+        public void Semantics_MultipleDeclarationTest()
         {
             string text = "var n : int;\n" +
                           "var n : bool;\n" +
@@ -58,9 +58,6 @@ namespace InterpreterProjectTest
 
             MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
 
-            foreach (IError err in prog.errors)
-                Console.WriteLine(err.GetMessage());
-
             Assert.AreEqual(2, prog.errors.Count);
         }
 
@@ -77,10 +74,125 @@ namespace InterpreterProjectTest
 
             MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
 
+            Assert.AreEqual(1, prog.errors.Count);
+        }
+
+        [TestMethod]
+        public void Semantics_TypeCheck_ForTest()
+        {
+            string text = "var s : string; for s in \"hello\"..(2 = 2) do print 1; end for;";
+
+            MiniPL miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
+
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+
             foreach (IError err in prog.errors)
                 Console.WriteLine(err.GetMessage());
 
+            Assert.AreEqual(3, prog.errors.Count);
+        }
+
+        [TestMethod]
+        public void Semantics_TypeCheck_ReadTest()
+        {
+            string text = "var b : bool; read b;";
+
+            MiniPL miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
+
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+
+            foreach (IError err in prog.errors)
+                Console.WriteLine(err.GetMessage());
+
+            
             Assert.AreEqual(1, prog.errors.Count);
+            Assert.IsTrue(prog.errors[0] is SemanticError);
+        }
+
+        [TestMethod]
+        public void Semantics_TypeCheck_PrintTest()
+        {
+            string text = "var b : bool; print b;";
+
+            MiniPL miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
+
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+
+            foreach (IError err in prog.errors)
+                Console.WriteLine(err.GetMessage());
+
+
+            Assert.AreEqual(1, prog.errors.Count);
+            Assert.IsTrue(prog.errors[0] is SemanticError);
+        }
+
+        [TestMethod]
+        public void Semantics_TypeCheck_AssertTest()
+        {
+            string text = "var s : string; assert(s);";
+
+            MiniPL miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
+
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+
+            foreach (IError err in prog.errors)
+                Console.WriteLine(err.GetMessage());
+
+
+            Assert.AreEqual(1, prog.errors.Count);
+            Assert.IsTrue(prog.errors[0] is SemanticError);
+        }
+
+        [TestMethod]
+        public void Semantics_TypeCheck_AssignmentTest()
+        {
+            string text = "var b : bool; b := \"nope\";";
+
+            MiniPL miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
+
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+
+            foreach (IError err in prog.errors)
+                Console.WriteLine(err.GetMessage());
+
+
+            Assert.AreEqual(1, prog.errors.Count);
+            Assert.IsTrue(prog.errors[0] is SemanticError);
+        }
+
+        [TestMethod]
+        public void Semantics_TypeCheck_DeclarationTest()
+        {
+            string text = "var b : bool := \"nope\";";
+
+            MiniPL miniPL = MiniPL.GetInstance();
+            Scanner sc = miniPL.GetScanner();
+            Parser ps = miniPL.GetParser();
+            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
+
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+
+            foreach (IError err in prog.errors)
+                Console.WriteLine(err.GetMessage());
+
+
+            Assert.AreEqual(1, prog.errors.Count);
+            Assert.IsTrue(prog.errors[0] is SemanticError);
         }
     }
 }

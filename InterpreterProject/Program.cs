@@ -17,16 +17,17 @@ namespace InterpreterProject
 
         static void Main(string[] args)
         {
-            string program = "var i : int; for i in 0..9 do print i; end for;";
+            string text = "var s : string; for s in \"hello\"..(2 = 2) do print 1; end for;";
 
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
+            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
 
-            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(program));
             MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
 
-            prog.Execute(Console.In, Console.Out);
+            foreach (IError err in prog.errors)
+                Console.WriteLine(err.GetMessage());
 
             Console.ReadLine();
         }
