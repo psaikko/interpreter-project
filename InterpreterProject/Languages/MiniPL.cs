@@ -315,8 +315,16 @@ namespace InterpreterProject.Languages
                 if (Program.debug) Console.WriteLine("Start execution");
 
                 foreach (Statement stmt in statements)
-                {                                    
-                    RuntimeError err = stmt.Execute(this, stdin, stdout);
+                {
+                    RuntimeError err;
+                    try
+                    {
+                        err = stmt.Execute(this, stdin, stdout);
+                    }
+                    catch (MiniPL_DivideByZeroException ex)
+                    {
+                        err = ex.err;
+                    }
                     if (err != null)
                     {
                         stdout.WriteLine(err.GetMessage());

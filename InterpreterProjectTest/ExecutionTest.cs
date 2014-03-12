@@ -155,6 +155,24 @@ namespace InterpreterProjectTest
         }
 
         [TestMethod]
+        public void Execute_StringAdditionTest()
+        {
+            string program = "var s : string := \"hello \" + \"world!\"; assert(s = \"hello world!\");";
+            string input = "";
+            string output = RunWithInput(program, input);
+            Assert.AreEqual("", output);
+        }
+
+        [TestMethod]
+        public void Execute_ZeroDivisionTest()
+        {
+            string program = "var i : int := 5 / 0;";
+            string input = "";
+            string output = RunWithInput(program, input);
+            Assert.IsTrue(output.StartsWith("Runtime error"));
+        }
+
+        [TestMethod]
         public void Execute_SampleProgram1Test()
         {
             string program = "var X : int := 4 + (6 * 2);\n" +

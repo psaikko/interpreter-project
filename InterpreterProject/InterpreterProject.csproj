@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Errors\IError.cs" />
     <Compile Include="Errors\LexicalError.cs" />
+    <Compile Include="Errors\MiniPL_DivideByZeroException.cs" />
     <Compile Include="Errors\RuntimeError.cs" />
     <Compile Include="Errors\SemanticError.cs" />
     <Compile Include="Errors\SyntaxError.cs" />

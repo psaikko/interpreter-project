@@ -211,7 +211,10 @@ namespace InterpreterProject.Languages
                     case '/':
                         if (rhs.Type(context) != ValueType.Integer || lhs.Type(context) != ValueType.Integer)
                             throw new Exception("TYPECHECKING FAILED");
-                        return new Value(lhs.Evaluate(context).IntValue() / rhs.Evaluate(context).IntValue());
+                        int denominator = rhs.Evaluate(context).IntValue();
+                        if (denominator == 0)
+                            throw new MiniPL_DivideByZeroException(new RuntimeError(token, "divide by zero"));
+                        return new Value(lhs.Evaluate(context).IntValue() / denominator);
                     case '<':
                         if (rhs.Type(context) != ValueType.Integer || lhs.Type(context) != ValueType.Integer)
                             throw new Exception("TYPECHECKING FAILED");
