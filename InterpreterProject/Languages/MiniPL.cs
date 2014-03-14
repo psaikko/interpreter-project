@@ -208,7 +208,7 @@ namespace InterpreterProject.Languages
             // STMTS->STMTS_HEAD STMTS_TAIL to STMTS->(STMT)+
             // DECL->"var" <IDENT> ":" <TYPE> ASSIGN to  DECL->"var" <IDENT> ":" <TYPE> [":=" <EXPR>] 
             // EXPR->UNARY|OPND BINARY to EXPR-> unary_op OPND | OPND | OPND binary_op OPND
-            // OPND-><INT>|<STRING>|<IDENT>|<EXPR> -> just <INT>|<STRING>|<IDENT>|<EXPR>
+            // OPND-><INT>|<STRING>|<IDENT>|<EXPR> to just <INT>|<STRING>|<IDENT>|<EXPR>
             Nonterminal[] pruneVariables = new Nonterminal[] { 
                 vars["statements_head"], vars["statements_tail"], vars["unary_operation"], 
                 vars["binary_operation"], vars["declaration_assignment"], vars["operand"] };
@@ -278,34 +278,8 @@ namespace InterpreterProject.Languages
                     }
                 }
             }
-
-            // for-loop control variables not assigned to inside for loop
-            /*
-            List<ParseTree> forList = new List<ParseTree>();
-            foreach (IParseNode node in parseTree.Nodes())
-            {
-                if (node is ParseTree)
-                {
-                    ParseTree tree = node as ParseTree;
-                    if (tree.children.Count == 4) // is a for loop
-                        forList.Add(tree);                    
-                }
-            }
-
-            foreach (ParseTree forTree in forList)
-            {
-                // should not have used a generic tree structure...
-                string identifier = ((forTree.children[0] as ParseLeaf).GetValue() as Parser.TerminalValue).token.lexeme;
-                Stack<IParseNode> statements = new Stack<IParseNode>();
-                statements.Push(forTree);
-                while (statements.Count != 0)
-                {
-                    break;
-                }
-            }
-            */
+            
             // add statements to runnable
-
             ParseTree statementListNode = parseTree.children[0] as ParseTree;
             foreach (IParseNode statementNode in statementListNode.children)
                 prog.statements.Add(Statement.FromTreeNode(statementNode, terms, vars));
@@ -314,6 +288,43 @@ namespace InterpreterProject.Languages
             foreach (Statement stmt in prog.statements)
                 stmt.TypeCheck(prog);
 
+            foreach (Statement stmt in prog.statements)
+            {
+                if (stmt is Statement.ForStmt)
+                {
+                    Statement.ForStmt forStmt = stmt as Statement.ForStmt;
+                    Stack<Statement> stmtStack = new Stack<Statement>();
+
+                    foreach (Statement substmt in forStmt.block)
+                        stmtStack.Push(substmt);
+
+                    while (stmtStack.Count != 0)
+                    {
+                        Statement s = stmtStack.Pop();
+                        if (s is Statement.AssignStmt)
+                        {
+                            Statement.AssignStmt assignment = s as Statement.AssignStmt;
+                            if (assignment.identifier == forStmt.identifier)
+                                prog.errors.Add(new SemanticError(assignment.token, forStmt.identifier + " cannot be modified inside for-loop"));
+                        }
+                        else if (s is Statement.DeclarationStmt)
+                        {
+                            Statement.DeclarationStmt declaration = s as Statement.DeclarationStmt;
+                            if (declaration.identifier == forStmt.identifier)
+                                prog.errors.Add(new SemanticError(declaration.token, forStmt.identifier + " cannot be modified inside for-loop"));
+                        }
+                        else if (s is Statement.ForStmt)
+                        {
+                            Statement.ForStmt nestedFor = s as Statement.ForStmt;
+                            if (nestedFor.identifier == forStmt.identifier)
+                                prog.errors.Add(new SemanticError(nestedFor.token, forStmt.identifier + " cannot be modified inside for-loop"));
+                            foreach (Statement substmt in nestedFor.block)
+                                stmtStack.Push(substmt);
+                        }
+                    }
+                }
+            }
+            
             return prog;
         }        
 
@@ -326,7 +337,6 @@ namespace InterpreterProject.Languages
     
             public bool Execute(TextReader stdin, TextWriter stdout)
             {
-
                 if (errors.Count > 0)
                 {
                     foreach (IError err in errors)

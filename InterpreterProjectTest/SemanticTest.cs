@@ -65,6 +65,26 @@ namespace InterpreterProjectTest
         }
 
         [TestMethod]
+        public void Semantics_ForLoopTest1()
+        {
+            string text = "var i : int; for i in 0..9 do i := i + 1; end for;";
+
+            List<IError> errors = GetErrors(text);
+            Assert.AreEqual(1, errors.Count);
+            Assert.IsTrue(errors[0] is SemanticError);
+        }
+
+        [TestMethod]
+        public void Semantics_ForLoopTest2()
+        {
+            string text = "var i : int; var j : int; for i in 0..9 do for j in 0..9 do i := i + 1; end for; end for;";
+
+            List<IError> errors = GetErrors(text);
+            Assert.AreEqual(1, errors.Count);
+            Assert.IsTrue(errors[0] is SemanticError);
+        }
+
+        [TestMethod]
         public void Semantics_TypeCheck_ForTest()
         {
             string text = "var s : string; for s in \"hello\"..(2 = 2) do print 1; end for;";
