@@ -14,11 +14,6 @@ namespace InterpreterProject.Languages
     {
         static MiniPL instance;
 
-        Dictionary<String, TokenType> tts = new Dictionary<string, TokenType>();
-        Dictionary<String, Terminal> terms = new Dictionary<string, Terminal>();
-        Dictionary<String, Nonterminal> vars = new Dictionary<string, Nonterminal>();
-        CFG grammar;
-
         public static MiniPL GetInstance()
         {
             if (instance == null)
@@ -26,10 +21,46 @@ namespace InterpreterProject.Languages
             return instance;
         }
 
+        Dictionary<String, TokenType> tokenTypes = new Dictionary<string, TokenType>();
+        public Dictionary<String, TokenType> TokenTypes
+        {
+            get { return tokenTypes; }
+        }
+
+        Dictionary<String, Terminal> terminals = new Dictionary<string, Terminal>();
+        public Dictionary<String, Terminal> Terminals
+        {
+            get { return terminals; }
+        }
+
+        Dictionary<String, Nonterminal> nonterminals = new Dictionary<string, Nonterminal>();
+        public Dictionary<String, Nonterminal> Nonterminals
+        {
+            get { return nonterminals; }
+        }
+
+        CFG grammar;
+        public CFG Grammar
+        {
+            get { return grammar; }
+        }
+
+        Parser parser;
+        public Parser Parser
+        {
+            get { return parser; }
+        }
+
+
+        Scanner scanner;
+        public Scanner Scanner
+        {
+            get { return scanner; }
+        }
+
         private MiniPL()
         {
-            // Define regexes for tokens
-
+            // Create NFA-type things for tokens using regular operations
             Regex reBlockCommentStart = Regex.Concat("/*");
             Regex reBlockCommentEnd = Regex.Concat("*/");
 
@@ -56,121 +87,96 @@ namespace InterpreterProject.Languages
             Regex reInteger = Regex.Range('0', '9').Plus();
 
             // Define token types
-            tts["block_comment_start"] = new TokenType("block_comment_start", reBlockCommentStart);
-            tts["block_comment_end"] = new TokenType("block_comment_end", reBlockCommentEnd);
-            tts["int"] = new TokenType("int", reInteger);
-            tts["whitespace"] = new TokenType("whitespace", reWhitespace, priority: TokenType.Priority.Whitespace);
-            tts["string"] = new TokenType("string", reString);
-            tts["binary_op"] = new TokenType("binary op", reBinaryOperator);
-            tts["unary_op"] = new TokenType("unary op", reUnaryOperator);
-            tts["keyword"] = new TokenType("keyword", reKeyword, priority: TokenType.Priority.Keyword);
-            tts["type"] = new TokenType("type", reType, priority: TokenType.Priority.Keyword);
-            tts["left_paren"] = new TokenType("left paren", reParenLeft);
-            tts["right_paren"] = new TokenType("right paren", reParenRight);
-            tts["colon"] = new TokenType("colon", reColon);
-            tts["semicolon"] = new TokenType("semicolon", reSemicolon);
-            tts["assignment"] = new TokenType("assignment", reAssignment);
-            tts["dots"] = new TokenType("dots", reDots);
-            tts["identifier"] = new TokenType("identifier", reIdentifier);
+            tokenTypes["block_comment_start"] = new TokenType("block_comment_start", reBlockCommentStart);
+            tokenTypes["block_comment_end"] = new TokenType("block_comment_end", reBlockCommentEnd);
+            tokenTypes["int"] = new TokenType("int", reInteger);
+            tokenTypes["whitespace"] = new TokenType("whitespace", reWhitespace, priority: TokenType.Priority.Whitespace);
+            tokenTypes["string"] = new TokenType("string", reString);
+            tokenTypes["binary_op"] = new TokenType("binary op", reBinaryOperator);
+            tokenTypes["unary_op"] = new TokenType("unary op", reUnaryOperator);
+            tokenTypes["keyword"] = new TokenType("keyword", reKeyword, priority: TokenType.Priority.Keyword);
+            tokenTypes["type"] = new TokenType("type", reType, priority: TokenType.Priority.Keyword);
+            tokenTypes["left_paren"] = new TokenType("left paren", reParenLeft);
+            tokenTypes["right_paren"] = new TokenType("right paren", reParenRight);
+            tokenTypes["colon"] = new TokenType("colon", reColon);
+            tokenTypes["semicolon"] = new TokenType("semicolon", reSemicolon);
+            tokenTypes["assignment"] = new TokenType("assignment", reAssignment);
+            tokenTypes["dots"] = new TokenType("dots", reDots);
+            tokenTypes["identifier"] = new TokenType("identifier", reIdentifier);
+
+            // create combined automaton and scanner object
+            TokenAutomaton automaton = TokenType.CombinedAutomaton(tokenTypes.Values.ToArray());
+            scanner = new Scanner(automaton, tokenTypes["block_comment_start"], tokenTypes["block_comment_end"]);
 
             // Define nonterminal variables of CFG
-            vars["program"] = new Nonterminal("PROG");
-            vars["statements"] = new Nonterminal("STMTS");
-            vars["statements_head"] = new Nonterminal("STMTS_HEAD");
-            vars["statements_tail"] = new Nonterminal("STMTS_TAIL");
-            vars["statement"] = new Nonterminal("STMT");
-            vars["declaration"] = new Nonterminal("DECL");
-            vars["declaration_assignment"] = new Nonterminal("DECL_ASSIGN");
-            vars["expression"] = new Nonterminal("EXPR");
-            vars["unary_operation"] = new Nonterminal("UNARY_OP");
-            vars["binary_operation"] = new Nonterminal("BINARY_OP");
-            vars["operand"] = new Nonterminal("OPND");
+            nonterminals["program"] = new Nonterminal("PROG");
+            nonterminals["statements"] = new Nonterminal("STMTS");
+            nonterminals["statements_head"] = new Nonterminal("STMTS_HEAD");
+            nonterminals["statements_tail"] = new Nonterminal("STMTS_TAIL");
+            nonterminals["statement"] = new Nonterminal("STMT");
+            nonterminals["declaration"] = new Nonterminal("DECL");
+            nonterminals["declaration_assignment"] = new Nonterminal("DECL_ASSIGN");
+            nonterminals["expression"] = new Nonterminal("EXPR");
+            nonterminals["unary_operation"] = new Nonterminal("UNARY_OP");
+            nonterminals["binary_operation"] = new Nonterminal("BINARY_OP");
+            nonterminals["operand"] = new Nonterminal("OPND");
 
             // Define terminal variables of CFG
-            terms["identifier"] = new Terminal(tts["identifier"]);
-            terms["assert"] = new Terminal("assert");
-            terms["print"] = new Terminal("print");
-            terms["read"] = new Terminal("read");
-            terms["for"] = new Terminal("for");
-            terms["in"] = new Terminal("in");
-            terms["end"] = new Terminal("end");
-            terms["do"] = new Terminal("do");
-            terms["var"] = new Terminal("var");
-            terms["type"] = new Terminal(tts["type"]);
-            terms["string"] = new Terminal(tts["string"]);
-            terms["int"] = new Terminal(tts["int"]);
-            terms[")"] = new Terminal(")");
-            terms["("] = new Terminal("(");
-            terms[".."] = new Terminal("..");
-            terms[":="] = new Terminal(":=");
-            terms[":"] = new Terminal(":");
-            terms[";"] = new Terminal(";");
-            terms["binary_operator"] = new Terminal(tts["binary_op"]);
-            terms["unary_operator"] = new Terminal(tts["unary_op"]);
+            terminals["identifier"] = new Terminal(tokenTypes["identifier"]);
+            terminals["assert"] = new Terminal("assert");
+            terminals["print"] = new Terminal("print");
+            terminals["read"] = new Terminal("read");
+            terminals["for"] = new Terminal("for");
+            terminals["in"] = new Terminal("in");
+            terminals["end"] = new Terminal("end");
+            terminals["do"] = new Terminal("do");
+            terminals["var"] = new Terminal("var");
+            terminals["type"] = new Terminal(tokenTypes["type"]);
+            terminals["string"] = new Terminal(tokenTypes["string"]);
+            terminals["int"] = new Terminal(tokenTypes["int"]);
+            terminals[")"] = new Terminal(")");
+            terminals["("] = new Terminal("(");
+            terminals[".."] = new Terminal("..");
+            terminals[":="] = new Terminal(":=");
+            terminals[":"] = new Terminal(":");
+            terminals[";"] = new Terminal(";");
+            terminals["binary_operator"] = new Terminal(tokenTypes["binary_op"]);
+            terminals["unary_operator"] = new Terminal(tokenTypes["unary_op"]);
 
-            grammar = new CFG(vars["program"], terms.Values, vars.Values);
+            grammar = new CFG(nonterminals["program"], terminals.Values, nonterminals.Values);
 
-            grammar.AddProductionRule(vars["program"], new ISymbol[] { vars["statements"] });
-            grammar.AddProductionRule(vars["statements"], new ISymbol[] { vars["statements_head"], vars["statements_tail"] });
-            grammar.AddProductionRule(vars["statements_head"], new ISymbol[] { vars["statement"], terms[";"] });
-            grammar.AddProductionRule(vars["statements_tail"], new ISymbol[] { vars["statements_head"], vars["statements_tail"] });
-            grammar.AddProductionRule(vars["statements_tail"], new ISymbol[] { Terminal.EPSILON });
+            grammar.AddProductionRule(nonterminals["program"], new ISymbol[] { nonterminals["statements"] });
+            grammar.AddProductionRule(nonterminals["statements"], new ISymbol[] { nonterminals["statements_head"], nonterminals["statements_tail"] });
+            grammar.AddProductionRule(nonterminals["statements_head"], new ISymbol[] { nonterminals["statement"], terminals[";"] });
+            grammar.AddProductionRule(nonterminals["statements_tail"], new ISymbol[] { nonterminals["statements_head"], nonterminals["statements_tail"] });
+            grammar.AddProductionRule(nonterminals["statements_tail"], new ISymbol[] { Terminal.EPSILON });
 
-            grammar.AddProductionRule(vars["statement"], new ISymbol[] { vars["declaration"] });
-            grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["identifier"], terms[":="], vars["expression"] });
-            grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["for"], terms["identifier"], terms["in"], vars["expression"], terms[".."], vars["expression"], terms["do"],
-                                                                                   vars["statements"], terms["end"], terms["for"] });
-            grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["read"], terms["identifier"] });
-            grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["print"], vars["expression"] });
-            grammar.AddProductionRule(vars["statement"], new ISymbol[] { terms["assert"], terms["("], vars["expression"], terms[")"] });
+            grammar.AddProductionRule(nonterminals["statement"], new ISymbol[] { nonterminals["declaration"] });
+            grammar.AddProductionRule(nonterminals["statement"], new ISymbol[] { terminals["identifier"], terminals[":="], nonterminals["expression"] });
+            grammar.AddProductionRule(nonterminals["statement"], new ISymbol[] { terminals["for"], terminals["identifier"], terminals["in"], nonterminals["expression"], terminals[".."], nonterminals["expression"], terminals["do"],
+                                                                                   nonterminals["statements"], terminals["end"], terminals["for"] });
+            grammar.AddProductionRule(nonterminals["statement"], new ISymbol[] { terminals["read"], terminals["identifier"] });
+            grammar.AddProductionRule(nonterminals["statement"], new ISymbol[] { terminals["print"], nonterminals["expression"] });
+            grammar.AddProductionRule(nonterminals["statement"], new ISymbol[] { terminals["assert"], terminals["("], nonterminals["expression"], terminals[")"] });
 
-            grammar.AddProductionRule(vars["declaration"], new ISymbol[] { terms["var"], terms["identifier"], terms[":"], terms["type"], vars["declaration_assignment"] });
-            grammar.AddProductionRule(vars["declaration_assignment"], new ISymbol[] { terms[":="], vars["expression"] });
-            grammar.AddProductionRule(vars["declaration_assignment"], new ISymbol[] { Terminal.EPSILON });
+            grammar.AddProductionRule(nonterminals["declaration"], new ISymbol[] { terminals["var"], terminals["identifier"], terminals[":"], terminals["type"], nonterminals["declaration_assignment"] });
+            grammar.AddProductionRule(nonterminals["declaration_assignment"], new ISymbol[] { terminals[":="], nonterminals["expression"] });
+            grammar.AddProductionRule(nonterminals["declaration_assignment"], new ISymbol[] { Terminal.EPSILON });
 
-            grammar.AddProductionRule(vars["expression"], new ISymbol[] { vars["unary_operation"] });
-            grammar.AddProductionRule(vars["expression"], new ISymbol[] { vars["operand"], vars["binary_operation"] });
+            grammar.AddProductionRule(nonterminals["expression"], new ISymbol[] { nonterminals["unary_operation"] });
+            grammar.AddProductionRule(nonterminals["expression"], new ISymbol[] { nonterminals["operand"], nonterminals["binary_operation"] });
 
-            grammar.AddProductionRule(vars["unary_operation"], new ISymbol[] { terms["unary_operator"], vars["operand"] });
+            grammar.AddProductionRule(nonterminals["unary_operation"], new ISymbol[] { terminals["unary_operator"], nonterminals["operand"] });
 
-            grammar.AddProductionRule(vars["binary_operation"], new ISymbol[] { terms["binary_operator"], vars["operand"] });
-            grammar.AddProductionRule(vars["binary_operation"], new ISymbol[] { Terminal.EPSILON });
+            grammar.AddProductionRule(nonterminals["binary_operation"], new ISymbol[] { terminals["binary_operator"], nonterminals["operand"] });
+            grammar.AddProductionRule(nonterminals["binary_operation"], new ISymbol[] { Terminal.EPSILON });
 
-            grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["int"] });
-            grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["string"] });
-            grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["identifier"] });
-            grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["("], vars["expression"], terms[")"] });
-        }
+            grammar.AddProductionRule(nonterminals["operand"], new ISymbol[] { terminals["int"] });
+            grammar.AddProductionRule(nonterminals["operand"], new ISymbol[] { terminals["string"] });
+            grammar.AddProductionRule(nonterminals["operand"], new ISymbol[] { terminals["identifier"] });
+            grammar.AddProductionRule(nonterminals["operand"], new ISymbol[] { terminals["("], nonterminals["expression"], terminals[")"] });
 
-        public Dictionary<string, TokenType> GetTokenTypes()
-        {
-            return tts;
-        }
-
-        public Dictionary<string, Nonterminal> GetGrammarNonterminals()
-        {
-            return vars;
-        }
-
-        public Dictionary<string, Terminal> GetGrammarTerminals()
-        {
-            return terms;
-        }
-
-        public Scanner GetScanner()
-        {
-            TokenAutomaton automaton = TokenType.CombinedAutomaton(tts.Values.ToArray());
-            return new Scanner(automaton, tts["block_comment_start"], tts["block_comment_end"]);
-        }
-
-        public Parser GetParser()
-        {
-            return new Parser(grammar, terms[";"]);
-        }
-
-        public CFG GetGrammar()
-        {
-            return grammar;
+            parser = new Parser(grammar, terminals[";"]);
         }
 
         public Runnable ProcessParseTree(ParseTree parseTree, IEnumerable<IError> parseErrors)
@@ -183,6 +189,7 @@ namespace InterpreterProject.Languages
                 if (err is SyntaxError)
                     isValidParseTree = false;
             }
+
             // can't construct AST if parse tree is bad
             if (!isValidParseTree)
                 return prog;
@@ -201,15 +208,14 @@ namespace InterpreterProject.Languages
 
             parseTree.RemoveNodes(isEmptyNonterminal);
 
-
             // refactor
             // STMTS->STMTS_HEAD STMTS_TAIL to STMTS->(STMT)+
             // DECL->"var" <IDENT> ":" <TYPE> ASSIGN to  DECL->"var" <IDENT> ":" <TYPE> [":=" <EXPR>] 
             // EXPR->UNARY|OPND BINARY to EXPR-> unary_op OPND | OPND | OPND binary_op OPND
             // OPND-><INT>|<STRING>|<IDENT>|<EXPR> to just <INT>|<STRING>|<IDENT>|<EXPR>
             Nonterminal[] pruneVariables = new Nonterminal[] { 
-                vars["statements_head"], vars["statements_tail"], vars["unary_operation"], 
-                vars["binary_operation"], vars["declaration_assignment"], vars["operand"] };
+                nonterminals["statements_head"], nonterminals["statements_tail"], nonterminals["unary_operation"], 
+                nonterminals["binary_operation"], nonterminals["declaration_assignment"], nonterminals["operand"] };
 
             Predicate<IParseNode> isUnnecessaryNonterminal =
                 n => (n is ParseTree) ? pruneVariables.Contains((n as ParseTree).var) : false;
@@ -224,7 +230,7 @@ namespace InterpreterProject.Languages
                 if (node is ParseTree)
                 {
                     ParseTree subtree = node as ParseTree;
-                    if (subtree.var == vars["declaration"])
+                    if (subtree.var == nonterminals["declaration"])
                     {
                         ParseLeaf idLeaf = (subtree.children[0] as ParseLeaf);
                         ParseLeaf typeLeaf = (subtree.children[1] as ParseLeaf);
@@ -242,7 +248,7 @@ namespace InterpreterProject.Languages
                                 break;
                             case 3: // declaration with assignment
                                 ParseLeaf valueLeaf = (subtree.children[2] as ParseLeaf);
-                                Expression expr = Expression.FromTreeNode(subtree.children[2], terms, vars);
+                                Expression expr = Expression.FromTreeNode(subtree.children[2], terminals, nonterminals);
                                 declaration = new Statement.DeclarationStmt(identifier, type, idToken, expr);
                                 break;
                             default:
@@ -264,14 +270,14 @@ namespace InterpreterProject.Languages
                 {
                     ParseLeaf leaf = node as ParseLeaf;
                     Token leafToken = leaf.token;
-                    if (leafToken.tokenType == tts["identifier"])
+                    if (leafToken.tokenType == tokenTypes["identifier"])
                     {
                         string identifier = leafToken.lexeme;
                         Position idPosition = leafToken.pos;
 
                         if (!prog.declarations.ContainsKey(identifier))
                             prog.errors.Add(new SemanticError(leafToken, identifier + " never defined"));
-                        else if (idPosition.CompareTo(prog.declarations[identifier].token.pos) < 0)
+                        else if (idPosition.CompareTo(prog.declarations[identifier].Token.pos) < 0)
                             prog.errors.Add(new SemanticError(leafToken, identifier + " not defined before use"));
                     }
                 }
@@ -280,7 +286,7 @@ namespace InterpreterProject.Languages
             // add statements to runnable
             ParseTree statementListNode = parseTree.children[0] as ParseTree;
             foreach (IParseNode statementNode in statementListNode.children)
-                prog.statements.Add(Statement.FromTreeNode(statementNode, terms, vars));
+                prog.statements.Add(Statement.FromTreeNode(statementNode, terminals, nonterminals));
 
             // typecheck each statement
             foreach (Statement stmt in prog.statements)
@@ -293,7 +299,7 @@ namespace InterpreterProject.Languages
                     Statement.ForStmt forStmt = stmt as Statement.ForStmt;
                     Stack<Statement> stmtStack = new Stack<Statement>();
 
-                    foreach (Statement substmt in forStmt.block)
+                    foreach (Statement substmt in forStmt.Block)
                         stmtStack.Push(substmt);
 
                     while (stmtStack.Count != 0)
@@ -302,21 +308,21 @@ namespace InterpreterProject.Languages
                         if (s is Statement.AssignStmt)
                         {
                             Statement.AssignStmt assignment = s as Statement.AssignStmt;
-                            if (assignment.identifier == forStmt.identifier)
-                                prog.errors.Add(new SemanticError(assignment.token, forStmt.identifier + " cannot be modified inside for-loop"));
+                            if (assignment.Identifier == forStmt.Identifier)
+                                prog.errors.Add(new SemanticError(assignment.Token, forStmt.Identifier + " cannot be modified inside for-loop"));
                         }
                         else if (s is Statement.DeclarationStmt)
                         {
                             Statement.DeclarationStmt declaration = s as Statement.DeclarationStmt;
-                            if (declaration.identifier == forStmt.identifier)
-                                prog.errors.Add(new SemanticError(declaration.token, forStmt.identifier + " cannot be modified inside for-loop"));
+                            if (declaration.Identifier == forStmt.Identifier)
+                                prog.errors.Add(new SemanticError(declaration.Token, forStmt.Identifier + " cannot be modified inside for-loop"));
                         }
                         else if (s is Statement.ForStmt)
                         {
                             Statement.ForStmt nestedFor = s as Statement.ForStmt;
-                            if (nestedFor.identifier == forStmt.identifier)
-                                prog.errors.Add(new SemanticError(nestedFor.token, forStmt.identifier + " cannot be modified inside for-loop"));
-                            foreach (Statement substmt in nestedFor.block)
+                            if (nestedFor.Identifier == forStmt.Identifier)
+                                prog.errors.Add(new SemanticError(nestedFor.Token, forStmt.Identifier + " cannot be modified inside for-loop"));
+                            foreach (Statement substmt in nestedFor.Block)
                                 stmtStack.Push(substmt);
                         }
                     }

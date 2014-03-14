@@ -11,12 +11,20 @@ namespace InterpreterProject.Languages
 {
     public abstract class Expression
     {
-        public Token token;
+        Token token;
+        public Token Token
+        {
+            get { return token; }
+        }
+
         public abstract Value Evaluate(MiniPL.Runnable context);
         public abstract ValueType Type(MiniPL.Runnable context);
         public abstract void TypeCheck(MiniPL.Runnable context);
 
-        Expression(Token token) { this.token = token; }
+        Expression(Token token) 
+        { 
+            this.token = token; 
+        }
 
         public static Expression FromTreeNode(IParseNode ASTNode,
             Dictionary<String, Terminal> terms,
@@ -82,7 +90,7 @@ namespace InterpreterProject.Languages
 
         public class ValueExpr : Expression
         {
-            public Value value;
+            Value value;
 
             public ValueExpr(Value value, Token token)
                 : base(token)
@@ -108,7 +116,7 @@ namespace InterpreterProject.Languages
 
         public class IdentifierExpr : Expression
         {
-            public string identifier;
+            string identifier;
 
             public IdentifierExpr(string identifier, Token token)
                 : base(token)
@@ -123,7 +131,7 @@ namespace InterpreterProject.Languages
 
             override public ValueType Type(MiniPL.Runnable context)
             {
-                return context.declarations[identifier].type;
+                return context.declarations[identifier].Type;
             }
 
             override public void TypeCheck(MiniPL.Runnable context)
@@ -166,15 +174,15 @@ namespace InterpreterProject.Languages
                 expr.TypeCheck(context);
                 if (expr.Type(context) != ValueType.Boolean &&
                     expr.Type(context) != ValueType.Integer)
-                    context.errors.Add(new SemanticError(token, "bad type for '!' operation"));
+                    context.errors.Add(new SemanticError(Token, "bad type for '!' operation"));
             }
         }
 
         public class BinaryOp : Expression
         {
-            public Expression lhs;
-            public char op;
-            public Expression rhs;
+            Expression lhs;
+            char op;
+            Expression rhs;
 
             public BinaryOp(Expression lhs, char op, Expression rhs, Token token)
                 : base(token)
@@ -207,7 +215,7 @@ namespace InterpreterProject.Languages
                             throw new Exception("TYPECHECKING FAILED");
                         int denominator = rhs.Evaluate(context).IntValue();
                         if (denominator == 0)
-                            throw new MiniPL_DivideByZeroException(new RuntimeError(token, "divide by zero"));
+                            throw new MiniPL_DivideByZeroException(new RuntimeError(Token, "divide by zero"));
                         return new Value(lhs.Evaluate(context).IntValue() / denominator);
                     case '<':
                         if (rhs.Type(context) != ValueType.Integer || lhs.Type(context) != ValueType.Integer)
@@ -269,31 +277,31 @@ namespace InterpreterProject.Languages
                     case '+':
                         if (!((rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer) ||
                               (rhs.Type(context) == ValueType.String && lhs.Type(context) == ValueType.String)))
-                            context.errors.Add(new SemanticError(token, "bad operand types for '+' operation"));
+                            context.errors.Add(new SemanticError(Token, "bad operand types for '+' operation"));
                         break;
                     case '-':
                         if (!(rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer))
-                            context.errors.Add(new SemanticError(token, "bad operand types for '-' operation"));
+                            context.errors.Add(new SemanticError(Token, "bad operand types for '-' operation"));
                         break;
                     case '*':
                         if (!(rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer))
-                            context.errors.Add(new SemanticError(token, "bad operand types for '*' operation"));
+                            context.errors.Add(new SemanticError(Token, "bad operand types for '*' operation"));
                         break;
                     case '/':
                         if (!(rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer))
-                            context.errors.Add(new SemanticError(token, "bad operand types for '/' operation"));
+                            context.errors.Add(new SemanticError(Token, "bad operand types for '/' operation"));
                         break;
                     case '<':
                         if (!(rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer))
-                            context.errors.Add(new SemanticError(token, "bad operand types for '<' operation"));
+                            context.errors.Add(new SemanticError(Token, "bad operand types for '<' operation"));
                         break;
                     case '=':
                         if (!(rhs.Type(context) == lhs.Type(context)))
-                            context.errors.Add(new SemanticError(token, "bad operand types for '=' operation"));
+                            context.errors.Add(new SemanticError(Token, "bad operand types for '=' operation"));
                         break;
                     case '&':
                         if (rhs.Type(context) == ValueType.String || lhs.Type(context) == ValueType.String)
-                            context.errors.Add(new SemanticError(token, "bad operand types for '&' operation"));
+                            context.errors.Add(new SemanticError(Token, "bad operand types for '&' operation"));
                         break;
                 }
             }

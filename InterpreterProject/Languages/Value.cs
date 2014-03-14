@@ -10,39 +10,7 @@ namespace InterpreterProject.Languages
 
     public class Value
     {
-        private static readonly string[] escapeStrings =
-            new string[] { "\\a", "\\b", "\\f", "\\n", "\\r", "\\t", "\\v", "\\\\", "\\'", "\\\"", "\\0" };
-        private static readonly string[] escapeChars =
-            new string[] { "\a", "\b", "\f", "\n", "\r", "\t", "\v", "\\", "\'", "\"", "\0" };
-
-        private static string Unescape(string s)
-        {
-            for (int i = 0; i < escapeStrings.Length; i++)
-                s = s.Replace(escapeStrings[i], escapeChars[i]);
-            return s;
-        }
-
-        public static ValueType TypeFromString(string s)
-        {
-            ValueType type;
-            switch (s)
-            {
-                case "int":
-                    type = ValueType.Integer;
-                    break;
-                case "bool":
-                    type = ValueType.Boolean;
-                    break;
-                case "string":
-                    type = ValueType.String;
-                    break;
-                default:
-                    throw new Exception("UNEXPECTED TYPE STRING");
-            }
-            return type;
-        }
-
-        public Object value;
+        Object value;
         public ValueType Type()
         {
             if (value is Int32)
@@ -128,6 +96,38 @@ namespace InterpreterProject.Languages
                 return (bool)value;
             else
                 return 0 != (int)value;
+        }
+
+        private static readonly string[] escapeStrings =
+            new string[] { "\\a", "\\b", "\\f", "\\n", "\\r", "\\t", "\\v", "\\\\", "\\'", "\\\"", "\\0" };
+        private static readonly string[] escapeChars =
+            new string[] { "\a", "\b", "\f", "\n", "\r", "\t", "\v", "\\", "\'", "\"", "\0" };
+
+        private static string Unescape(string s)
+        {
+            for (int i = 0; i < escapeStrings.Length; i++)
+                s = s.Replace(escapeStrings[i], escapeChars[i]);
+            return s;
+        }
+
+        public static ValueType TypeFromString(string s)
+        {
+            ValueType type;
+            switch (s)
+            {
+                case "int":
+                    type = ValueType.Integer;
+                    break;
+                case "bool":
+                    type = ValueType.Boolean;
+                    break;
+                case "string":
+                    type = ValueType.String;
+                    break;
+                default:
+                    throw new Exception("UNEXPECTED TYPE STRING");
+            }
+            return type;
         }
     }
 }

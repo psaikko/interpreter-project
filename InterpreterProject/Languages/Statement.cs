@@ -14,8 +14,18 @@ namespace InterpreterProject.Languages
     {
         public abstract RuntimeError Execute(MiniPL.Runnable context, TextReader stdin, TextWriter stdout);
         public abstract void TypeCheck(MiniPL.Runnable context);
-        public Token token;
-        Statement(Token token) { this.token = token; }
+
+        Token token;
+        public Token Token
+        {
+            get { return token; }
+            set { }
+        }
+
+        Statement(Token token) 
+        { 
+            this.token = token; 
+        }
 
         public static Statement FromTreeNode(IParseNode ASTNode,
             Dictionary<String, Terminal> terms,
@@ -63,7 +73,7 @@ namespace InterpreterProject.Languages
                 ParseLeaf firstChild =
                     subtree.children[0] as ParseLeaf;
                 if (firstChild.terminal.tokenType != null &&
-                    firstChild.terminal.tokenType.name == "identifier") // --------------------------------- assignment or for
+                    firstChild.terminal.tokenType.name == "identifier") // ---------------------------- assignment or for
                 {
                     if (subtree.children.Count == 2) // ----------------------------------------------- assignment
                     {
@@ -119,7 +129,11 @@ namespace InterpreterProject.Languages
 
         public class ReadStmt : Statement
         {
-            public string identifier;
+            string identifier;
+            public string Identifier
+            {
+                get { return identifier; }
+            }
 
             public ReadStmt(string identifier, Token token)
                 : base(token)
@@ -140,13 +154,13 @@ namespace InterpreterProject.Languages
                     input += buf[0];
                 }
 
-                if (context.declarations[identifier].type == ValueType.Integer)
+                if (context.declarations[identifier].Type == ValueType.Integer)
                 {
                     int inputInt = 0;
-                    if (!Int32.TryParse(input, out inputInt)) return new RuntimeError(token, "expected to read integer");
+                    if (!Int32.TryParse(input, out inputInt)) return new RuntimeError(Token, "expected to read integer");
                     context.values[identifier] = new Value(inputInt);
                 }
-                else if (context.declarations[identifier].type == ValueType.String)
+                else if (context.declarations[identifier].Type == ValueType.String)
                 {
                     context.values[identifier] = new Value(input);
                 }
@@ -158,25 +172,27 @@ namespace InterpreterProject.Languages
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
-                if (context.declarations[identifier].type == ValueType.Boolean)
-                    context.errors.Add(new SemanticError(token, "cannot read a boolean value"));
+                if (context.declarations[identifier].Type == ValueType.Boolean)
+                    context.errors.Add(new SemanticError(Token, "cannot read a boolean value"));
             }
         }
 
         public class AssertStmt : Statement
         {
-            public Expression expr;
+            Expression expr;
 
             public AssertStmt(Expression expr, Token token)
                 : base(token)
-            { this.expr = expr; }
+            { 
+                this.expr = expr; 
+            }
 
             public override RuntimeError Execute(MiniPL.Runnable context, TextReader stdin, TextWriter stdout)
             {
                 if (expr.Type(context) == ValueType.String)
                     throw new Exception("TYPE CHECKING FAILED");
                 if (expr.Evaluate(context).BooleanValue() == false)
-                    return new RuntimeError(token, "assertion failed");
+                    return new RuntimeError(Token, "assertion failed");
                 return null;
             }
 
@@ -184,7 +200,7 @@ namespace InterpreterProject.Languages
             {
                 expr.TypeCheck(context);
                 if (expr.Type(context) == ValueType.String)
-                    context.errors.Add(new SemanticError(token, "cannot assert a string value"));
+                    context.errors.Add(new SemanticError(Token, "cannot assert a string value"));
             }
         }
 
@@ -218,15 +234,20 @@ namespace InterpreterProject.Languages
             {
                 expr.TypeCheck(context);
                 if (expr.Type(context) == ValueType.Boolean)
-                    context.errors.Add(new SemanticError(token, "cannot print a boolean value"));
+                    context.errors.Add(new SemanticError(Token, "cannot print a boolean value"));
             }
         }
 
         public class AssignStmt : Statement
         {
-            public string identifier;
-            public Expression expr;
+            Expression expr;
 
+            string identifier;
+            public string Identifier
+            {
+                get { return identifier; }
+            }
+           
             public AssignStmt(string identifier, Expression expr, Token token)
                 : base(token)
             {
@@ -243,30 +264,40 @@ namespace InterpreterProject.Languages
             public override void TypeCheck(MiniPL.Runnable context)
             {
                 expr.TypeCheck(context);
-                switch (context.declarations[identifier].type)
+                switch (context.declarations[identifier].Type)
                 {
                     case ValueType.Boolean:
                         if (expr.Type(context) == ValueType.String)
-                            context.errors.Add(new SemanticError(token, "cannot assign string value to boolean " + identifier));
+                            context.errors.Add(new SemanticError(Token, "cannot assign string value to boolean " + identifier));
                         break;
                     case ValueType.Integer:
                         if (expr.Type(context) != ValueType.Integer)
-                            context.errors.Add(new SemanticError(token, "expected integer type value for " + identifier));
+                            context.errors.Add(new SemanticError(Token, "expected integer type value for " + identifier));
                         break;
                     case ValueType.String:
                         if (expr.Type(context) != ValueType.String)
-                            context.errors.Add(new SemanticError(token, "expected string type value for " + identifier));
+                            context.errors.Add(new SemanticError(Token, "expected string type value for " + identifier));
                         break;
                 }
             }
         }
 
         public class ForStmt : Statement
-        {
-            public string identifier;
-            public Expression startVal;
-            public Expression endVal;
-            public IEnumerable<Statement> block;
+        {                      
+            Expression startVal;
+            Expression endVal;
+            
+            private string identifier;
+            public string Identifier
+            {
+                get { return identifier; }
+            }
+
+            private IEnumerable<Statement> block;
+            public IEnumerable<Statement> Block
+            {
+                get { return block; }
+            }
 
             public ForStmt(string identifier, Expression startVal, Expression endVal, IEnumerable<Statement> block, Token token)
                 : base(token)
@@ -298,12 +329,12 @@ namespace InterpreterProject.Languages
             {
                 startVal.TypeCheck(context);
                 endVal.TypeCheck(context);
-                if (context.declarations[identifier].type != ValueType.Integer)
-                    context.errors.Add(new SemanticError(token, "bad for-loop control type"));
+                if (context.declarations[identifier].Type != ValueType.Integer)
+                    context.errors.Add(new SemanticError(Token, "bad for-loop control type"));
                 if (startVal.Type(context) != ValueType.Integer)
-                    context.errors.Add(new SemanticError(startVal.token, "bad for-loop start value type"));
+                    context.errors.Add(new SemanticError(startVal.Token, "bad for-loop start value type"));
                 if (endVal.Type(context) != ValueType.Integer)
-                    context.errors.Add(new SemanticError(startVal.token, "bad for-loop end value type"));
+                    context.errors.Add(new SemanticError(startVal.Token, "bad for-loop end value type"));
                 foreach (Statement stmt in block)
                 {
                     stmt.TypeCheck(context);
@@ -312,10 +343,20 @@ namespace InterpreterProject.Languages
         }
 
         public class DeclarationStmt : Statement
-        {
-            public string identifier;
-            public ValueType type;
-            public Expression initialValue;
+        {         
+            Expression initialValue;
+
+            string identifier;
+            public string Identifier
+            {
+                get { return identifier; }
+            }
+
+            ValueType type;
+            public ValueType Type
+            {
+                get { return type; }
+            }
 
             public DeclarationStmt(string identifier, ValueType type, Token token, Expression initialValue)
                 : this(identifier, type, token)
@@ -345,15 +386,15 @@ namespace InterpreterProject.Languages
                     {
                         case ValueType.Boolean:
                             if (initialValue.Type(context) == ValueType.String)
-                                context.errors.Add(new SemanticError(token, "cannot assign string value to boolean " + identifier));
+                                context.errors.Add(new SemanticError(Token, "cannot assign string value to boolean " + identifier));
                             break;
                         case ValueType.Integer:
                             if (initialValue.Type(context) != ValueType.Integer)
-                                context.errors.Add(new SemanticError(token, "expected integer type value for " + identifier));
+                                context.errors.Add(new SemanticError(Token, "expected integer type value for " + identifier));
                             break;
                         case ValueType.String:
                             if (initialValue.Type(context) != ValueType.String)
-                                context.errors.Add(new SemanticError(token, "expected string type value for " + identifier));
+                                context.errors.Add(new SemanticError(Token, "expected string type value for " + identifier));
                             break;
                     }
                 }
