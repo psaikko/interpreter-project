@@ -13,13 +13,18 @@ namespace InterpreterProject.SyntaxAnalysis
         ParseTable table;
         Nonterminal start;
         Terminal syncTerm;
+        CFG grammar;
         List<IError> errors = new List<IError>();
 
-        public Parser(ParseTable table, Nonterminal start, Terminal syncTerm)
+        public Parser(CFG grammar, Terminal syncTerm)
         {
-            this.table = table;
-            this.start = start;
+            this.grammar = grammar;
+            this.table = grammar.CreateLL1ParseTable();
+            this.start = grammar.StartSymbol;
             this.syncTerm = syncTerm;
+
+            if (table == null)
+                throw new Exception("GRAMMAR NOT LL(1)");
         }
 
         public Tree<IParseValue> Parse(IEnumerable<Token> tokenSource)
@@ -43,15 +48,15 @@ namespace InterpreterProject.SyntaxAnalysis
                 if (Program.debug)
                 {
                     Console.WriteLine("=========================================================");
-                    Console.WriteLine("PARSE: Stack " + SymbolsToString(symbolStack));
-                    Console.WriteLine("PARSE: expecting " + symbolStack.Peek());
-                    Console.WriteLine("PARSE: token " + tokenStream.Current);
+                    Console.WriteLine("  PARSE: Stack " + SymbolsToString(symbolStack));
+                    Console.WriteLine("  PARSE: expecting " + symbolStack.Peek());
+                    Console.WriteLine("  PARSE: token " + tokenStream.Current);
                 }
 
                 if (tokenStream.Current.tokenType == TokenType.ERROR)
                 {
                     if (Program.debug) 
-                        Console.WriteLine("PARSE: skipping error token");
+                        Console.WriteLine("  PARSE: skipping error token");
                     errors.Add(new LexicalError(tokenStream.Current));
                     tokenStream.MoveNext();
                     continue;
@@ -65,7 +70,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     if (term == Terminal.EPSILON)
                     {
                         if (Program.debug) 
-                            Console.WriteLine("PARSE: ignore epsilon");
+                            Console.WriteLine("  PARSE: ignore epsilon");
                         symbolStack.Pop();
                         treeStack.Pop();
                     }
@@ -73,7 +78,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     {
                         (leaf.GetValue() as TerminalValue).token = tokenStream.Current;
                         if (Program.debug) 
-                            Console.WriteLine("PARSE: Terminal match");
+                            Console.WriteLine("  PARSE: Terminal match");
                         tokenStream.MoveNext();
                         symbolStack.Pop();
                         treeStack.Pop();
@@ -81,12 +86,8 @@ namespace InterpreterProject.SyntaxAnalysis
                     else
                     {
                         if (Program.debug)
-                        {
-                            Console.WriteLine("PARSE: Terminal mismatch");
-                            Console.WriteLine("PARSE: Error");
-                            Console.WriteLine("PARSE: Panic mode");
-                        }
-                        
+                            Console.WriteLine("  PARSE: Error, Terminal mismatch");
+                       
                         errors.Add(new SyntaxError(tokenStream.Current));
                         Synchronize(symbolStack, treeStack, tokenStream);     
                     }
@@ -101,20 +102,19 @@ namespace InterpreterProject.SyntaxAnalysis
 
                     if (production == null)
                     {
+                        symbolStack.Push(var);
+                        treeStack.Push(popped);
+
                         if (Program.debug)
-                        {
-                            Console.WriteLine("PARSE: No such production");
-                            Console.WriteLine("PARSE: Error");
-                            Console.WriteLine("PARSE: Panic mode");
-                        }
-                        
+                            Console.WriteLine("  PARSE: Error, No such production");
+
                         errors.Add(new SyntaxError(tokenStream.Current));
                         Synchronize(symbolStack, treeStack, tokenStream);
                     }
                     else
                     {
                         if (Program.debug) 
-                            Console.WriteLine("PARSE: Using production " + SymbolsToString(production));
+                            Console.WriteLine("  PARSE: Using production " + SymbolsToString(production));
                         for (int i = production.Length - 1; i >= 0; i--)
                         {
                             INode<IParseValue> treeChild;
@@ -137,33 +137,93 @@ namespace InterpreterProject.SyntaxAnalysis
         }
 
         private void Synchronize(Stack<ISymbol> symbolStack, Stack<INode<IParseValue>> treeStack, IEnumerator<Token> tokenStream)
-        {           
-            // unexpected end of file - no sync possible
-            if (tokenStream.Current.tokenType == TokenType.EOF)
+        {
+            sync: while (symbolStack.Count > 0)
             {
-                while (symbolStack.Count > 0)
-                    symbolStack.Pop();
-                if (Program.debug) 
-                    Console.WriteLine("PARSE: Unexpected EOF");
-                return;
-            }
+                if (Program.debug)
+                    Console.WriteLine("  PARSE: Synchronize token " + tokenStream.Current + " symbol " + symbolStack.Peek());
 
-            while (!syncTerm.Matches(tokenStream.Current))
-            {
-                if (Program.debug) 
-                    Console.WriteLine("PARSE: Discarding token " + tokenStream.Current);
-                if (!tokenStream.MoveNext())
-                    break; // no more token for us?
+                if (tokenStream.Current.tokenType == TokenType.EOF)
+                {
+                    while (symbolStack.Count > 0)
+                    {
+                        symbolStack.Pop();
+                        treeStack.Pop();
+                    }                        
+                    if (Program.debug)
+                        Console.WriteLine("PARSE: Unexpected EOF");
+                    return;
+                }
+
+                if (symbolStack.Peek() is Terminal)
+                {                   
+                    Terminal t = symbolStack.Peek() as Terminal;
+                    if (t.Matches(tokenStream.Current))
+                    {
+                        if (Program.debug)
+                            Console.WriteLine("  PARSE: Token matches");
+                        return;
+                    }
+
+                    if (syncTerm.Matches(tokenStream.Current))
+                    {
+                        if (Program.debug)
+                            Console.WriteLine("  PARSE: Discarding symbol " + symbolStack.Peek());
+                        symbolStack.Pop();
+                        treeStack.Pop();
+                        continue;
+                    }
+
+                    if (Program.debug)
+                        Console.WriteLine("  PARSE: Discard token");
+                    if (!tokenStream.MoveNext())
+                        throw new Exception("OUT OF TOKENS");
+                    continue;
+                }
+                else
+                {
+                    Nonterminal v = symbolStack.Peek() as Nonterminal;
+                    if (table.Get(v, tokenStream.Current) != null)
+                    {
+                        if (Program.debug)
+                            Console.WriteLine("  PARSE: Valid production exists");
+                        return;
+                    }
+                        
+                    foreach (ISymbol sym in grammar.Follow(v))
+                    {
+                        if (sym is Terminal)
+                        {
+                            Terminal followTerm = sym as Terminal;
+                            if (followTerm.Matches(tokenStream.Current))
+                            {
+                                if (Program.debug)
+                                    Console.WriteLine("  PARSE: Discarding symbol " + symbolStack.Peek());
+                                symbolStack.Pop();
+                                treeStack.Pop();
+                                goto sync;
+                            }
+                        }
+                        if (sym is Nonterminal)
+                        {
+                            Nonterminal followVar = sym as Nonterminal;
+                            if (table.Get(followVar, tokenStream.Current) != null)
+                            {
+                                if (Program.debug)
+                                    Console.WriteLine("  PARSE: Discarding symbol " + symbolStack.Peek());
+                                symbolStack.Pop();
+                                treeStack.Pop();
+                                goto sync;
+                            }
+                        }
+                    }
+
+                    if (Program.debug)
+                        Console.WriteLine("  PARSE: Discard token");
+                    if (!tokenStream.MoveNext())
+                        throw new Exception("OUT OF TOKENS");
+                }
             }
-            if (Program.debug) 
-                Console.WriteLine(syncTerm);
-            while (symbolStack.Count > 0 && symbolStack.Peek() != syncTerm)
-            {
-                if (Program.debug) 
-                    Console.WriteLine("PARSE: Discarding symbol " + symbolStack.Peek());
-                symbolStack.Pop();
-                treeStack.Pop();
-            }             
         }
 
         private string SymbolsToString(IEnumerable<ISymbol> production)

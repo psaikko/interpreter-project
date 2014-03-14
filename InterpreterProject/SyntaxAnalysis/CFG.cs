@@ -9,7 +9,14 @@ namespace InterpreterProject.SyntaxAnalysis
     public class CFG
     {
         Dictionary<Nonterminal, List<ISymbol[]>> productions = new Dictionary<Nonterminal, List<ISymbol[]>>();
+
         Nonterminal startSymbol;
+        public Nonterminal StartSymbol
+        {
+            get { return startSymbol; }
+            set { }
+        }
+
         ICollection<Terminal> terminals;
         ICollection<Nonterminal> nonterminals;
 

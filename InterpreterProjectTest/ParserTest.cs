@@ -273,12 +273,13 @@ namespace InterpreterProjectTest
             string text = "var nTimes : int := -0;\n" + // no unary negative
                           "print \"How many times?\";\n" +
                           "read nTimes + 1;\n" + // read expr
+                          "+" + // stray +
                           "x : int;\n" + // declaration without var
                           "for x in 0..nTimes-1 do\n" +
                           "     print x;\n" +
-                          "     print \" : Hello, World!\n\";\n" +
+                          "     print \" : Hello, World!\n\";\n" + 
                           "end for;\n" +
-                          " */ ;" + // stray block comment end
+                          "*/" + // stray block comment end
                           "assert (x = nTimes); - "; // stray -
 
             MiniPL miniPL = MiniPL.GetInstance();
@@ -288,7 +289,7 @@ namespace InterpreterProjectTest
             ps.Parse(sc.Tokenize(text));
             List<IError> errors = ps.GetErrors();
 
-            Assert.AreEqual(5, errors.Count);
+            Assert.AreEqual(6, errors.Count);
         }        
     }
 }

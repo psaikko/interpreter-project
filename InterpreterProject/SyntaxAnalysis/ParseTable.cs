@@ -11,11 +11,6 @@ namespace InterpreterProject.SyntaxAnalysis
     {
         Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> table = new Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>>();
 
-        public ParseTable()
-        {
-
-        }
-
         public ISymbol[] Get(Nonterminal var, Terminal term)
         {
             if (!table.ContainsKey(var))

@@ -19,8 +19,6 @@ namespace InterpreterProject.Languages
         Dictionary<String, Nonterminal> vars = new Dictionary<string, Nonterminal>();
         CFG grammar;
 
-        ParseTable parseTable;
-
         public static MiniPL GetInstance()
         {
             if (instance == null)
@@ -144,8 +142,6 @@ namespace InterpreterProject.Languages
             grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["string"] });
             grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["identifier"] });
             grammar.AddProductionRule(vars["operand"], new ISymbol[] { terms["("], vars["expression"], terms[")"] });
-
-            parseTable = grammar.CreateLL1ParseTable();
         }
 
         public Dictionary<string, TokenType> GetTokenTypes()
@@ -171,7 +167,7 @@ namespace InterpreterProject.Languages
 
         public Parser GetParser()
         {
-            return new Parser(parseTable, vars["program"], terms[";"]);
+            return new Parser(grammar, terms[";"]);
         }
 
         public CFG GetGrammar()
