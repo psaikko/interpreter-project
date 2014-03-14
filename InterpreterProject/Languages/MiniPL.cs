@@ -198,13 +198,13 @@ namespace InterpreterProject.Languages
             String[] pruneTokens = { "(", ")", ";", ":", "..", ":=", "var", "in", "for", "end", "do" };
 
             Predicate<IParseNode> isUnnecessaryTerminal =
-                n => (n is ParseLeaf) ? (n as ParseLeaf).token == null || pruneTokens.Contains((n as ParseLeaf).token.lexeme) : false;
+                n => (n is ParseLeaf) ? (n as ParseLeaf).Token == null || pruneTokens.Contains((n as ParseLeaf).Token.Lexeme) : false;
 
             parseTree.RemoveNodes(isUnnecessaryTerminal);
 
             // remove any tree nodes with no children
             Predicate<IParseNode> isEmptyNonterminal =
-                v => (v is ParseTree) ? (v as ParseTree).children.Count == 0 : false;
+                v => (v is ParseTree) ? (v as ParseTree).Children.Count == 0 : false;
 
             parseTree.RemoveNodes(isEmptyNonterminal);
 
@@ -218,7 +218,7 @@ namespace InterpreterProject.Languages
                 nonterminals["binary_operation"], nonterminals["declaration_assignment"], nonterminals["operand"] };
 
             Predicate<IParseNode> isUnnecessaryNonterminal =
-                n => (n is ParseTree) ? pruneVariables.Contains((n as ParseTree).var) : false;
+                n => (n is ParseTree) ? pruneVariables.Contains((n as ParseTree).Nonterminal) : false;
 
             parseTree.RemoveNodes(isUnnecessaryNonterminal);
 
@@ -230,25 +230,25 @@ namespace InterpreterProject.Languages
                 if (node is ParseTree)
                 {
                     ParseTree subtree = node as ParseTree;
-                    if (subtree.var == nonterminals["declaration"])
+                    if (subtree.Nonterminal == nonterminals["declaration"])
                     {
-                        ParseLeaf idLeaf = (subtree.children[0] as ParseLeaf);
-                        ParseLeaf typeLeaf = (subtree.children[1] as ParseLeaf);
-                        Token idToken = idLeaf.token;
-                        Token typeToken = typeLeaf.token;
+                        ParseLeaf idLeaf = (subtree.Children[0] as ParseLeaf);
+                        ParseLeaf typeLeaf = (subtree.Children[1] as ParseLeaf);
+                        Token idToken = idLeaf.Token;
+                        Token typeToken = typeLeaf.Token;
 
-                        string identifier = idToken.lexeme;
-                        ValueType type = Value.TypeFromString(typeToken.lexeme);
+                        string identifier = idToken.Lexeme;
+                        ValueType type = Value.TypeFromString(typeToken.Lexeme);
 
                         Statement.DeclarationStmt declaration;
-                        switch (subtree.children.Count)
+                        switch (subtree.Children.Count)
                         {
                             case 2: // simple declaration
                                 declaration = new Statement.DeclarationStmt(identifier, type, idToken);
                                 break;
                             case 3: // declaration with assignment
-                                ParseLeaf valueLeaf = (subtree.children[2] as ParseLeaf);
-                                Expression expr = Expression.FromTreeNode(subtree.children[2], terminals, nonterminals);
+                                ParseLeaf valueLeaf = (subtree.Children[2] as ParseLeaf);
+                                Expression expr = Expression.FromTreeNode(subtree.Children[2], terminals, nonterminals);
                                 declaration = new Statement.DeclarationStmt(identifier, type, idToken, expr);
                                 break;
                             default:
@@ -269,23 +269,23 @@ namespace InterpreterProject.Languages
                 if (node is ParseLeaf)
                 {
                     ParseLeaf leaf = node as ParseLeaf;
-                    Token leafToken = leaf.token;
-                    if (leafToken.tokenType == tokenTypes["identifier"])
+                    Token leafToken = leaf.Token;
+                    if (leafToken.Type == tokenTypes["identifier"])
                     {
-                        string identifier = leafToken.lexeme;
-                        Position idPosition = leafToken.pos;
+                        string identifier = leafToken.Lexeme;
+                        Position idPosition = leafToken.TextPosition;
 
                         if (!prog.declarations.ContainsKey(identifier))
                             prog.errors.Add(new SemanticError(leafToken, identifier + " never defined"));
-                        else if (idPosition.CompareTo(prog.declarations[identifier].Token.pos) < 0)
+                        else if (idPosition.CompareTo(prog.declarations[identifier].Token.TextPosition) < 0)
                             prog.errors.Add(new SemanticError(leafToken, identifier + " not defined before use"));
                     }
                 }
             }
 
             // add statements to runnable
-            ParseTree statementListNode = parseTree.children[0] as ParseTree;
-            foreach (IParseNode statementNode in statementListNode.children)
+            ParseTree statementListNode = parseTree.Children[0] as ParseTree;
+            foreach (IParseNode statementNode in statementListNode.Children)
                 prog.statements.Add(Statement.FromTreeNode(statementNode, terminals, nonterminals));
 
             // typecheck each statement

@@ -61,7 +61,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     Console.WriteLine("  PARSE: token " + tokenStream.Current);
                 }
 
-                if (tokenStream.Current.tokenType == TokenType.ERROR)
+                if (tokenStream.Current.Type == TokenType.ERROR)
                 {
                     if (Program.debug)
                         Console.WriteLine("  PARSE: skipping error token");
@@ -84,7 +84,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     }
                     else if (term.Matches(tokenStream.Current))
                     {
-                        leaf.token = tokenStream.Current;
+                        leaf.Token = tokenStream.Current;
                         if (Program.debug)
                             Console.WriteLine("  PARSE: Terminal match");
                         tokenStream.MoveNext();
@@ -130,7 +130,7 @@ namespace InterpreterProject.SyntaxAnalysis
                                 treeChild = new ParseLeaf(production[i] as Terminal);
                             else
                                 treeChild = new ParseTree(production[i] as Nonterminal);
-                            subtree.children.Insert(0, treeChild);
+                            subtree.Children.Insert(0, treeChild);
                             treeStack.Push(treeChild);
                             symbolStack.Push(production[i]);
                         }
@@ -151,7 +151,7 @@ namespace InterpreterProject.SyntaxAnalysis
                 if (Program.debug)
                     Console.WriteLine("  PARSE: Synchronize token " + tokenStream.Current + " symbol " + symbolStack.Peek());
 
-                if (tokenStream.Current.tokenType == TokenType.EOF)
+                if (tokenStream.Current.Type == TokenType.EOF)
                 {
                     while (symbolStack.Count > 0)
                     {

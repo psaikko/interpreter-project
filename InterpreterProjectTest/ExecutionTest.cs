@@ -16,11 +16,11 @@ namespace InterpreterProjectTest
         private string RunWithInput(string program, string input)
         {
             MiniPL miniPL = MiniPL.GetInstance();
-            Scanner sc = miniPL.GetScanner();
-            Parser ps = miniPL.GetParser();
+            Scanner sc = miniPL.Scanner;
+            Parser ps = miniPL.Parser;
 
             ParseTree ptree = ps.Parse(sc.Tokenize(program));
-            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.Errors);
 
             StringWriter writer = new StringWriter();
             StringReader reader = new StringReader(input);

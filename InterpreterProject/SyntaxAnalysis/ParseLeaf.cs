@@ -10,8 +10,18 @@ namespace InterpreterProject.SyntaxAnalysis
 {
     public class ParseLeaf : IParseNode
     {
-        public Terminal terminal;
-        public Token token;
+        private Terminal terminal;
+        public Terminal Terminal
+        {
+            get { return terminal; }
+        }
+
+        private Token token;
+        public Token Token
+        {
+            get { return token; }
+            set { this.token = value; }
+        }
 
         public ParseLeaf(Terminal terminal)
         {

@@ -13,15 +13,25 @@ namespace InterpreterProject.LexicalAnalysis
         public static readonly TokenType ERROR = new TokenType("ERROR", Regex.None());
         public static readonly TokenType EOF = new TokenType("EOF", Regex.Char(TokenAutomaton.EOF));
 
-        public readonly String name;
-        public readonly Priority priority;
-        readonly Regex regex;
+        String name;
+        public String Name
+        {
+            get { return name; }
+        }
+
+        Priority tokenPriority;
+        public Priority TokenPriority
+        {
+            get { return tokenPriority; }
+        } 
+
+        Regex regex;
 
         public TokenType(String name, Regex regex, Priority priority = Priority.Default)
         {
             this.name = name;
             this.regex = regex;
-            this.priority = priority;
+            this.tokenPriority = priority;
             regex.DefineTokenClass(this);
         }
 

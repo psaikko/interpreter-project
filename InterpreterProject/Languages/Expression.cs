@@ -33,44 +33,44 @@ namespace InterpreterProject.Languages
             if (ASTNode is ParseTree)
             {
                 ParseTree subtree = ASTNode as ParseTree;
-                if (subtree.var != vars["expression"]) throw new Exception("EXPECTED EXPRESSION NODE");
+                if (subtree.Nonterminal != vars["expression"]) throw new Exception("EXPECTED EXPRESSION NODE");
 
-                switch (subtree.children.Count)
+                switch (subtree.Children.Count)
                 {
                     case 1:
-                        IParseNode child = subtree.children[0];
+                        IParseNode child = subtree.Children[0];
                         if (child is ParseLeaf) // identifier or literal
                             return ExprFromLeaf(child as ParseLeaf);
                         else // another expr
                             return FromTreeNode(child, terms, vars);
                     case 2:
                         {
-                            IParseNode op = subtree.children[0];
+                            IParseNode op = subtree.Children[0];
                             ParseLeaf opLeaf = op as ParseLeaf;
                             if (opLeaf == null) throw new Exception("MALFORMED AST");
 
-                            IParseNode opnd = subtree.children[1];
+                            IParseNode opnd = subtree.Children[1];
                             Expression baseExpr;
                             if (opnd is ParseLeaf)
                                 baseExpr = ExprFromLeaf(opnd as ParseLeaf);
                             else
                                 baseExpr = FromTreeNode(opnd as ParseTree, terms, vars);
-                            return new UnaryOp(opLeaf.token.lexeme[0], baseExpr, opLeaf.token);
+                            return new UnaryOp(opLeaf.Token.Lexeme[0], baseExpr, opLeaf.Token);
                         }
                     case 3:
                         {
-                            IParseNode op = subtree.children[1];
+                            IParseNode op = subtree.Children[1];
                             ParseLeaf opLeaf = op as ParseLeaf;
                             if (opLeaf == null) throw new Exception("MALFORMED AST");
 
-                            IParseNode lhs = subtree.children[0];
-                            IParseNode rhs = subtree.children[2];
+                            IParseNode lhs = subtree.Children[0];
+                            IParseNode rhs = subtree.Children[2];
                             Expression lhsExpr, rhsExpr;
                             if (lhs is ParseLeaf) lhsExpr = ExprFromLeaf(lhs as ParseLeaf);
                             else lhsExpr = FromTreeNode(lhs as ParseTree, terms, vars);
                             if (rhs is ParseLeaf) rhsExpr = ExprFromLeaf(rhs as ParseLeaf);
                             else rhsExpr = FromTreeNode(rhs as ParseTree, terms, vars);
-                            return new BinaryOp(lhsExpr, opLeaf.token.lexeme[0], rhsExpr, opLeaf.token);
+                            return new BinaryOp(lhsExpr, opLeaf.Token.Lexeme[0], rhsExpr, opLeaf.Token);
                         }
                     default:
                         throw new Exception("MALFORMED AST");
@@ -82,10 +82,10 @@ namespace InterpreterProject.Languages
         private static Expression ExprFromLeaf(ParseLeaf leaf)
         {
             if (leaf == null) throw new Exception("MALFORMED AST");
-            if (leaf.token.tokenType.name == "identifier")
-                return new IdentifierExpr(leaf.token.lexeme, leaf.token);
+            if (leaf.Token.Type.Name == "identifier")
+                return new IdentifierExpr(leaf.Token.Lexeme, leaf.Token);
             else
-                return new ValueExpr(new Value(leaf.token.tokenType.name, leaf.token.lexeme), leaf.token);
+                return new ValueExpr(new Value(leaf.Token.Type.Name, leaf.Token.Lexeme), leaf.Token);
         }
 
         public class ValueExpr : Expression

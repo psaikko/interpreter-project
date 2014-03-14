@@ -25,6 +25,19 @@ namespace InterpreterProject.LexicalAnalysis
         private int startRow = 0;
         private int startCol = 0;
 
+        public void Reset()
+        {
+            row = 0;
+            col = 0;
+            endRow = 0;
+            endCol = 0;
+            startRow = 0;
+            startCol = 0;
+            tokenBuffer = new Queue<Token>();
+            lastToken = null;
+            position = start;
+        }
+
         public TokenAutomaton(Node initNode)
         {
             this.start = initNode;
@@ -86,7 +99,7 @@ namespace InterpreterProject.LexicalAnalysis
                 if (Program.debug) Console.WriteLine("AUTOMATON recognize token " + match);
 
                 position = start;
-                string overflow = charBuffer.Remove(0, match.lexeme.Length);
+                string overflow = charBuffer.Remove(0, match.Lexeme.Length);
                 charBuffer = "";
 
                 foreach (char ch in overflow)

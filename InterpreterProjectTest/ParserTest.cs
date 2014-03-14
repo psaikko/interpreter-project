@@ -15,7 +15,7 @@ namespace InterpreterProjectTest
         [TestMethod]
         public void Parser_MiniPL_LL1ParseTableGenerationTest()
         {
-            CFG grammar = MiniPL.GetInstance().GetGrammar();
+            CFG grammar = MiniPL.GetInstance().Grammar;
             ParseTable parseTable = grammar.CreateLL1ParseTable();
             Assert.AreNotEqual(null, parseTable);
         }
@@ -24,9 +24,9 @@ namespace InterpreterProjectTest
         public void Parser_MiniPL_LL1FirstSetsTest()
         {
             MiniPL miniPL = MiniPL.GetInstance();
-            CFG grammar = miniPL.GetGrammar();
-            Dictionary<string, Nonterminal> vars = miniPL.GetGrammarNonterminals();
-            Dictionary<string, Terminal> terms = miniPL.GetGrammarTerminals();
+            CFG grammar = miniPL.Grammar;
+            Dictionary<string, Nonterminal> vars = miniPL.Nonterminals;
+            Dictionary<string, Terminal> terms = miniPL.Terminals;
 
             ISet<Terminal> firstSet = grammar.First(vars["program"]);
             Assert.IsTrue(firstSet.SetEquals(new Terminal[] { 
@@ -77,9 +77,9 @@ namespace InterpreterProjectTest
         public void Parser_MiniPL_LL1FollowSetsTest()
         {
             MiniPL miniPL = MiniPL.GetInstance();
-            CFG grammar = miniPL.GetGrammar();
-            Dictionary<string, Nonterminal> vars = miniPL.GetGrammarNonterminals();
-            Dictionary<string, Terminal> terms = miniPL.GetGrammarTerminals();
+            CFG grammar = miniPL.Grammar;
+            Dictionary<string, Nonterminal> vars = miniPL.Nonterminals;
+            Dictionary<string, Terminal> terms = miniPL.Terminals;
 
             ISet<Terminal> followSet = grammar.Follow(vars["program"]);
             Assert.IsTrue(followSet.SetEquals(new Terminal[] { 
@@ -133,9 +133,12 @@ namespace InterpreterProjectTest
                           "print X;";
 
             MiniPL miniPL = MiniPL.GetInstance();
-            Scanner sc = miniPL.GetScanner();
-            Parser ps = miniPL.GetParser();
-            ParseTree ptree = ps.Parse(sc.Tokenize(text));         
+            CFG grammar = miniPL.Grammar;
+            Dictionary<string, Nonterminal> vars = miniPL.Nonterminals;
+            Dictionary<string, Terminal> terms = miniPL.Terminals;
+            Scanner sc = miniPL.Scanner;
+            Parser ps = miniPL.Parser;
+            ParseTree ptree = ps.Parse(sc.Tokenize(text));
 
             // compare contents of tree to hand-drawn parse tree
 
@@ -146,22 +149,22 @@ namespace InterpreterProjectTest
             Assert.AreEqual(2, ptree.SymbolCount(
                 s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal) == Terminal.EPSILON));
             Assert.AreEqual(3, ptree.SymbolCount(
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).MatchedTokenType == miniPL.TokenTypes["int"]));
             Assert.AreEqual(2, ptree.SymbolCount(
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["binary_op"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).MatchedTokenType == miniPL.TokenTypes["binary_op"]));
             Assert.AreEqual(21, ptree.SymbolCount(
                 s => s.GetSymbol() is Nonterminal));
             // two actual binary operations, one -> epsilon
             Assert.AreEqual(3, ptree.SymbolCount(
-                s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == miniPL.GetGrammarNonterminals()["binary_operation"]));
+                s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == vars["binary_operation"]));
             Assert.AreEqual(2, ptree.SymbolCount(
-                s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == miniPL.GetGrammarNonterminals()["statement"]));
+                s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == vars["statement"]));
             Assert.IsTrue(ptree.DepthContains(12,
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).MatchedTokenType == miniPL.TokenTypes["int"]));
             Assert.IsTrue(ptree.DepthContains(11,
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).MatchedTokenType == miniPL.TokenTypes["int"]));
             Assert.IsTrue(ptree.DepthContains(8,
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).MatchedTokenType == miniPL.TokenTypes["int"]));
         }
 
         [TestMethod]
@@ -171,12 +174,12 @@ namespace InterpreterProjectTest
                           "print X;";
 
             MiniPL miniPL = MiniPL.GetInstance();
-            Scanner sc = miniPL.GetScanner();
-            Parser ps = miniPL.GetParser();
+            Scanner sc = miniPL.Scanner;
+            Parser ps = miniPL.Parser;
 
             ParseTree ptree  = ps.Parse(sc.Tokenize(text));
 
-            List<IError> errors = ps.GetErrors();
+            List<IError> errors = ps.Errors;
 
             Assert.AreEqual(0, errors.Count);
         }
@@ -195,10 +198,10 @@ namespace InterpreterProjectTest
                           "assert (x = nTimes);";
 
             MiniPL miniPL = MiniPL.GetInstance();
-            Scanner sc = miniPL.GetScanner();
-            Parser ps = miniPL.GetParser();
+            Scanner sc = miniPL.Scanner;
+            Parser ps = miniPL.Parser;
             ps.Parse(sc.Tokenize(text));
-            List<IError> errors = ps.GetErrors();
+            List<IError> errors = ps.Errors;
 
             Assert.AreEqual(0, errors.Count);
         }
@@ -218,11 +221,11 @@ namespace InterpreterProjectTest
                           "print f;";
 
             MiniPL miniPL = MiniPL.GetInstance();
-            Scanner sc = miniPL.GetScanner();
-            Parser ps = miniPL.GetParser();
+            Scanner sc = miniPL.Scanner;
+            Parser ps = miniPL.Parser;
             ParseTree ptree = ps.Parse(sc.Tokenize(text));
 
-            List<IError> errors = ps.GetErrors();
+            List<IError> errors = ps.Errors;
 
             Assert.AreEqual(0, errors.Count);
         }
@@ -236,11 +239,11 @@ namespace InterpreterProjectTest
                           "print X###;";
 
             MiniPL miniPL = MiniPL.GetInstance();
-            Scanner sc = miniPL.GetScanner();
-            Parser ps = miniPL.GetParser();
+            Scanner sc = miniPL.Scanner;
+            Parser ps = miniPL.Parser;
             ParseTree ptree = ps.Parse(sc.Tokenize(text));
 
-            List<IError> errors = ps.GetErrors();
+            List<IError> errors = ps.Errors;
 
             Assert.AreEqual(6, errors.Count);
 
@@ -250,21 +253,21 @@ namespace InterpreterProjectTest
             Assert.AreEqual(2, ptree.SymbolCount(
                 s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal) == Terminal.EPSILON));
             Assert.AreEqual(3, ptree.SymbolCount(
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).MatchedTokenType == miniPL.TokenTypes["int"]));
             Assert.AreEqual(2, ptree.SymbolCount(
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["binary_op"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).MatchedTokenType == miniPL.TokenTypes["binary_op"]));
             Assert.AreEqual(21, ptree.SymbolCount(
                 s => s.GetSymbol() is Nonterminal));
             Assert.AreEqual(3, ptree.SymbolCount(
-                s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == miniPL.GetGrammarNonterminals()["binary_operation"]));
+                s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == miniPL.Nonterminals["binary_operation"]));
             Assert.AreEqual(2, ptree.SymbolCount(
-                s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == miniPL.GetGrammarNonterminals()["statement"]));
+                s => (s.GetSymbol() is Nonterminal) && (s.GetSymbol() as Nonterminal) == miniPL.Nonterminals["statement"]));
             Assert.IsTrue(ptree.DepthContains(12,
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).MatchedTokenType == miniPL.TokenTypes["int"]));
             Assert.IsTrue(ptree.DepthContains(11,
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).MatchedTokenType == miniPL.TokenTypes["int"]));
             Assert.IsTrue(ptree.DepthContains(8,
-                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).tokenType == miniPL.GetTokenTypes()["int"]));
+                s => (s.GetSymbol() is Terminal) && (s.GetSymbol() as Terminal).MatchedTokenType == miniPL.TokenTypes["int"]));
         }
 
         [TestMethod]
@@ -283,11 +286,11 @@ namespace InterpreterProjectTest
                           "assert (x = nTimes); - "; // stray -
 
             MiniPL miniPL = MiniPL.GetInstance();
-            Scanner sc = miniPL.GetScanner();
-            Parser ps = miniPL.GetParser();
+            Scanner sc = miniPL.Scanner;
+            Parser ps = miniPL.Parser;
 
             ps.Parse(sc.Tokenize(text));
-            List<IError> errors = ps.GetErrors();
+            List<IError> errors = ps.Errors;
 
             Assert.AreEqual(6, errors.Count);
         }        

@@ -21,7 +21,7 @@ namespace InterpreterProject.Errors
 
         public string GetMessage()
         {
-            return String.Format("Semantic error: {0} at {1}", description, t.pos);
+            return String.Format("Semantic error: {0} at {1}", description, t.TextPosition);
         }
     }
 }

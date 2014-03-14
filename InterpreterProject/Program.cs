@@ -38,10 +38,10 @@ namespace InterpreterProject
                     }
 
                     MiniPL miniPL = MiniPL.GetInstance();
-                    Scanner sc = miniPL.GetScanner();
-                    Parser ps = miniPL.GetParser();
+                    Scanner sc = miniPL.Scanner;
+                    Parser ps = miniPL.Parser;
                     ParseTree ptree = ps.Parse(sc.Tokenize(fs));
-                    MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+                    MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.Errors);
                     prog.Execute(Console.In, Console.Out);
 
                     break;

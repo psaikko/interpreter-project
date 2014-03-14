@@ -12,12 +12,21 @@ namespace InterpreterProject.SyntaxAnalysis
         public static readonly Terminal EPSILON = new Terminal("");
         public static readonly Terminal EOF = new Terminal(TokenType.EOF);
 
-        public readonly TokenType tokenType = null;
-        public readonly string matchedString = null;
+        TokenType matchedTokenType = null;
+        public TokenType MatchedTokenType
+        {
+            get { return matchedTokenType; }
+        }
+
+        string matchedString = null;
+        public string MatchedString
+        {
+            get { return matchedString; }
+        } 
 
         public Terminal(TokenType tokenType)
         {
-            this.tokenType = tokenType;
+            this.matchedTokenType = tokenType;
         }
 
         public Terminal(string lexeme)
@@ -27,16 +36,16 @@ namespace InterpreterProject.SyntaxAnalysis
 
         public bool Matches(Token t)
         {
-            if (tokenType != null)
-                return t.tokenType == tokenType;
+            if (matchedTokenType != null)
+                return t.Type == matchedTokenType;
             else
-                return t.lexeme == matchedString;
+                return t.Lexeme == matchedString;
         }
 
         public override string ToString()
         {
-            if (tokenType != null)
-                return "<" + tokenType.name + ">";
+            if (matchedTokenType != null)
+                return "<" + matchedTokenType.Name + ">";
             else
                 return "\"" + matchedString + "\"";
         }

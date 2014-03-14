@@ -27,7 +27,7 @@ namespace InterpreterProjectTest
             
             Assert.AreEqual(5, tokens.Count);
             for (int i = 0; i < 5; i++)
-                Assert.AreEqual(tokens[i].lexeme, "a");
+                Assert.AreEqual(tokens[i].Lexeme, "a");
         }
 
         [TestMethod]
@@ -40,7 +40,7 @@ namespace InterpreterProjectTest
 
             Assert.AreEqual(3, tokens.Count);
             for (int i = 0; i < 3; i++)
-                Assert.AreEqual(tokens[i].lexeme, "ab");
+                Assert.AreEqual(tokens[i].Lexeme, "ab");
         }
 
         [TestMethod]
@@ -54,7 +54,7 @@ namespace InterpreterProjectTest
             string[] expectedTokens = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
         }
 
         [TestMethod]
@@ -70,7 +70,7 @@ namespace InterpreterProjectTest
             string[] expectedTokens = { "aa", "b", "a", "b", "aa", "b", "aa" };
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
         }
 
         [TestMethod]
@@ -84,8 +84,8 @@ namespace InterpreterProjectTest
             string[] expectedTokens = { "baa","ba","ba","b" };
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-            Assert.AreEqual(TokenType.ERROR, tokens[3].tokenType);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
+            Assert.AreEqual(TokenType.ERROR, tokens[3].Type);
         }
 
         [TestMethod]
@@ -99,7 +99,7 @@ namespace InterpreterProjectTest
             string[] expectedTokens = { "aab","ab","b" };
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
         }
 
         [TestMethod]
@@ -113,7 +113,7 @@ namespace InterpreterProjectTest
             string[] expectedTokens = { "b","ab","b","ab" };
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
         }
 
         [TestMethod]
@@ -130,11 +130,11 @@ namespace InterpreterProjectTest
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
                 if (expectedTokens[i] == "b")
-                    Assert.AreEqual("b", tokens[i].tokenType.name);
+                    Assert.AreEqual("b", tokens[i].Type.Name);
                 else
-                    Assert.AreEqual("not b", tokens[i].tokenType.name);
+                    Assert.AreEqual("not b", tokens[i].Type.Name);
             }
         }
 
@@ -150,8 +150,8 @@ namespace InterpreterProjectTest
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(anyType, tokens[i].tokenType);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
+                Assert.AreEqual(anyType, tokens[i].Type);
             }
         }
     }

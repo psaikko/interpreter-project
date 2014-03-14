@@ -9,9 +9,22 @@ namespace InterpreterProject.SyntaxAnalysis
 {
     public class ParseTree : IParseNode
     {
-        public List<IParseNode> children = new List<IParseNode>();
-        public Nonterminal var;
-        public ParseTree(Nonterminal var) { this.var = var; }
+        List<IParseNode> children = new List<IParseNode>();
+        public List<IParseNode> Children
+        {
+            get { return children; }
+        }
+
+        Nonterminal nonterminal;
+        public Nonterminal Nonterminal
+        {
+            get { return nonterminal; }
+        }
+
+        public ParseTree(Nonterminal var) 
+        { 
+            this.nonterminal = var; 
+        }
 
         public override string ToString()
         {
@@ -35,7 +48,7 @@ namespace InterpreterProject.SyntaxAnalysis
                 else
                 {
                     ParseTree t = node as ParseTree;
-                    s += indent + t.var.ToString() + '\n';
+                    s += indent + t.nonterminal.ToString() + '\n';
                     for (int i = t.children.Count - 1; i >= 0; i--)
                     {
                         IParseNode next = t.children[i];
@@ -169,7 +182,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
         public ISymbol GetSymbol()
         {
-            return var;
+            return nonterminal;
         }
     }
 }

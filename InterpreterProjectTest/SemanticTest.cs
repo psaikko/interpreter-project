@@ -15,10 +15,10 @@ namespace InterpreterProjectTest
         private List<IError> GetErrors(string program)
         {
             MiniPL miniPL = MiniPL.GetInstance();
-            Scanner sc = miniPL.GetScanner();
-            Parser ps = miniPL.GetParser();
+            Scanner sc = miniPL.Scanner;
+            Parser ps = miniPL.Parser;
             ParseTree ptree = ps.Parse(sc.Tokenize(program));
-            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.Errors);
 
             return prog.errors;
         }
@@ -37,10 +37,10 @@ namespace InterpreterProjectTest
                           "print \"The result is: \";\n" +
                           "print f;";
             MiniPL miniPL = MiniPL.GetInstance();
-            Scanner sc = miniPL.GetScanner();
-            Parser ps = miniPL.GetParser();
+            Scanner sc = miniPL.Scanner;
+            Parser ps = miniPL.Parser;
             ParseTree ptree = ps.Parse(sc.Tokenize(text));
-            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.Errors);
 
             Assert.AreEqual(3, prog.declarations.Count);
         }

@@ -35,34 +35,34 @@ namespace InterpreterProject.Languages
                 ASTNode as ParseTree;
             if (subtree == null)
                 throw new Exception("EXPECTED TREE NODE");
-            if (subtree.var != vars["statement"])
+            if (subtree.Nonterminal != vars["statement"])
                 throw new Exception("EXPECTED STATEMENT NODE");
 
-            if (subtree.children[0] is ParseTree) // ----------------------------------- Declaration
+            if (subtree.Children[0] is ParseTree) // ----------------------------------- Declaration
             {
                 ParseTree declTree =
-                    subtree.children[0] as ParseTree;
+                    subtree.Children[0] as ParseTree;
                 ParseLeaf idLeaf =
-                    declTree.children[0] as ParseLeaf;
+                    declTree.Children[0] as ParseLeaf;
                 ParseLeaf typeLeaf =
-                    declTree.children[1] as ParseLeaf;
+                    declTree.Children[1] as ParseLeaf;
                 if (idLeaf == null || typeLeaf == null)
                     throw new Exception("BAD AST STRUCTURE");
-                Token idToken = idLeaf.token;
-                Token typeToken = typeLeaf.token;
+                Token idToken = idLeaf.Token;
+                Token typeToken = typeLeaf.Token;
 
-                string identifier = idToken.lexeme;
-                ValueType type = Value.TypeFromString(typeToken.lexeme);
+                string identifier = idToken.Lexeme;
+                ValueType type = Value.TypeFromString(typeToken.Lexeme);
 
-                switch (declTree.children.Count)
+                switch (declTree.Children.Count)
                 {
                     case 2: // ------------------------------------------------------------------------ simple declaration
                         return new Statement.DeclarationStmt(identifier, type, idToken);
                     case 3: // ------------------------------------------------------------------------ declaration with assignment
                         ParseLeaf valueLeaf =
-                            declTree.children[2] as ParseLeaf;
+                            declTree.Children[2] as ParseLeaf;
                         Expression expr =
-                            Expression.FromTreeNode(declTree.children[2], terms, vars);
+                            Expression.FromTreeNode(declTree.Children[2], terms, vars);
                         return new Statement.DeclarationStmt(identifier, type, idToken, expr);
                     default:
                         throw new Exception("BAD AST STRUCTURE");
@@ -71,54 +71,54 @@ namespace InterpreterProject.Languages
             else // Assignment or read or print or assert or for
             {
                 ParseLeaf firstChild =
-                    subtree.children[0] as ParseLeaf;
-                if (firstChild.terminal.tokenType != null &&
-                    firstChild.terminal.tokenType.name == "identifier") // ---------------------------- assignment or for
+                    subtree.Children[0] as ParseLeaf;
+                if (firstChild.Terminal.MatchedTokenType != null &&
+                    firstChild.Terminal.MatchedTokenType.Name == "identifier") // ---------------------------- assignment or for
                 {
-                    if (subtree.children.Count == 2) // ----------------------------------------------- assignment
+                    if (subtree.Children.Count == 2) // ----------------------------------------------- assignment
                     {
-                        return new AssignStmt(firstChild.token.lexeme,
-                            Expression.FromTreeNode(subtree.children[1], terms, vars),
-                            firstChild.token);
+                        return new AssignStmt(firstChild.Token.Lexeme,
+                            Expression.FromTreeNode(subtree.Children[1], terms, vars),
+                            firstChild.Token);
                     }
-                    else if (subtree.children.Count == 4) // ------------------------------------------ for
+                    else if (subtree.Children.Count == 4) // ------------------------------------------ for
                     {
                         List<Statement> block = new List<Statement>();
                         ParseTree blockChild =
-                            subtree.children[3] as ParseTree;
-                        foreach (IParseNode blockSubtree in blockChild.children)
+                            subtree.Children[3] as ParseTree;
+                        foreach (IParseNode blockSubtree in blockChild.Children)
                             block.Add(Statement.FromTreeNode(blockSubtree, terms, vars));
                         if (blockChild == null)
                             throw new Exception("MALFORMED AST");
-                        return new ForStmt(firstChild.token.lexeme,
-                            Expression.FromTreeNode(subtree.children[1], terms, vars),
-                            Expression.FromTreeNode(subtree.children[2], terms, vars),
-                            block, firstChild.token);
+                        return new ForStmt(firstChild.Token.Lexeme,
+                            Expression.FromTreeNode(subtree.Children[1], terms, vars),
+                            Expression.FromTreeNode(subtree.Children[2], terms, vars),
+                            block, firstChild.Token);
                     }
                     else throw new Exception("MALFORMED AST");
                 }
                 else
                 {
-                    if (subtree.children.Count != 2)
+                    if (subtree.Children.Count != 2)
                         throw new Exception("MALFORMED AST");
-                    switch (firstChild.token.lexeme)
+                    switch (firstChild.Token.Lexeme)
                     {
                         case "assert": // ------------------------------------------------------------- assert                        
                             return new AssertStmt(Expression.FromTreeNode(
-                                subtree.children[1],
+                                subtree.Children[1],
                                 terms, vars),
-                                firstChild.token);
+                                firstChild.Token);
                         case "print": // -------------------------------------------------------------- print
                             return new PrintStmt(Expression.FromTreeNode(
-                                subtree.children[1],
+                                subtree.Children[1],
                                 terms, vars),
-                                firstChild.token);
+                                firstChild.Token);
                         case "read": // --------------------------------------------------------------- read
                             ParseLeaf secondChild =
-                                subtree.children[1] as ParseLeaf;
+                                subtree.Children[1] as ParseLeaf;
                             if (secondChild == null)
                                 throw new Exception("MALFORMED AST");
-                            return new ReadStmt(secondChild.token.lexeme, firstChild.token);
+                            return new ReadStmt(secondChild.Token.Lexeme, firstChild.Token);
                         default:
                             throw new Exception("UNEXPECTED STATEMENT TYPE");
                     }

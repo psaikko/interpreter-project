@@ -18,7 +18,7 @@ namespace InterpreterProject.LexicalAnalysis
             int hash = 0;
             foreach (T t in obj)
             {
-                hash = (hash + t.GetHashCode()) % 7919;
+                hash = (hash + t.GetHashCode() % 15485867) % 15485867;
             }
             return hash;
         }

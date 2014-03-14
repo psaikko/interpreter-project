@@ -8,20 +8,34 @@ namespace InterpreterProject.LexicalAnalysis
 {
     public class Token
     {
-        public readonly TokenType tokenType;
-        public readonly String lexeme;
-        public readonly Position pos;
+        TokenType type;
+        public TokenType Type
+        {
+            get { return type; }
+        }
+
+        String lexeme;
+        public String Lexeme
+        {
+            get { return lexeme; }
+        }
+
+        Position textPosition;
+        public Position TextPosition
+        {
+            get { return textPosition; }
+        } 
 
         public Token(TokenType type, String lexeme, int row, int col)
         {
-            this.tokenType = type;
+            this.type = type;
             this.lexeme = lexeme;
-            this.pos = new Position(row, col);
+            this.textPosition = new Position(row, col);
         }
 
         public override string ToString()
         {
-            return "{" + tokenType.name + " : \"" + lexeme + "\"} @" + pos;
+            return "{" + type.Name + " : \"" + lexeme + "\"} @" + textPosition;
         }
     }
 }

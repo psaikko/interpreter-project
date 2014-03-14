@@ -22,6 +22,7 @@ namespace InterpreterProject.LexicalAnalysis
 
         public IEnumerable<Token> Tokenize(Stream input, bool yieldEOF = true)
         {
+            automaton.Reset();
             StreamReader reader = new StreamReader(input);
             Token t;
             int commentDepth = 0;
@@ -34,13 +35,13 @@ namespace InterpreterProject.LexicalAnalysis
                 t = automaton.GetToken();
                 if (t != null)
                 {
-                    if (t.tokenType == blockCommentStart)
+                    if (t.Type == blockCommentStart)
                     {
                         if (Program.debug) Console.WriteLine("SCANNER: incrementing comment depth");
                         commentDepth++;
                         continue;
                     }
-                    if (t.tokenType == blockCommentEnd)
+                    if (t.Type == blockCommentEnd)
                     {
                         if (Program.debug) Console.WriteLine("SCANNER: decrementing comment depth");
                         commentDepth--;
@@ -69,13 +70,13 @@ namespace InterpreterProject.LexicalAnalysis
 
             while ((t = automaton.GetToken()) != null)
             {
-                if (t.tokenType == blockCommentStart)
+                if (t.Type == blockCommentStart)
                 {
                     if (Program.debug) Console.WriteLine("SCANNER: incrementing comment depth");
                     commentDepth++;
                     continue;
                 }
-                if (t.tokenType == blockCommentEnd)
+                if (t.Type == blockCommentEnd)
                 {
                     if (Program.debug) Console.WriteLine("SCANNER: decrementing comment depth");
                     commentDepth--;
@@ -85,7 +86,7 @@ namespace InterpreterProject.LexicalAnalysis
                         commentDepth = 0;
                 }
 
-                if (IsRelevant(t, yieldEOF) && ((commentDepth == 0) || t.tokenType == TokenType.EOF))
+                if (IsRelevant(t, yieldEOF) && ((commentDepth == 0) || t.Type == TokenType.EOF))
                 {
                     if (Program.debug) Console.WriteLine("SCANNER: yield token " + t);
                     yield return t;
@@ -99,7 +100,7 @@ namespace InterpreterProject.LexicalAnalysis
 
         private bool IsRelevant(Token t, bool EOFisRelevant)
         {
-            return (t.tokenType.priority != TokenType.Priority.Whitespace && (t.tokenType != TokenType.EOF || EOFisRelevant));
+            return (t.Type.TokenPriority != TokenType.Priority.Whitespace && (t.Type != TokenType.EOF || EOFisRelevant));
         }
 
         public IEnumerable<Token> Tokenize(string text, bool yieldEOF = true)

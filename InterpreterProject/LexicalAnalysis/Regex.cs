@@ -211,7 +211,7 @@ namespace InterpreterProject.LexicalAnalysis
                 }
                 s += "}";
                 if (current.tokenType != null)
-                    s += ", Token: " + current.tokenType.name;
+                    s += ", Token: " + current.tokenType.Name;
                 s += "\n";
             }
             return s;
@@ -261,7 +261,7 @@ namespace InterpreterProject.LexicalAnalysis
                             {
                                 if (n.tokenType != null &&
                                     (nextDFAState.acceptedTokenType == null ||
-                                    (n.tokenType.priority == TokenType.Priority.Keyword)))
+                                    (n.tokenType.TokenPriority == TokenType.Priority.Keyword)))
                                 {
                                     nextDFAState.acceptedTokenType = n.tokenType;
                                 }

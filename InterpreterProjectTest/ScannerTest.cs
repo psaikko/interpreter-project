@@ -30,11 +30,11 @@ namespace InterpreterProjectTest
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                if (tokens[i].lexeme == "a")
-                    Assert.AreEqual(aToken, tokens[i].tokenType);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
+                if (tokens[i].Lexeme == "a")
+                    Assert.AreEqual(aToken, tokens[i].Type);
                 else
-                    Assert.AreEqual(TokenType.ERROR, tokens[i].tokenType);
+                    Assert.AreEqual(TokenType.ERROR, tokens[i].Type);
             }
         }
 
@@ -59,7 +59,7 @@ namespace InterpreterProjectTest
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
             }
         }
 
@@ -114,8 +114,8 @@ namespace InterpreterProjectTest
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(ttB, tokens[i].tokenType);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
+                Assert.AreEqual(ttB, tokens[i].Type);
             }
         }
 
@@ -167,8 +167,8 @@ namespace InterpreterProjectTest
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(ttB, tokens[i].tokenType);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
+                Assert.AreEqual(ttB, tokens[i].Type);
             }
         }
 
@@ -198,8 +198,8 @@ namespace InterpreterProjectTest
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(ttB, tokens[i].tokenType);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
+                Assert.AreEqual(ttB, tokens[i].Type);
             }
         }
 
@@ -229,8 +229,8 @@ namespace InterpreterProjectTest
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(ttB, tokens[i].tokenType);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
+                Assert.AreEqual(ttB, tokens[i].Type);
             }
         }
 
@@ -251,7 +251,7 @@ namespace InterpreterProjectTest
 
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
         }
 
         [TestMethod]
@@ -267,7 +267,7 @@ namespace InterpreterProjectTest
 
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
         }
 
         [TestMethod]
@@ -284,7 +284,7 @@ namespace InterpreterProjectTest
 
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
         }
 
         [TestMethod]
@@ -305,7 +305,7 @@ namespace InterpreterProjectTest
 
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
         }
 
         [TestMethod]
@@ -325,7 +325,7 @@ namespace InterpreterProjectTest
 
             Assert.AreEqual(expectedTokens.Length, tokens.Count);
             for (int i = 0; i < expectedTokens.Length; i++)
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
         }
 
         [TestMethod]
@@ -338,13 +338,13 @@ namespace InterpreterProjectTest
             string[] expectedTypeNames = { "keyword", "identifier", "colon", "type", "assignment", "int", "binary op", "left paren",
                                            "int", "binary op", "int", "right paren", "semicolon", "keyword", "identifier", "semicolon"};
 
-            Scanner sc = MiniPL.GetInstance().GetScanner();
+            Scanner sc = MiniPL.GetInstance().Scanner;
             List<Token> tokens = new List<Token>(sc.Tokenize(text, yieldEOF:false));
 
             for (int i = 0; i < tokens.Count; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(expectedTypeNames[i], tokens[i].tokenType.name);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
+                Assert.AreEqual(expectedTypeNames[i], tokens[i].Type.Name);
             }
         }
 
@@ -381,13 +381,13 @@ namespace InterpreterProjectTest
                                            "keyword","keyword","semicolon",
                                            "keyword","left paren","identifier","binary op","identifier","right paren","semicolon" };
 
-            Scanner sc = MiniPL.GetInstance().GetScanner();
+            Scanner sc = MiniPL.GetInstance().Scanner;
             List<Token> tokens = new List<Token>(sc.Tokenize(text, yieldEOF: false));
 
             for (int i = 0; i < tokens.Count; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(expectedTypeNames[i], tokens[i].tokenType.name);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
+                Assert.AreEqual(expectedTypeNames[i], tokens[i].Type.Name);
             }
         }
 
@@ -426,13 +426,13 @@ namespace InterpreterProjectTest
                                            "keyword", "string", "semicolon",
                                            "keyword", "identifier", "semicolon"};
 
-            Scanner sc = MiniPL.GetInstance().GetScanner();
+            Scanner sc = MiniPL.GetInstance().Scanner;
             List<Token> tokens = new List<Token>(sc.Tokenize(text, yieldEOF: false));
 
             for (int i = 0; i < tokens.Count; i++)
             {
-                Assert.AreEqual(expectedTokens[i], tokens[i].lexeme);
-                Assert.AreEqual(expectedTypeNames[i], tokens[i].tokenType.name);
+                Assert.AreEqual(expectedTokens[i], tokens[i].Lexeme);
+                Assert.AreEqual(expectedTypeNames[i], tokens[i].Type.Name);
             }
         }
 
@@ -473,13 +473,13 @@ namespace InterpreterProjectTest
                 0, 6, 7
             };
 
-            Scanner sc = MiniPL.GetInstance().GetScanner();
+            Scanner sc = MiniPL.GetInstance().Scanner;
             List<Token> tokens = new List<Token>(sc.Tokenize(text, yieldEOF: false));
 
             for (int i = 0; i < tokens.Count; i++)
             {
-                Assert.AreEqual(expectedRows[i], tokens[i].pos.row);
-                Assert.AreEqual(expectedCols[i], tokens[i].pos.col);
+                Assert.AreEqual(expectedRows[i], tokens[i].TextPosition.Row);
+                Assert.AreEqual(expectedCols[i], tokens[i].TextPosition.Column);
             }
         }
 
@@ -504,13 +504,13 @@ namespace InterpreterProjectTest
                 0, 4, 6, 8, 11
             };
 
-            Scanner sc = MiniPL.GetInstance().GetScanner();
+            Scanner sc = MiniPL.GetInstance().Scanner;
             List<Token> tokens = new List<Token>(sc.Tokenize(text, yieldEOF: false));
 
             for (int i = 0; i < tokens.Count; i++)
             {
-                Assert.AreEqual(expectedRows[i], tokens[i].pos.row);
-                Assert.AreEqual(expectedCols[i], tokens[i].pos.col);
+                Assert.AreEqual(expectedRows[i], tokens[i].TextPosition.Row);
+                Assert.AreEqual(expectedCols[i], tokens[i].TextPosition.Column);
             }
         }
     }

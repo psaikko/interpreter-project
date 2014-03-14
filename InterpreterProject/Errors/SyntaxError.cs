@@ -19,7 +19,7 @@ namespace InterpreterProject.Errors
 
         public string GetMessage()
         {
-            return String.Format("Syntax error: unexpected {2} token \"{0}\" at {1}", t.lexeme, t.pos, t.tokenType.name);
+            return String.Format("Syntax error: unexpected {2} token \"{0}\" at {1}", t.Lexeme, t.TextPosition, t.Type.Name);
         }
     }
 }

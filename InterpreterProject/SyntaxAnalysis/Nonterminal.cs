@@ -8,7 +8,11 @@ namespace InterpreterProject.SyntaxAnalysis
 {
     public class Nonterminal : ISymbol
     {
-        public readonly string name;
+        string name;
+        public string Name
+        {
+            get { return name; }
+        } 
 
         public Nonterminal(string name)
         {
