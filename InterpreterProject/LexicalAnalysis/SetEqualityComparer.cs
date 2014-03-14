@@ -21,6 +21,6 @@ namespace InterpreterProject.LexicalAnalysis
                 hash = (hash + t.GetHashCode()) % 7919;
             }
             return hash;
-        }    
+        }
     }
 }

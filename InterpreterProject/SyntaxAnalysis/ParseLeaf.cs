@@ -13,7 +13,7 @@ namespace InterpreterProject.SyntaxAnalysis
         public Terminal terminal;
         public Token token;
 
-        public ParseLeaf(Terminal terminal) 
+        public ParseLeaf(Terminal terminal)
         {
             this.terminal = terminal;
         }

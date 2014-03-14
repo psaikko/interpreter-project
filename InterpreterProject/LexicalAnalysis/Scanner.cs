@@ -20,7 +20,7 @@ namespace InterpreterProject.LexicalAnalysis
             this.blockCommentEnd = blockCommentEnd;
         }
 
-        public IEnumerable<Token> Tokenize(Stream input, bool yieldEOF = true)            
+        public IEnumerable<Token> Tokenize(Stream input, bool yieldEOF = true)
         {
             StreamReader reader = new StreamReader(input);
             Token t;
@@ -28,7 +28,7 @@ namespace InterpreterProject.LexicalAnalysis
 
             while (!reader.EndOfStream)
             {
-                char c = (char) reader.Read();
+                char c = (char)reader.Read();
                 if (Program.debug) Console.WriteLine(String.Format("SCANNER: feeding '{0}'", c));
                 automaton.FeedCharacter(c);
                 t = automaton.GetToken();
@@ -39,7 +39,7 @@ namespace InterpreterProject.LexicalAnalysis
                         if (Program.debug) Console.WriteLine("SCANNER: incrementing comment depth");
                         commentDepth++;
                         continue;
-                    }                        
+                    }
                     if (t.tokenType == blockCommentEnd)
                     {
                         if (Program.debug) Console.WriteLine("SCANNER: decrementing comment depth");
@@ -50,7 +50,7 @@ namespace InterpreterProject.LexicalAnalysis
                             commentDepth = 0;
                         // intentionally yield a mismatched comment end token.
                     }
-                        
+
                     if (IsRelevant(t, yieldEOF) && commentDepth == 0)
                     {
                         if (Program.debug) Console.WriteLine("SCANNER: yield token " + t);
@@ -61,7 +61,7 @@ namespace InterpreterProject.LexicalAnalysis
                         if (Program.debug) Console.WriteLine("SCANNER: ignore token " + t);
                     }
                 }
-                
+
             }
 
             if (Program.debug) Console.WriteLine("SCANNER: feeding EOF");

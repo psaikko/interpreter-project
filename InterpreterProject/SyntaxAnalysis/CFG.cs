@@ -22,7 +22,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
         Dictionary<ISymbol, ISet<Terminal>> first = new Dictionary<ISymbol, ISet<Terminal>>();
         Dictionary<Nonterminal, ISet<Terminal>> follow = new Dictionary<Nonterminal, ISet<Terminal>>();
- 
+
         public CFG(Nonterminal start, ICollection<Terminal> terminals, ICollection<Nonterminal> nonterminals)
         {
             this.startSymbol = start;
@@ -60,7 +60,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
         public List<ISymbol[]> GetProductionRules(Nonterminal v)
         {
-            List<ISymbol[]> productionRules= null;
+            List<ISymbol[]> productionRules = null;
             productions.TryGetValue(v, out productionRules);
             return productionRules;
         }
@@ -70,7 +70,7 @@ namespace InterpreterProject.SyntaxAnalysis
             ComputeFirstSets();
             ComputeFollowSets();
 
-            if (Program.debug) 
+            if (Program.debug)
                 Console.WriteLine("=========================================================");
 
             ParseTable parseTable = new ParseTable();
@@ -81,7 +81,7 @@ namespace InterpreterProject.SyntaxAnalysis
                 {
                     //if (varProduction[0] != Terminal.epsilon)
                     {
-                        if (Program.debug) 
+                        if (Program.debug)
                             Console.WriteLine("CFG: LL(1) table gen, var = " + var + " prod = " + SymbolsToString(varProduction));
 
                         ISet<Terminal> productionFirst = First(varProduction);
@@ -97,7 +97,7 @@ namespace InterpreterProject.SyntaxAnalysis
                                         Console.WriteLine("CFG: LL(1) violation at (First) [" + var + "," + term + "]");
                                         Console.WriteLine("\tWas: " + SymbolsToString(parseTable.Get(var, term)));
                                         Console.WriteLine("\tNew: " + SymbolsToString(varProduction));
-                                    }                                    
+                                    }
                                     return null;
                                 }
                                 else
@@ -117,7 +117,7 @@ namespace InterpreterProject.SyntaxAnalysis
                                         Console.WriteLine("CFG: LL(1) violation at (Follow) [" + var + "," + term + "]");
                                         Console.WriteLine("\tWas: " + SymbolsToString(parseTable.Get(var, term)));
                                         Console.WriteLine("\tNew: " + SymbolsToString(varProduction));
-                                    }                               
+                                    }
                                     return null;
                                 }
                                 else
@@ -126,7 +126,7 @@ namespace InterpreterProject.SyntaxAnalysis
                                 }
                             }
                         }
-                    }                    
+                    }
                 }
             }
 
@@ -141,7 +141,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     }
                 }
             }
-            
+
             return parseTable;
         }
 
@@ -152,25 +152,25 @@ namespace InterpreterProject.SyntaxAnalysis
                 Console.WriteLine("=========================================================");
                 Console.WriteLine("CFG: Computing first sets");
             }
-            
+
             foreach (Nonterminal var in nonterminals)
             {
                 first[var] = new HashSet<Terminal>();
                 foreach (ISymbol[] production in productions[var])
                     if (production[0] is Terminal)
                         first[var].Add(production[0] as Terminal);
-                if (Program.debug) 
+                if (Program.debug)
                     Console.WriteLine("CFG: First " + var + " = " + SymbolsToString(first[var]));
             }
 
-            if (Program.debug) 
+            if (Program.debug)
                 Console.WriteLine("CFG: Initial step done");
 
             bool converged = false;
             while (!converged)
             {
                 converged = true;
-                if (Program.debug) 
+                if (Program.debug)
                     Console.WriteLine("--iteration--");
                 foreach (Nonterminal var in nonterminals)
                 {
@@ -180,15 +180,15 @@ namespace InterpreterProject.SyntaxAnalysis
                         first[var].UnionWith(First(production));
                         if (first[var].Count > tmp)
                         {
-                            if (Program.debug) 
+                            if (Program.debug)
                                 Console.WriteLine("CFG: First " + var + " = " + SymbolsToString(first[var]));
                             converged = false;
-                        } 
-                    }                 
+                        }
+                    }
                 }
 
             }
-            if (Program.debug) 
+            if (Program.debug)
                 Console.WriteLine("CFG: first sets converged");
         }
 
@@ -221,7 +221,7 @@ namespace InterpreterProject.SyntaxAnalysis
                 Console.WriteLine("=========================================================");
                 Console.WriteLine("CFG: Computing follow sets");
             }
-            
+
             foreach (Nonterminal A in nonterminals)
             {
                 follow[A] = new HashSet<Terminal>();
@@ -234,12 +234,12 @@ namespace InterpreterProject.SyntaxAnalysis
                         for (int i = 0; i < prod.Length - 1; i++)
                             if (prod[i] == A && prod[i + 1] is Terminal)
                                 follow[A].Add(prod[i + 1] as Terminal);
-                    }                    
+                    }
                 }
-                if (Program.debug) 
+                if (Program.debug)
                     Console.WriteLine("CFG: Follow " + A + " = " + SymbolsToString(follow[A]));
             }
-            if (Program.debug) 
+            if (Program.debug)
                 Console.WriteLine("CFG: Initial step done");
 
             bool converged = false;
@@ -247,7 +247,7 @@ namespace InterpreterProject.SyntaxAnalysis
             while (!converged)
             {
                 converged = true;
-                if (Program.debug) 
+                if (Program.debug)
                     Console.WriteLine("--iteration--");
                 foreach (Nonterminal B in nonterminals)
                 {
@@ -260,12 +260,12 @@ namespace InterpreterProject.SyntaxAnalysis
                                 Nonterminal A = prod[i] as Nonterminal;
                                 int tmp = follow[A].Count;
                                 if (i == prod.Length - 1)
-                                {                          
-                                    follow[A].UnionWith(follow[B]);   
+                                {
+                                    follow[A].UnionWith(follow[B]);
                                 }
                                 else
                                 {
-                                    ISymbol[] w = prod.Skip(i+1).ToArray();
+                                    ISymbol[] w = prod.Skip(i + 1).ToArray();
                                     ISet<Terminal> fw = First(w);
                                     if (fw.Contains(Terminal.EPSILON))
                                     {
@@ -281,18 +281,18 @@ namespace InterpreterProject.SyntaxAnalysis
                                         Console.WriteLine("CFG: used rule " + B + " -> " + SymbolsToString(prod) + "for " + A);
                                         Console.WriteLine("CFG: Follow " + A + " = " + SymbolsToString(follow[A]));
                                         Console.WriteLine();
-                                    }                                
+                                    }
                                     converged = false;
                                 }
                             }
                         }
-                    }  
+                    }
                 }
-                if (Program.debug) 
+                if (Program.debug)
                     foreach (Nonterminal A in nonterminals)
                         Console.WriteLine("CFG: Follow " + A + " = " + SymbolsToString(follow[A]));
             }
-            if (Program.debug) 
+            if (Program.debug)
                 Console.WriteLine("CFG: follow sets converged");
         }
 

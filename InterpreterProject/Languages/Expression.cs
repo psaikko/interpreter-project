@@ -84,9 +84,10 @@ namespace InterpreterProject.Languages
         {
             public Value value;
 
-            public ValueExpr(Value value, Token token) : base(token) 
-            { 
-                this.value = value; 
+            public ValueExpr(Value value, Token token)
+                : base(token)
+            {
+                this.value = value;
             }
 
             override public Value Evaluate(MiniPL.Runnable context)
@@ -109,8 +110,9 @@ namespace InterpreterProject.Languages
         {
             public string identifier;
 
-            public IdentifierExpr(string identifier, Token token) : base(token)  
-            { 
+            public IdentifierExpr(string identifier, Token token)
+                : base(token)
+            {
                 this.identifier = identifier;
             }
 
@@ -135,7 +137,8 @@ namespace InterpreterProject.Languages
             public char op;
             public Expression expr;
 
-            public UnaryOp(char op, Expression expr, Token token) : base(token) 
+            public UnaryOp(char op, Expression expr, Token token)
+                : base(token)
             {
                 this.op = op; this.expr = expr;
             }
@@ -150,7 +153,7 @@ namespace InterpreterProject.Languages
                         return new Value(expr.Evaluate(context).IntValue() == 0);
                     throw new Exception("TYPE CHECKING FAILED");
                 }
-                throw new Exception("UNEXPECTED OPERATION " + op);               
+                throw new Exception("UNEXPECTED OPERATION " + op);
             }
 
             override public ValueType Type(MiniPL.Runnable context)
@@ -173,9 +176,10 @@ namespace InterpreterProject.Languages
             public char op;
             public Expression rhs;
 
-            public BinaryOp(Expression lhs, char op, Expression rhs, Token token) : base(token) 
+            public BinaryOp(Expression lhs, char op, Expression rhs, Token token)
+                : base(token)
             {
-                this.op = op; 
+                this.op = op;
                 this.lhs = lhs;
                 this.rhs = rhs;
             }
@@ -185,7 +189,7 @@ namespace InterpreterProject.Languages
                 switch (op)
                 {
                     case '+':
-                        if (rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer)                            
+                        if (rhs.Type(context) == ValueType.Integer && lhs.Type(context) == ValueType.Integer)
                             return new Value(lhs.Evaluate(context).IntValue() + rhs.Evaluate(context).IntValue());
                         if (rhs.Type(context) == ValueType.String && lhs.Type(context) == ValueType.String)
                             return new Value(lhs.Evaluate(context).StringValue() + rhs.Evaluate(context).StringValue());

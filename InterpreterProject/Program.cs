@@ -44,7 +44,7 @@ namespace InterpreterProject
                     MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
                     prog.Execute(Console.In, Console.Out);
 
-                    break;                
+                    break;
             }
         }
     }

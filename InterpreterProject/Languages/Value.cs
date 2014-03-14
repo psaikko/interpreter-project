@@ -10,9 +10,9 @@ namespace InterpreterProject.Languages
 
     public class Value
     {
-        private static readonly string[] escapeStrings = 
+        private static readonly string[] escapeStrings =
             new string[] { "\\a", "\\b", "\\f", "\\n", "\\r", "\\t", "\\v", "\\\\", "\\'", "\\\"", "\\0" };
-        private static readonly string[] escapeChars = 
+        private static readonly string[] escapeChars =
             new string[] { "\a", "\b", "\f", "\n", "\r", "\t", "\v", "\\", "\'", "\"", "\0" };
 
         private static string Unescape(string s)
@@ -69,7 +69,7 @@ namespace InterpreterProject.Languages
                     break;
                 default:
                     throw new Exception("UNEXPECTED TYPE STRING");
-            }        
+            }
         }
         public Value(ValueType type, string valueString)
         {
@@ -129,5 +129,5 @@ namespace InterpreterProject.Languages
             else
                 return 0 != (int)value;
         }
-    } 
+    }
 }

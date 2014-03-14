@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace InterpreterProject.LexicalAnalysis
 {
     public class Token
-    {       
+    {
         public readonly TokenType tokenType;
         public readonly String lexeme;
         public readonly Position pos;

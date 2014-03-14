@@ -9,7 +9,8 @@ namespace InterpreterProject.Errors
     class MiniPL_DivideByZeroException : Exception
     {
         public RuntimeError err;
-        public MiniPL_DivideByZeroException(RuntimeError err) : base(err.GetMessage())
+        public MiniPL_DivideByZeroException(RuntimeError err)
+            : base(err.GetMessage())
         {
             this.err = err;
         }

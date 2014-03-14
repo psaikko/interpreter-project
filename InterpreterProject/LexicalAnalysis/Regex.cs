@@ -186,7 +186,7 @@ namespace InterpreterProject.LexicalAnalysis
             while (q.Count != 0)
             {
                 Node current = q.Dequeue();
-                
+
                 s += "ID " + current.id + " Transitions: { ";
                 foreach (char c in current.transitions.Keys)
                 {
@@ -197,7 +197,7 @@ namespace InterpreterProject.LexicalAnalysis
                         q.Enqueue(next);
                         visited.Add(next);
                     }
-                        
+
                 }
                 s += "}, Eps: { ";
                 foreach (Node next in current.epsilonTransitions)
@@ -222,7 +222,7 @@ namespace InterpreterProject.LexicalAnalysis
          */
         public TokenAutomaton ConstructAutomaton()
         {
-            Dictionary<ISet<Node>, TokenAutomaton.Node> DFAStates = 
+            Dictionary<ISet<Node>, TokenAutomaton.Node> DFAStates =
                 new Dictionary<ISet<Node>, TokenAutomaton.Node>(new SetEqualityComparer<Node>());
             TokenAutomaton.Node DFAStartState = new TokenAutomaton.Node();
             ISet<Node> NFAStartStates = start.EpsilonMove();
@@ -230,13 +230,13 @@ namespace InterpreterProject.LexicalAnalysis
 
             Stack<ISet<Node>> s = new Stack<ISet<Node>>();
             s.Push(NFAStartStates);
-            
-            while (s.Count != 0) 
+
+            while (s.Count != 0)
             {
                 ISet<Node> currentNFAStates = s.Pop();
                 TokenAutomaton.Node currentDFAState = DFAStates[currentNFAStates];
                 ISet<char> nextChars = new HashSet<char>();
-                
+
                 // find which characters we can move with from currentNFAStates
                 foreach (Node n in currentNFAStates)
                     nextChars.UnionWith(n.transitions.Keys);
@@ -250,7 +250,7 @@ namespace InterpreterProject.LexicalAnalysis
                         HashSet<Node> epsilonClosure = new HashSet<Node>();
                         epsilonClosure.UnionWith(nextNFAStates);
                         epsilonClosure.UnionWith(Node.EpsilonMove(nextNFAStates, cached: true));
-                        
+
                         TokenAutomaton.Node nextDFAState;
 
                         if (!DFAStates.TryGetValue(epsilonClosure, out nextDFAState))
@@ -259,7 +259,7 @@ namespace InterpreterProject.LexicalAnalysis
 
                             foreach (Node n in epsilonClosure)
                             {
-                                if (n.tokenType != null && 
+                                if (n.tokenType != null &&
                                     (nextDFAState.acceptedTokenType == null ||
                                     (n.tokenType.priority == TokenType.Priority.Keyword)))
                                 {
@@ -270,11 +270,11 @@ namespace InterpreterProject.LexicalAnalysis
                             DFAStates.Add(epsilonClosure, nextDFAState);
                             s.Push(epsilonClosure);
                         }
-                   
+
                         currentDFAState.transitions.Add(c, nextDFAState);
                     }
-                    
-                }                
+
+                }
             }
 
             return new TokenAutomaton(DFAStartState);
@@ -302,7 +302,7 @@ namespace InterpreterProject.LexicalAnalysis
                 reachable.Add(this);
                 Stack<Node> s = new Stack<Node>();
                 s.Push(this);
-                
+
                 while (s.Count != 0)
                 {
                     Node current = s.Pop();
@@ -331,7 +331,7 @@ namespace InterpreterProject.LexicalAnalysis
                 if (cache)
                 {
                     if (cachedEpsilonMove == null)
-                        cachedEpsilonMove = EpsilonMove();  
+                        cachedEpsilonMove = EpsilonMove();
                     return cachedEpsilonMove;
                 }
                 return EpsilonMove();

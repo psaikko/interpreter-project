@@ -114,7 +114,7 @@ namespace InterpreterProject.SyntaxAnalysis
                 {
                     if (pred(node))
                     {
-                        
+
                         pruneList.Add(node);
                         if (node is ParseTree)
                             replaceList.Add((node as ParseTree).children);
@@ -157,13 +157,13 @@ namespace InterpreterProject.SyntaxAnalysis
             {
                 IParseNode currentNode = nodeStack.Pop();
                 yield return currentNode;
-                
+
                 if (currentNode is ParseTree)
                 {
                     ParseTree subtree = currentNode as ParseTree;
                     for (int i = subtree.children.Count - 1; i >= 0; i--)
                         nodeStack.Push(subtree.children[i]);
-                }                        
+                }
             }
         }
 

@@ -21,20 +21,20 @@ namespace InterpreterProject.Languages
             Dictionary<String, Terminal> terms,
             Dictionary<String, Nonterminal> vars)
         {
-            ParseTree subtree = 
+            ParseTree subtree =
                 ASTNode as ParseTree;
-            if (subtree == null) 
+            if (subtree == null)
                 throw new Exception("EXPECTED TREE NODE");
-            if (subtree.var != vars["statement"]) 
+            if (subtree.var != vars["statement"])
                 throw new Exception("EXPECTED STATEMENT NODE");
 
             if (subtree.children[0] is ParseTree) // ----------------------------------- Declaration
             {
-                ParseTree declTree = 
+                ParseTree declTree =
                     subtree.children[0] as ParseTree;
-                ParseLeaf idLeaf = 
+                ParseLeaf idLeaf =
                     declTree.children[0] as ParseLeaf;
-                ParseLeaf typeLeaf = 
+                ParseLeaf typeLeaf =
                     declTree.children[1] as ParseLeaf;
                 if (idLeaf == null || typeLeaf == null)
                     throw new Exception("BAD AST STRUCTURE");
@@ -49,9 +49,9 @@ namespace InterpreterProject.Languages
                     case 2: // ------------------------------------------------------------------------ simple declaration
                         return new Statement.DeclarationStmt(identifier, type, idToken);
                     case 3: // ------------------------------------------------------------------------ declaration with assignment
-                        ParseLeaf valueLeaf = 
+                        ParseLeaf valueLeaf =
                             declTree.children[2] as ParseLeaf;
-                        Expression expr = 
+                        Expression expr =
                             Expression.FromTreeNode(declTree.children[2], terms, vars);
                         return new Statement.DeclarationStmt(identifier, type, idToken, expr);
                     default:
@@ -60,25 +60,25 @@ namespace InterpreterProject.Languages
             }
             else // Assignment or read or print or assert or for
             {
-                ParseLeaf firstChild = 
+                ParseLeaf firstChild =
                     subtree.children[0] as ParseLeaf;
                 if (firstChild.terminal.tokenType != null &&
                     firstChild.terminal.tokenType.name == "identifier") // --------------------------------- assignment or for
                 {
                     if (subtree.children.Count == 2) // ----------------------------------------------- assignment
                     {
-                        return new AssignStmt(firstChild.token.lexeme, 
+                        return new AssignStmt(firstChild.token.lexeme,
                             Expression.FromTreeNode(subtree.children[1], terms, vars),
                             firstChild.token);
                     }
                     else if (subtree.children.Count == 4) // ------------------------------------------ for
                     {
                         List<Statement> block = new List<Statement>();
-                        ParseTree blockChild = 
+                        ParseTree blockChild =
                             subtree.children[3] as ParseTree;
                         foreach (IParseNode blockSubtree in blockChild.children)
                             block.Add(Statement.FromTreeNode(blockSubtree, terms, vars));
-                        if (blockChild == null) 
+                        if (blockChild == null)
                             throw new Exception("MALFORMED AST");
                         return new ForStmt(firstChild.token.lexeme,
                             Expression.FromTreeNode(subtree.children[1], terms, vars),
@@ -89,7 +89,7 @@ namespace InterpreterProject.Languages
                 }
                 else
                 {
-                    if (subtree.children.Count != 2) 
+                    if (subtree.children.Count != 2)
                         throw new Exception("MALFORMED AST");
                     switch (firstChild.token.lexeme)
                     {
@@ -100,13 +100,13 @@ namespace InterpreterProject.Languages
                                 firstChild.token);
                         case "print": // -------------------------------------------------------------- print
                             return new PrintStmt(Expression.FromTreeNode(
-                                subtree.children[1], 
+                                subtree.children[1],
                                 terms, vars),
                                 firstChild.token);
                         case "read": // --------------------------------------------------------------- read
-                            ParseLeaf secondChild = 
+                            ParseLeaf secondChild =
                                 subtree.children[1] as ParseLeaf;
-                            if (secondChild == null) 
+                            if (secondChild == null)
                                 throw new Exception("MALFORMED AST");
                             return new ReadStmt(secondChild.token.lexeme, firstChild.token);
                         default:
@@ -115,14 +115,14 @@ namespace InterpreterProject.Languages
                 }
             }
             throw new Exception("THIS SHOULD NOT HAPPEN WHAT DID YOU DO");
-        }   
+        }
 
         public class ReadStmt : Statement
         {
             public string identifier;
 
             public ReadStmt(string identifier, Token token)
-                : base(token) 
+                : base(token)
             {
                 this.identifier = identifier;
             }
@@ -168,7 +168,7 @@ namespace InterpreterProject.Languages
             public Expression expr;
 
             public AssertStmt(Expression expr, Token token)
-                : base(token)  
+                : base(token)
             { this.expr = expr; }
 
             public override RuntimeError Execute(MiniPL.Runnable context, TextReader stdin, TextWriter stdout)
@@ -228,7 +228,7 @@ namespace InterpreterProject.Languages
             public Expression expr;
 
             public AssignStmt(string identifier, Expression expr, Token token)
-                : base(token) 
+                : base(token)
             {
                 this.identifier = identifier;
                 this.expr = expr;
@@ -257,7 +257,7 @@ namespace InterpreterProject.Languages
                         if (expr.Type(context) != ValueType.String)
                             context.errors.Add(new SemanticError(token, "expected string type value for " + identifier));
                         break;
-                }             
+                }
             }
         }
 
@@ -269,7 +269,7 @@ namespace InterpreterProject.Languages
             public IEnumerable<Statement> block;
 
             public ForStmt(string identifier, Expression startVal, Expression endVal, IEnumerable<Statement> block, Token token)
-                : base(token) 
+                : base(token)
             {
                 this.identifier = identifier;
                 this.startVal = startVal;
@@ -317,13 +317,14 @@ namespace InterpreterProject.Languages
             public ValueType type;
             public Expression initialValue;
 
-            public DeclarationStmt(string identifier, ValueType type, Token token, Expression initialValue) : this(identifier, type, token)
-            {                
+            public DeclarationStmt(string identifier, ValueType type, Token token, Expression initialValue)
+                : this(identifier, type, token)
+            {
                 this.initialValue = initialValue;
             }
 
             public DeclarationStmt(string identifier, ValueType type, Token token)
-                : base(token) 
+                : base(token)
             {
                 this.identifier = identifier;
                 this.type = type;
@@ -336,15 +337,15 @@ namespace InterpreterProject.Languages
             }
 
             public override void TypeCheck(MiniPL.Runnable context)
-            {                
+            {
                 if (initialValue != null)
                 {
                     initialValue.TypeCheck(context);
-                    switch(type)
+                    switch (type)
                     {
                         case ValueType.Boolean:
                             if (initialValue.Type(context) == ValueType.String)
-                                context.errors.Add(new SemanticError(token, "cannot assign string value to boolean "+identifier));
+                                context.errors.Add(new SemanticError(token, "cannot assign string value to boolean " + identifier));
                             break;
                         case ValueType.Integer:
                             if (initialValue.Type(context) != ValueType.Integer)
@@ -352,7 +353,7 @@ namespace InterpreterProject.Languages
                             break;
                         case ValueType.String:
                             if (initialValue.Type(context) != ValueType.String)
-                                context.errors.Add(new SemanticError(token, "expected string type value for "+identifier));
+                                context.errors.Add(new SemanticError(token, "expected string type value for " + identifier));
                             break;
                     }
                 }

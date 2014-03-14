@@ -160,7 +160,7 @@ namespace InterpreterProject.Languages
         public Scanner GetScanner()
         {
             TokenAutomaton automaton = TokenType.CombinedAutomaton(tts.Values.ToArray());
-            return new Scanner(automaton, tts["block_comment_start"], tts["block_comment_end"]); 
+            return new Scanner(automaton, tts["block_comment_start"], tts["block_comment_end"]);
         }
 
         public Parser GetParser()
@@ -188,7 +188,7 @@ namespace InterpreterProject.Languages
                 return prog;
 
             // first remove unnecessary symbols ; : .. ( ) := and epsilons
-            String[] pruneTokens = {"(",")",";",":","..",":=","var","in","for","end","do"};
+            String[] pruneTokens = { "(", ")", ";", ":", "..", ":=", "var", "in", "for", "end", "do" };
 
             Predicate<IParseNode> isUnnecessaryTerminal =
                 n => (n is ParseLeaf) ? (n as ParseLeaf).token == null || pruneTokens.Contains((n as ParseLeaf).token.lexeme) : false;
@@ -214,7 +214,7 @@ namespace InterpreterProject.Languages
             Predicate<IParseNode> isUnnecessaryNonterminal =
                 n => (n is ParseTree) ? pruneVariables.Contains((n as ParseTree).var) : false;
 
-            parseTree.RemoveNodes(isUnnecessaryNonterminal);           
+            parseTree.RemoveNodes(isUnnecessaryNonterminal);
 
             if (Program.debug) Console.WriteLine(parseTree);
 
@@ -250,9 +250,9 @@ namespace InterpreterProject.Languages
                         }
 
                         if (prog.declarations.ContainsKey(identifier))
-                            prog.errors.Add(new SemanticError(idToken, identifier+" multiply defined"));
+                            prog.errors.Add(new SemanticError(idToken, identifier + " multiply defined"));
                         else
-                            prog.declarations[identifier] = declaration;                                     
+                            prog.declarations[identifier] = declaration;
                     }
                 }
             }
@@ -271,12 +271,12 @@ namespace InterpreterProject.Languages
 
                         if (!prog.declarations.ContainsKey(identifier))
                             prog.errors.Add(new SemanticError(leafToken, identifier + " never defined"));
-                        else if (idPosition.CompareTo(prog.declarations[identifier].token.pos) < 0)  
+                        else if (idPosition.CompareTo(prog.declarations[identifier].token.pos) < 0)
                             prog.errors.Add(new SemanticError(leafToken, identifier + " not defined before use"));
                     }
                 }
             }
-            
+
             // add statements to runnable
             ParseTree statementListNode = parseTree.children[0] as ParseTree;
             foreach (IParseNode statementNode in statementListNode.children)
@@ -322,17 +322,17 @@ namespace InterpreterProject.Languages
                     }
                 }
             }
-            
+
             return prog;
-        }        
+        }
 
         public class Runnable
         {
             public List<Statement> statements = new List<Statement>();
             public Dictionary<string, Statement.DeclarationStmt> declarations = new Dictionary<string, Statement.DeclarationStmt>();
             public Dictionary<string, Value> values = new Dictionary<string, Value>();
-            public List<IError> errors = new List<IError>();    
-    
+            public List<IError> errors = new List<IError>();
+
             public bool Execute(TextReader stdin, TextWriter stdout)
             {
                 if (errors.Count > 0)
@@ -366,6 +366,6 @@ namespace InterpreterProject.Languages
 
                 return true;
             }
-        }   
+        }
     }
 }

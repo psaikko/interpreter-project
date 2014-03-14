@@ -70,13 +70,13 @@ namespace InterpreterProject.LexicalAnalysis
                     StoreToken(TokenType.EOF);
                 else
                     StoreToken(TokenType.ERROR);
-            }    
+            }
 
             if (position.HasTransition(c))
             {
                 position = position.GetNext(c);
                 if (position.IsAcceptingState())
-                    StoreToken(position.acceptedTokenType);        
+                    StoreToken(position.acceptedTokenType);
             }
             else
             {
@@ -101,7 +101,7 @@ namespace InterpreterProject.LexicalAnalysis
             else
                 return null;
         }
-         
+
         public class Node
         {
             public Dictionary<char, Node> transitions = new Dictionary<char, Node>();

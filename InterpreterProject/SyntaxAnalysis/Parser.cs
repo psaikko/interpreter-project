@@ -55,7 +55,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
                 if (tokenStream.Current.tokenType == TokenType.ERROR)
                 {
-                    if (Program.debug) 
+                    if (Program.debug)
                         Console.WriteLine("  PARSE: skipping error token");
                     errors.Add(new LexicalError(tokenStream.Current));
                     tokenStream.MoveNext();
@@ -69,7 +69,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
                     if (term == Terminal.EPSILON)
                     {
-                        if (Program.debug) 
+                        if (Program.debug)
                             Console.WriteLine("  PARSE: ignore epsilon");
                         symbolStack.Pop();
                         treeStack.Pop();
@@ -77,7 +77,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     else if (term.Matches(tokenStream.Current))
                     {
                         leaf.token = tokenStream.Current;
-                        if (Program.debug) 
+                        if (Program.debug)
                             Console.WriteLine("  PARSE: Terminal match");
                         tokenStream.MoveNext();
                         symbolStack.Pop();
@@ -87,9 +87,9 @@ namespace InterpreterProject.SyntaxAnalysis
                     {
                         if (Program.debug)
                             Console.WriteLine("  PARSE: Error, Terminal mismatch");
-                       
+
                         errors.Add(new SyntaxError(tokenStream.Current));
-                        Synchronize(symbolStack, treeStack, tokenStream);     
+                        Synchronize(symbolStack, treeStack, tokenStream);
                     }
                 }
                 else // top of stack is a nonterminal
@@ -113,7 +113,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     }
                     else
                     {
-                        if (Program.debug) 
+                        if (Program.debug)
                             Console.WriteLine("  PARSE: Using production " + SymbolsToString(production));
                         for (int i = production.Length - 1; i >= 0; i--)
                         {
@@ -130,7 +130,7 @@ namespace InterpreterProject.SyntaxAnalysis
                 }
             }
 
-            if (Program.debug) 
+            if (Program.debug)
                 Console.WriteLine(parseTree);
 
             return parseTree;
@@ -138,7 +138,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
         private void Synchronize(Stack<ISymbol> symbolStack, Stack<IParseNode> treeStack, IEnumerator<Token> tokenStream)
         {
-            sync: while (symbolStack.Count > 0)
+        sync: while (symbolStack.Count > 0)
             {
                 if (Program.debug)
                     Console.WriteLine("  PARSE: Synchronize token " + tokenStream.Current + " symbol " + symbolStack.Peek());
@@ -149,14 +149,14 @@ namespace InterpreterProject.SyntaxAnalysis
                     {
                         symbolStack.Pop();
                         treeStack.Pop();
-                    }                        
+                    }
                     if (Program.debug)
                         Console.WriteLine("PARSE: Unexpected EOF");
                     return;
                 }
 
                 if (symbolStack.Peek() is Terminal)
-                {                   
+                {
                     Terminal t = symbolStack.Peek() as Terminal;
                     if (t.Matches(tokenStream.Current))
                     {
@@ -189,7 +189,7 @@ namespace InterpreterProject.SyntaxAnalysis
                             Console.WriteLine("  PARSE: Valid production exists");
                         return;
                     }
-                        
+
                     foreach (ISymbol sym in grammar.Follow(v))
                     {
                         if (sym is Terminal)
@@ -245,7 +245,7 @@ namespace InterpreterProject.SyntaxAnalysis
             return tmp;
         }
 
-        public interface IParseValue 
+        public interface IParseValue
         {
             ISymbol GetSymbol();
         }
