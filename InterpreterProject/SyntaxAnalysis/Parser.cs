@@ -14,7 +14,13 @@ namespace InterpreterProject.SyntaxAnalysis
         Nonterminal start;
         Terminal syncTerm;
         CFG grammar;
-        List<IError> errors = new List<IError>();
+
+        List<IError> errors;
+
+        public List<IError> Errors
+        {
+            get { return errors; }
+        }
 
         public Parser(CFG grammar, Terminal syncTerm)
         {
@@ -29,6 +35,8 @@ namespace InterpreterProject.SyntaxAnalysis
 
         public ParseTree Parse(IEnumerable<Token> tokenSource)
         {
+            errors = new List<IError>();
+
             Stack<ISymbol> symbolStack = new Stack<ISymbol>();
             symbolStack.Push(Terminal.EOF);
             symbolStack.Push(start);
@@ -236,38 +244,6 @@ namespace InterpreterProject.SyntaxAnalysis
                 s += symbol + " ";
             }
             return s;
-        }
-
-        public List<IError> GetErrors()
-        {
-            List<IError> tmp = errors;
-            errors = new List<IError>();
-            return tmp;
-        }
-
-        public interface IParseValue
-        {
-            ISymbol GetSymbol();
-        }
-
-        public class NonterminalValue : IParseValue
-        {
-            public Nonterminal var;
-
-            public NonterminalValue(Nonterminal var)
-            {
-                this.var = var;
-            }
-
-            public override string ToString()
-            {
-                return var.ToString();
-            }
-
-            public ISymbol GetSymbol()
-            {
-                return var;
-            }
         }
     }
 }
