@@ -1,44 +1,44 @@
-﻿using System;
+﻿using InterpreterProject.SyntaxAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InterpreterProject
+namespace InterpreterProject.SyntaxAnalysis
 {
-    public class Tree<T> : INode<T>
+    public class ParseTree : IParseNode
     {
-        public List<INode<T>> children = new List<INode<T>>();
-        public T value;
-        public Tree(T value) { this.value = value; }
-        public T GetValue() { return value; }
+        public List<IParseNode> children = new List<IParseNode>();
+        public Nonterminal var;
+        public ParseTree(Nonterminal var) { this.var = var; }
 
         public override string ToString()
         {
             String s = "";
 
-            Stack<INode<T>> nodeStack = new Stack<INode<T>>();
+            Stack<IParseNode> nodeStack = new Stack<IParseNode>();
             Stack<int> depthStack = new Stack<int>();
             nodeStack.Push(this);
             depthStack.Push(0);
 
             while (nodeStack.Count > 0)
             {
-                INode<T> node = nodeStack.Pop();
+                IParseNode node = nodeStack.Pop();
                 int depth = depthStack.Pop();
                 string indent = "";
                 for (int i = 0; i < depth; i++) indent += "  ";
-                if (node is Leaf<T>)
+                if (node is ParseLeaf)
                 {
                     s += indent + node.ToString() + '\n';
                 }
                 else
                 {
-                    Tree<T> t = node as Tree<T>;
-                    s += indent + t.value.ToString() + '\n';
+                    ParseTree t = node as ParseTree;
+                    s += indent + t.var.ToString() + '\n';
                     for (int i = t.children.Count - 1; i >= 0; i--)
                     {
-                        INode<T> next = t.children[i];
+                        IParseNode next = t.children[i];
                         nodeStack.Push(next);
                         depthStack.Push(depth + 1);
                     }
@@ -48,42 +48,42 @@ namespace InterpreterProject
             return s;
         }
 
-        public int SymbolCount(Predicate<T> pred)
+        public int SymbolCount(Predicate<IParseNode> pred)
         {
             int count = 0;
-            Stack<INode<T>> nodeStack = new Stack<INode<T>>();
+            Stack<IParseNode> nodeStack = new Stack<IParseNode>();
             nodeStack.Push(this);
             while (nodeStack.Count > 0)
             {
-                INode<T> current = nodeStack.Pop();
-                if (pred(current.GetValue()))
+                IParseNode current = nodeStack.Pop();
+                if (pred(current))
                     count++;
-                if (current is Tree<T>)
+                if (current is ParseTree)
                 {
-                    Tree<T> subtree = current as Tree<T>;
-                    foreach (INode<T> child in subtree.children)
+                    ParseTree subtree = current as ParseTree;
+                    foreach (IParseNode child in subtree.children)
                         nodeStack.Push(child);
                 }
             }
             return count;
         }
 
-        public bool DepthContains(int depth, Predicate<T> pred)
+        public bool DepthContains(int depth, Predicate<IParseNode> pred)
         {
-            Stack<INode<T>> nodeStack = new Stack<INode<T>>();
+            Stack<IParseNode> nodeStack = new Stack<IParseNode>();
             Stack<int> depthStack = new Stack<int>();
             nodeStack.Push(this);
             depthStack.Push(0);
             while (nodeStack.Count > 0)
             {
-                INode<T> currentNode = nodeStack.Pop();
+                IParseNode currentNode = nodeStack.Pop();
                 int currentDepth = depthStack.Pop();
                 if (currentDepth < depth)
                 {
-                    if (currentNode is Tree<T>)
+                    if (currentNode is ParseTree)
                     {
-                        Tree<T> subtree = currentNode as Tree<T>;
-                        foreach (INode<T> child in subtree.children)
+                        ParseTree subtree = currentNode as ParseTree;
+                        foreach (IParseNode child in subtree.children)
                         {
                             nodeStack.Push(child);
                             depthStack.Push(currentDepth + 1);
@@ -91,33 +91,33 @@ namespace InterpreterProject
                     }
                 }
                 else if (currentDepth == depth)
-                    if (pred(currentNode.GetValue()))
+                    if (pred(currentNode))
                         return true;
             }
             return false;
         }
 
-        public void RemoveNodes(Predicate<INode<T>> pred)
+        public void RemoveNodes(Predicate<IParseNode> pred)
         {
-            Stack<Tree<T>> treeStack = new Stack<Tree<T>>();
+            Stack<ParseTree> treeStack = new Stack<ParseTree>();
 
             treeStack.Push(this);
 
 
             while (treeStack.Count > 0)
             {
-                Tree<T> currentNode = treeStack.Pop();
-                List<INode<T>> pruneList = new List<INode<T>>();
-                List<List<INode<T>>> replaceList = new List<List<INode<T>>>();
+                ParseTree currentNode = treeStack.Pop();
+                List<IParseNode> pruneList = new List<IParseNode>();
+                List<List<IParseNode>> replaceList = new List<List<IParseNode>>();
 
-                foreach (INode<T> node in currentNode.children)
+                foreach (IParseNode node in currentNode.children)
                 {
                     if (pred(node))
                     {
                         
                         pruneList.Add(node);
-                        if (node is Tree<T>)
-                            replaceList.Add((node as Tree<T>).children);
+                        if (node is ParseTree)
+                            replaceList.Add((node as ParseTree).children);
                         else
                             replaceList.Add(null);
                     }
@@ -142,34 +142,34 @@ namespace InterpreterProject
                 }
                 else
                 {
-                    foreach (INode<T> node in currentNode.children)
-                        if (node is Tree<T>)
-                            treeStack.Push(node as Tree<T>);
+                    foreach (IParseNode node in currentNode.children)
+                        if (node is ParseTree)
+                            treeStack.Push(node as ParseTree);
                 }
             }
         }
 
-        public void RemoveNodesByValue(Predicate<T> pred)
+        public IEnumerable<IParseNode> Nodes()
         {
-            RemoveNodes(n => pred(n.GetValue()));
-        }
-
-        public IEnumerable<INode<T>> Nodes()
-        {
-            Stack<INode<T>> nodeStack = new Stack<INode<T>>();
+            Stack<IParseNode> nodeStack = new Stack<IParseNode>();
             nodeStack.Push(this);
             while (nodeStack.Count > 0)
             {
-                INode<T> currentNode = nodeStack.Pop();
+                IParseNode currentNode = nodeStack.Pop();
                 yield return currentNode;
                 
-                if (currentNode is Tree<T>)
+                if (currentNode is ParseTree)
                 {
-                    Tree<T> subtree = currentNode as Tree<T>;
+                    ParseTree subtree = currentNode as ParseTree;
                     for (int i = subtree.children.Count - 1; i >= 0; i--)
                         nodeStack.Push(subtree.children[i]);
                 }                        
             }
+        }
+
+        public ISymbol GetSymbol()
+        {
+            return var;
         }
     }
 }

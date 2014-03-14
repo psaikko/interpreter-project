@@ -27,16 +27,16 @@ namespace InterpreterProject.SyntaxAnalysis
                 throw new Exception("GRAMMAR NOT LL(1)");
         }
 
-        public Tree<IParseValue> Parse(IEnumerable<Token> tokenSource)
+        public ParseTree Parse(IEnumerable<Token> tokenSource)
         {
             Stack<ISymbol> symbolStack = new Stack<ISymbol>();
             symbolStack.Push(Terminal.EOF);
             symbolStack.Push(start);
 
-            Tree<IParseValue> parseTree = new Tree<IParseValue>(new NonterminalValue(start));
-            Stack<INode<IParseValue>> treeStack = new Stack<INode<IParseValue>>();
+            ParseTree parseTree = new ParseTree(start);
+            Stack<IParseNode> treeStack = new Stack<IParseNode>();
 
-            treeStack.Push(new Leaf<IParseValue>(new TerminalValue(Terminal.EOF)));
+            treeStack.Push(new ParseLeaf(Terminal.EOF));
             treeStack.Push(parseTree);
 
             IEnumerator<Token> tokenStream = tokenSource.GetEnumerator();
@@ -65,7 +65,7 @@ namespace InterpreterProject.SyntaxAnalysis
                 if (symbolStack.Peek() is Terminal)
                 {
                     Terminal term = symbolStack.Peek() as Terminal;
-                    Leaf<IParseValue> leaf = treeStack.Peek() as Leaf<IParseValue>;
+                    ParseLeaf leaf = treeStack.Peek() as ParseLeaf;
 
                     if (term == Terminal.EPSILON)
                     {
@@ -76,7 +76,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     }
                     else if (term.Matches(tokenStream.Current))
                     {
-                        (leaf.GetValue() as TerminalValue).token = tokenStream.Current;
+                        leaf.token = tokenStream.Current;
                         if (Program.debug) 
                             Console.WriteLine("  PARSE: Terminal match");
                         tokenStream.MoveNext();
@@ -95,8 +95,8 @@ namespace InterpreterProject.SyntaxAnalysis
                 else // top of stack is a nonterminal
                 {
                     Nonterminal var = symbolStack.Pop() as Nonterminal;
-                    INode<IParseValue> popped = treeStack.Pop();
-                    Tree<IParseValue> subtree = popped as Tree<IParseValue>;
+                    IParseNode popped = treeStack.Pop();
+                    ParseTree subtree = popped as ParseTree;
 
                     ISymbol[] production = table.Get(var, tokenStream.Current);
 
@@ -117,11 +117,11 @@ namespace InterpreterProject.SyntaxAnalysis
                             Console.WriteLine("  PARSE: Using production " + SymbolsToString(production));
                         for (int i = production.Length - 1; i >= 0; i--)
                         {
-                            INode<IParseValue> treeChild;
+                            IParseNode treeChild;
                             if (production[i] is Terminal)
-                                treeChild = new Leaf<IParseValue>(new TerminalValue(production[i] as Terminal));
+                                treeChild = new ParseLeaf(production[i] as Terminal);
                             else
-                                treeChild = new Tree<IParseValue>(new NonterminalValue(production[i] as Nonterminal));
+                                treeChild = new ParseTree(production[i] as Nonterminal);
                             subtree.children.Insert(0, treeChild);
                             treeStack.Push(treeChild);
                             symbolStack.Push(production[i]);
@@ -136,7 +136,7 @@ namespace InterpreterProject.SyntaxAnalysis
             return parseTree;
         }
 
-        private void Synchronize(Stack<ISymbol> symbolStack, Stack<INode<IParseValue>> treeStack, IEnumerator<Token> tokenStream)
+        private void Synchronize(Stack<ISymbol> symbolStack, Stack<IParseNode> treeStack, IEnumerator<Token> tokenStream)
         {
             sync: while (symbolStack.Count > 0)
             {
@@ -248,27 +248,6 @@ namespace InterpreterProject.SyntaxAnalysis
         public interface IParseValue 
         {
             ISymbol GetSymbol();
-        }
-
-        public class TerminalValue : IParseValue
-        {
-            public Token token;
-            public Terminal term;
-
-            public TerminalValue(Terminal term)
-            {
-                this.term = term;
-            }
-
-            public override string ToString()
-            {
-                return (token == null) ? term.ToString() : token.ToString();
-            }
-
-            public ISymbol GetSymbol()
-            {
-                return term;
-            }
         }
 
         public class NonterminalValue : IParseValue

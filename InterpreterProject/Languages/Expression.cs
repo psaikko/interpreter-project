@@ -18,59 +18,51 @@ namespace InterpreterProject.Languages
 
         Expression(Token token) { this.token = token; }
 
-        public static Expression FromTreeNode(INode<Parser.IParseValue> ASTNode,
+        public static Expression FromTreeNode(IParseNode ASTNode,
             Dictionary<String, Terminal> terms,
             Dictionary<String, Nonterminal> vars)
         {
-            if (ASTNode is Tree<Parser.IParseValue>)
+            if (ASTNode is ParseTree)
             {
-                Tree<Parser.IParseValue> subtree = ASTNode as Tree<Parser.IParseValue>;
-                Parser.IParseValue val = subtree.GetValue();
-                Parser.NonterminalValue nt = val as Parser.NonterminalValue;
-                if (nt == null) throw new Exception("EXPECTED NONTERMINAL NODE");
-
-                if (nt.var != vars["expression"]) throw new Exception("EXPECTED EXPRESSION NODE");
+                ParseTree subtree = ASTNode as ParseTree;
+                if (subtree.var != vars["expression"]) throw new Exception("EXPECTED EXPRESSION NODE");
 
                 switch (subtree.children.Count)
                 {
                     case 1:
-                        INode<Parser.IParseValue> child = subtree.children[0];
-                        if (child is Leaf<Parser.IParseValue>) // identifier or literal
-                            return ExprFromLeaf(child as Leaf<Parser.IParseValue>);
+                        IParseNode child = subtree.children[0];
+                        if (child is ParseLeaf) // identifier or literal
+                            return ExprFromLeaf(child as ParseLeaf);
                         else // another expr
                             return FromTreeNode(child, terms, vars);
                     case 2:
                         {
-                            INode<Parser.IParseValue> op = subtree.children[0];
-                            Leaf<Parser.IParseValue> opLeaf = op as Leaf<Parser.IParseValue>;
+                            IParseNode op = subtree.children[0];
+                            ParseLeaf opLeaf = op as ParseLeaf;
                             if (opLeaf == null) throw new Exception("MALFORMED AST");
-                            Parser.TerminalValue opTerm = opLeaf.GetValue() as Parser.TerminalValue;
-                            if (opTerm == null) throw new Exception("MALFORMED AST");
 
-                            INode<Parser.IParseValue> opnd = subtree.children[1];
+                            IParseNode opnd = subtree.children[1];
                             Expression baseExpr;
-                            if (opnd is Leaf<Parser.IParseValue>)
-                                baseExpr = ExprFromLeaf(opnd as Leaf<Parser.IParseValue>);
+                            if (opnd is ParseLeaf)
+                                baseExpr = ExprFromLeaf(opnd as ParseLeaf);
                             else
-                                baseExpr = FromTreeNode(opnd as Tree<Parser.IParseValue>, terms, vars);
-                            return new UnaryOp(opTerm.token.lexeme[0], baseExpr, opTerm.token);
+                                baseExpr = FromTreeNode(opnd as ParseTree, terms, vars);
+                            return new UnaryOp(opLeaf.token.lexeme[0], baseExpr, opLeaf.token);
                         }
                     case 3:
                         {
-                            INode<Parser.IParseValue> op = subtree.children[1];
-                            Leaf<Parser.IParseValue> opLeaf = op as Leaf<Parser.IParseValue>;
+                            IParseNode op = subtree.children[1];
+                            ParseLeaf opLeaf = op as ParseLeaf;
                             if (opLeaf == null) throw new Exception("MALFORMED AST");
-                            Parser.TerminalValue opTerm = opLeaf.GetValue() as Parser.TerminalValue;
-                            if (opTerm == null) throw new Exception("MALFORMED AST");
 
-                            INode<Parser.IParseValue> lhs = subtree.children[0];
-                            INode<Parser.IParseValue> rhs = subtree.children[2];
+                            IParseNode lhs = subtree.children[0];
+                            IParseNode rhs = subtree.children[2];
                             Expression lhsExpr, rhsExpr;
-                            if (lhs is Leaf<Parser.IParseValue>) lhsExpr = ExprFromLeaf(lhs as Leaf<Parser.IParseValue>);
-                            else lhsExpr = FromTreeNode(lhs as Tree<Parser.IParseValue>, terms, vars);
-                            if (rhs is Leaf<Parser.IParseValue>) rhsExpr = ExprFromLeaf(rhs as Leaf<Parser.IParseValue>);
-                            else rhsExpr = FromTreeNode(rhs as Tree<Parser.IParseValue>, terms, vars);
-                            return new BinaryOp(lhsExpr, opTerm.token.lexeme[0], rhsExpr, opTerm.token);
+                            if (lhs is ParseLeaf) lhsExpr = ExprFromLeaf(lhs as ParseLeaf);
+                            else lhsExpr = FromTreeNode(lhs as ParseTree, terms, vars);
+                            if (rhs is ParseLeaf) rhsExpr = ExprFromLeaf(rhs as ParseLeaf);
+                            else rhsExpr = FromTreeNode(rhs as ParseTree, terms, vars);
+                            return new BinaryOp(lhsExpr, opLeaf.token.lexeme[0], rhsExpr, opLeaf.token);
                         }
                     default:
                         throw new Exception("MALFORMED AST");
@@ -79,15 +71,13 @@ namespace InterpreterProject.Languages
             else throw new Exception("EXPECTED LEAF NODE");
         }
 
-        private static Expression ExprFromLeaf(Leaf<Parser.IParseValue> leaf)
+        private static Expression ExprFromLeaf(ParseLeaf leaf)
         {
             if (leaf == null) throw new Exception("MALFORMED AST");
-            Parser.TerminalValue term = leaf.GetValue() as Parser.TerminalValue;
-            if (term == null) throw new Exception("MALFORMED AST");
-            if (term.token.tokenType.name == "identifier")
-                return new IdentifierExpr(term.token.lexeme, term.token);
+            if (leaf.token.tokenType.name == "identifier")
+                return new IdentifierExpr(leaf.token.lexeme, leaf.token);
             else
-                return new ValueExpr(new Value(term.token.tokenType.name, term.token.lexeme), term.token);
+                return new ValueExpr(new Value(leaf.token.tokenType.name, leaf.token.lexeme), leaf.token);
         }
 
         public class ValueExpr : Expression

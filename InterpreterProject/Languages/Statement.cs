@@ -17,33 +17,29 @@ namespace InterpreterProject.Languages
         public Token token;
         Statement(Token token) { this.token = token; }
 
-        public static Statement FromTreeNode(INode<Parser.IParseValue> ASTNode,
+        public static Statement FromTreeNode(IParseNode ASTNode,
             Dictionary<String, Terminal> terms,
             Dictionary<String, Nonterminal> vars)
         {
-            Tree<Parser.IParseValue> subtree = 
-                ASTNode as Tree<Parser.IParseValue>;
+            ParseTree subtree = 
+                ASTNode as ParseTree;
             if (subtree == null) 
                 throw new Exception("EXPECTED TREE NODE");
-            Parser.NonterminalValue nt = 
-                subtree.GetValue() as Parser.NonterminalValue;
-            if (nt == null) 
-                throw new Exception("EXPECTED NONTERMINAL NODE");
-            if (nt.var != vars["statement"]) 
+            if (subtree.var != vars["statement"]) 
                 throw new Exception("EXPECTED STATEMENT NODE");
 
-            if (subtree.children[0] is Tree<Parser.IParseValue>) // ----------------------------------- Declaration
+            if (subtree.children[0] is ParseTree) // ----------------------------------- Declaration
             {
-                Tree<Parser.IParseValue> declTree = 
-                    subtree.children[0] as Tree<Parser.IParseValue>;
-                Leaf<Parser.IParseValue> idLeaf = 
-                    declTree.children[0] as Leaf<Parser.IParseValue>;
-                Leaf<Parser.IParseValue> typeLeaf = 
-                    declTree.children[1] as Leaf<Parser.IParseValue>;
+                ParseTree declTree = 
+                    subtree.children[0] as ParseTree;
+                ParseLeaf idLeaf = 
+                    declTree.children[0] as ParseLeaf;
+                ParseLeaf typeLeaf = 
+                    declTree.children[1] as ParseLeaf;
                 if (idLeaf == null || typeLeaf == null)
                     throw new Exception("BAD AST STRUCTURE");
-                Token idToken = (idLeaf.GetValue() as Parser.TerminalValue).token;
-                Token typeToken = (typeLeaf.GetValue() as Parser.TerminalValue).token;
+                Token idToken = idLeaf.token;
+                Token typeToken = typeLeaf.token;
 
                 string identifier = idToken.lexeme;
                 ValueType type = Value.TypeFromString(typeToken.lexeme);
@@ -53,8 +49,8 @@ namespace InterpreterProject.Languages
                     case 2: // ------------------------------------------------------------------------ simple declaration
                         return new Statement.DeclarationStmt(identifier, type, idToken);
                     case 3: // ------------------------------------------------------------------------ declaration with assignment
-                        Leaf<Parser.IParseValue> valueLeaf = 
-                            declTree.children[2] as Leaf<Parser.IParseValue>;
+                        ParseLeaf valueLeaf = 
+                            declTree.children[2] as ParseLeaf;
                         Expression expr = 
                             Expression.FromTreeNode(declTree.children[2], terms, vars);
                         return new Statement.DeclarationStmt(identifier, type, idToken, expr);
@@ -64,34 +60,30 @@ namespace InterpreterProject.Languages
             }
             else // Assignment or read or print or assert or for
             {
-                Leaf<Parser.IParseValue> firstChild = 
-                    subtree.children[0] as Leaf<Parser.IParseValue>;
-                Parser.TerminalValue firstTerm = 
-                    firstChild.GetValue() as Parser.TerminalValue;
-                if (firstTerm == null) 
-                    throw new Exception("MALFORMED AST");
-                if (firstTerm.term.tokenType != null &&
-                    firstTerm.term.tokenType.name == "identifier") // --------------------------------- assignment or for
+                ParseLeaf firstChild = 
+                    subtree.children[0] as ParseLeaf;
+                if (firstChild.terminal.tokenType != null &&
+                    firstChild.terminal.tokenType.name == "identifier") // --------------------------------- assignment or for
                 {
                     if (subtree.children.Count == 2) // ----------------------------------------------- assignment
                     {
-                        return new AssignStmt(firstTerm.token.lexeme, 
+                        return new AssignStmt(firstChild.token.lexeme, 
                             Expression.FromTreeNode(subtree.children[1], terms, vars),
-                            firstTerm.token);
+                            firstChild.token);
                     }
                     else if (subtree.children.Count == 4) // ------------------------------------------ for
                     {
                         List<Statement> block = new List<Statement>();
-                        Tree<Parser.IParseValue> blockChild = 
-                            subtree.children[3] as Tree<Parser.IParseValue>;
-                        foreach (INode<Parser.IParseValue> blockSubtree in blockChild.children)
+                        ParseTree blockChild = 
+                            subtree.children[3] as ParseTree;
+                        foreach (IParseNode blockSubtree in blockChild.children)
                             block.Add(Statement.FromTreeNode(blockSubtree, terms, vars));
                         if (blockChild == null) 
-                            throw new Exception("MALFORMED AST"); 
-                        return new ForStmt(firstTerm.token.lexeme,
+                            throw new Exception("MALFORMED AST");
+                        return new ForStmt(firstChild.token.lexeme,
                             Expression.FromTreeNode(subtree.children[1], terms, vars),
                             Expression.FromTreeNode(subtree.children[2], terms, vars),
-                            block, firstTerm.token);
+                            block, firstChild.token);
                     }
                     else throw new Exception("MALFORMED AST");
                 }
@@ -99,28 +91,24 @@ namespace InterpreterProject.Languages
                 {
                     if (subtree.children.Count != 2) 
                         throw new Exception("MALFORMED AST");
-                    switch (firstTerm.token.lexeme)
+                    switch (firstChild.token.lexeme)
                     {
                         case "assert": // ------------------------------------------------------------- assert                        
                             return new AssertStmt(Expression.FromTreeNode(
                                 subtree.children[1],
                                 terms, vars),
-                                firstTerm.token);
+                                firstChild.token);
                         case "print": // -------------------------------------------------------------- print
                             return new PrintStmt(Expression.FromTreeNode(
                                 subtree.children[1], 
-                                terms, vars), 
-                                firstTerm.token);
+                                terms, vars),
+                                firstChild.token);
                         case "read": // --------------------------------------------------------------- read
-                            Leaf<Parser.IParseValue> secondChild = 
-                                subtree.children[1] as Leaf<Parser.IParseValue>;
+                            ParseLeaf secondChild = 
+                                subtree.children[1] as ParseLeaf;
                             if (secondChild == null) 
                                 throw new Exception("MALFORMED AST");
-                            Parser.TerminalValue secondTerm =
-                                secondChild.GetValue() as Parser.TerminalValue;
-                            if (secondTerm == null) 
-                                throw new Exception("MALFORMED AST");
-                            return new ReadStmt(secondTerm.token.lexeme, firstTerm.token);
+                            return new ReadStmt(secondChild.token.lexeme, firstChild.token);
                         default:
                             throw new Exception("UNEXPECTED STATEMENT TYPE");
                     }
@@ -269,8 +257,7 @@ namespace InterpreterProject.Languages
                         if (expr.Type(context) != ValueType.String)
                             context.errors.Add(new SemanticError(token, "expected string type value for " + identifier));
                         break;
-                }
-                
+                }             
             }
         }
 

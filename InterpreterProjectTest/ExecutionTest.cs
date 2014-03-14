@@ -19,7 +19,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(program));
+            ParseTree ptree = ps.Parse(sc.Tokenize(program));
             MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
 
             StringWriter writer = new StringWriter();

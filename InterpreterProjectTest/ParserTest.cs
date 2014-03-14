@@ -135,7 +135,7 @@ namespace InterpreterProjectTest
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
-            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));         
+            ParseTree ptree = ps.Parse(sc.Tokenize(text));         
 
             // compare contents of tree to hand-drawn parse tree
 
@@ -174,7 +174,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
 
-            Tree<Parser.IParseValue> ptree  = ps.Parse(sc.Tokenize(text));
+            ParseTree ptree  = ps.Parse(sc.Tokenize(text));
 
             List<IError> errors = ps.GetErrors();
 
@@ -220,7 +220,7 @@ namespace InterpreterProjectTest
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
-            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
+            ParseTree ptree = ps.Parse(sc.Tokenize(text));
 
             List<IError> errors = ps.GetErrors();
 
@@ -238,7 +238,7 @@ namespace InterpreterProjectTest
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.GetScanner();
             Parser ps = miniPL.GetParser();
-            Tree<Parser.IParseValue> ptree = ps.Parse(sc.Tokenize(text));
+            ParseTree ptree = ps.Parse(sc.Tokenize(text));
 
             List<IError> errors = ps.GetErrors();
 

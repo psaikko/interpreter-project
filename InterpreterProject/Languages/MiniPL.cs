@@ -175,7 +175,7 @@ namespace InterpreterProject.Languages
             return grammar;
         }
 
-        public Runnable ProcessParseTree(Tree<Parser.IParseValue> parseTree, IEnumerable<IError> parseErrors)
+        public Runnable ProcessParseTree(ParseTree parseTree, IEnumerable<IError> parseErrors)
         {
             Runnable prog = new Runnable();
             bool isValidParseTree = true;
@@ -192,14 +192,14 @@ namespace InterpreterProject.Languages
             // first remove unnecessary symbols ; : .. ( ) := and epsilons
             String[] pruneTokens = {"(",")",";",":","..",":=","var","in","for","end","do"};
 
-            Predicate<Parser.IParseValue> isUnnecessaryTerminal =
-                v => (v is Parser.TerminalValue) ? (v as Parser.TerminalValue).token == null || pruneTokens.Contains((v as Parser.TerminalValue).token.lexeme) : false;
+            Predicate<IParseNode> isUnnecessaryTerminal =
+                n => (n is ParseLeaf) ? (n as ParseLeaf).token == null || pruneTokens.Contains((n as ParseLeaf).token.lexeme) : false;
 
-            parseTree.RemoveNodesByValue(isUnnecessaryTerminal);
+            parseTree.RemoveNodes(isUnnecessaryTerminal);
 
             // remove any tree nodes with no children
-            Predicate<INode<Parser.IParseValue>> isEmptyNonterminal =
-                v => (v is Tree<Parser.IParseValue>) ? (v as Tree<Parser.IParseValue>).children.Count == 0 : false;
+            Predicate<IParseNode> isEmptyNonterminal =
+                v => (v is ParseTree) ? (v as ParseTree).children.Count == 0 : false;
 
             parseTree.RemoveNodes(isEmptyNonterminal);
 
@@ -213,26 +213,25 @@ namespace InterpreterProject.Languages
                 vars["statements_head"], vars["statements_tail"], vars["unary_operation"], 
                 vars["binary_operation"], vars["declaration_assignment"], vars["operand"] };
 
-            Predicate<Parser.IParseValue> isUnnecessaryNonterminal =
-                v => (v is Parser.NonterminalValue) ? pruneVariables.Contains((v as Parser.NonterminalValue).var) : false;
+            Predicate<IParseNode> isUnnecessaryNonterminal =
+                n => (n is ParseTree) ? pruneVariables.Contains((n as ParseTree).var) : false;
 
-            parseTree.RemoveNodesByValue(isUnnecessaryNonterminal);           
+            parseTree.RemoveNodes(isUnnecessaryNonterminal);           
 
             if (Program.debug) Console.WriteLine(parseTree);
 
             // find declarations, produce errors if identifier declared multiple times         
-            foreach (INode<Parser.IParseValue> node in parseTree.Nodes())
+            foreach (IParseNode node in parseTree.Nodes())
             {
-                if (node is Tree<Parser.IParseValue>)
+                if (node is ParseTree)
                 {
-                    Tree<Parser.IParseValue> subtree = node as Tree<Parser.IParseValue>;
-                    Parser.NonterminalValue subtreeValue = node.GetValue() as Parser.NonterminalValue;
-                    if (subtreeValue.var == vars["declaration"])
+                    ParseTree subtree = node as ParseTree;
+                    if (subtree.var == vars["declaration"])
                     {
-                        Leaf<Parser.IParseValue> idLeaf = (subtree.children[0] as Leaf<Parser.IParseValue>);
-                        Leaf<Parser.IParseValue> typeLeaf = (subtree.children[1] as Leaf<Parser.IParseValue>);
-                        Token idToken = (idLeaf.GetValue() as Parser.TerminalValue).token;
-                        Token typeToken = (typeLeaf.GetValue() as Parser.TerminalValue).token;
+                        ParseLeaf idLeaf = (subtree.children[0] as ParseLeaf);
+                        ParseLeaf typeLeaf = (subtree.children[1] as ParseLeaf);
+                        Token idToken = idLeaf.token;
+                        Token typeToken = typeLeaf.token;
 
                         string identifier = idToken.lexeme;
                         ValueType type = Value.TypeFromString(typeToken.lexeme);
@@ -244,7 +243,7 @@ namespace InterpreterProject.Languages
                                 declaration = new Statement.DeclarationStmt(identifier, type, idToken);
                                 break;
                             case 3: // declaration with assignment
-                                Leaf<Parser.IParseValue> valueLeaf = (subtree.children[2] as Leaf<Parser.IParseValue>);
+                                ParseLeaf valueLeaf = (subtree.children[2] as ParseLeaf);
                                 Expression expr = Expression.FromTreeNode(subtree.children[2], terms, vars);
                                 declaration = new Statement.DeclarationStmt(identifier, type, idToken, expr);
                                 break;
@@ -261,13 +260,12 @@ namespace InterpreterProject.Languages
             }
 
             // check that variables are defined before use
-            foreach (INode<Parser.IParseValue> node in parseTree.Nodes())
+            foreach (IParseNode node in parseTree.Nodes())
             {
-                if (node is Leaf<Parser.IParseValue>)
+                if (node is ParseLeaf)
                 {
-                    Leaf<Parser.IParseValue> leaf = node as Leaf<Parser.IParseValue>;
-                    Parser.TerminalValue leafValue = node.GetValue() as Parser.TerminalValue;
-                    Token leafToken = leafValue.token;
+                    ParseLeaf leaf = node as ParseLeaf;
+                    Token leafToken = leaf.token;
                     if (leafToken.tokenType == tts["identifier"])
                     {
                         string identifier = leafToken.lexeme;
@@ -282,12 +280,34 @@ namespace InterpreterProject.Languages
             }
 
             // for-loop control variables not assigned to inside for loop
+            /*
+            List<ParseTree> forList = new List<ParseTree>();
+            foreach (IParseNode node in parseTree.Nodes())
+            {
+                if (node is ParseTree)
+                {
+                    ParseTree tree = node as ParseTree;
+                    if (tree.children.Count == 4) // is a for loop
+                        forList.Add(tree);                    
+                }
+            }
 
-
-
+            foreach (ParseTree forTree in forList)
+            {
+                // should not have used a generic tree structure...
+                string identifier = ((forTree.children[0] as ParseLeaf).GetValue() as Parser.TerminalValue).token.lexeme;
+                Stack<IParseNode> statements = new Stack<IParseNode>();
+                statements.Push(forTree);
+                while (statements.Count != 0)
+                {
+                    break;
+                }
+            }
+            */
             // add statements to runnable
-            Tree<Parser.IParseValue> statementListNode = parseTree.children[0] as Tree<Parser.IParseValue>;
-            foreach (INode<Parser.IParseValue> statementNode in statementListNode.children)
+
+            ParseTree statementListNode = parseTree.children[0] as ParseTree;
+            foreach (IParseNode statementNode in statementListNode.children)
                 prog.statements.Add(Statement.FromTreeNode(statementNode, terms, vars));
 
             // typecheck each statement

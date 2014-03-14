@@ -62,11 +62,11 @@
     <Compile Include="Errors\RuntimeError.cs" />
     <Compile Include="Errors\SemanticError.cs" />
     <Compile Include="Errors\SyntaxError.cs" />
-    <Compile Include="INode.cs" />
+    <Compile Include="SyntaxAnalysis\IParseNode.cs" />
     <Compile Include="Languages\Expression.cs" />
     <Compile Include="Languages\Statement.cs" />
     <Compile Include="Languages\Value.cs" />
-    <Compile Include="Leaf.cs" />
+    <Compile Include="SyntaxAnalysis\ParseLeaf.cs" />
     <Compile Include="LexicalAnalysis\Position.cs" />
     <Compile Include="SyntaxAnalysis\CFG.cs" />
     <Compile Include="Languages\MiniPL.cs" />
@@ -83,7 +83,7 @@
     <Compile Include="LexicalAnalysis\SetEqualityComparer.cs" />
     <Compile Include="LexicalAnalysis\Token.cs" />
     <Compile Include="LexicalAnalysis\TokenType.cs" />
-    <Compile Include="Tree.cs" />
+    <Compile Include="SyntaxAnalysis\ParseTree.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
