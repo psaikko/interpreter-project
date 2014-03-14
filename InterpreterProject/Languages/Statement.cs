@@ -290,7 +290,7 @@ namespace InterpreterProject.Languages
                         stmt.Execute(context, stdin, stdout);
                     }
                 }
-
+                context.values[identifier] = new Value(end + 1);
                 return null;
             }
 

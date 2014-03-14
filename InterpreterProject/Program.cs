@@ -13,23 +13,39 @@ namespace InterpreterProject
 {
     class Program
     {
-        public static bool debug = true;
+        public static bool debug = false;
 
         static void Main(string[] args)
         {
-            string text = "var s : string; for s in \"hello\"..(2 = 2) do print 1; end for;";
+            if (args.Length > 1)
+                debug = true;
 
-            MiniPL miniPL = MiniPL.GetInstance();
-            Scanner sc = miniPL.GetScanner();
-            Parser ps = miniPL.GetParser();
-            ParseTree ptree = ps.Parse(sc.Tokenize(text));
+            switch (args.Length)
+            {
+                case 0:
+                    Console.WriteLine("Specify a file path.");
+                    break;
+                default:
+                    FileStream fs;
+                    try
+                    {
+                        fs = System.IO.File.OpenRead(args[0]);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                        break;
+                    }
 
-            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+                    MiniPL miniPL = MiniPL.GetInstance();
+                    Scanner sc = miniPL.GetScanner();
+                    Parser ps = miniPL.GetParser();
+                    ParseTree ptree = ps.Parse(sc.Tokenize(fs));
+                    MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.GetErrors());
+                    prog.Execute(Console.In, Console.Out);
 
-            foreach (IError err in prog.errors)
-                Console.WriteLine(err.GetMessage());
-
-            Console.ReadLine();
+                    break;                
+            }
         }
     }
 }

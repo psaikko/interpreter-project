@@ -29,15 +29,13 @@ namespace InterpreterProject.Languages
         private MiniPL()
         {
             // Define regexes for tokens
-            //Regex reBlockComment = Regex.Concat("/*").Concat(Regex.Not('*').Union(Regex.Char('*').Plus().Concat(Regex.Not('*', '/'))).Star())
-            //                                         .Concat(Regex.Char('*').Plus().Concat(Regex.Char('/')));
 
             Regex reBlockCommentStart = Regex.Concat("/*");
             Regex reBlockCommentEnd = Regex.Concat("*/");
 
             Regex reLineComment = Regex.Concat("//").Concat(Regex.Not('\n').Star());
 
-            Regex reWhitespace = Regex.Union(" \t\n").Star().Union(reLineComment);
+            Regex reWhitespace = Regex.Union(" \t\r\n").Star().Union(reLineComment);
 
             Regex reString = Regex.Char('"').Concat(Regex.Char('\\').Concat(Regex.Any()).Union(Regex.Not('"', '\\')).Star()).Concat(Regex.Char('"'));
             Regex reBinaryOperator = Regex.Union("+-*/<=&");
