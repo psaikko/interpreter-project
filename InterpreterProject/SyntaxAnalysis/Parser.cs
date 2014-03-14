@@ -8,6 +8,11 @@ using InterpreterProject.LexicalAnalysis;
 
 namespace InterpreterProject.SyntaxAnalysis
 {
+    /*
+     * Implements a predictive parser for any given LL(1) grammar.
+     * Uses phrase-level error recovery which is overridden if a special
+     * synchronising token (like ;) is encountered.
+     */
     public class Parser
     {
         ParseTable table;
@@ -33,6 +38,7 @@ namespace InterpreterProject.SyntaxAnalysis
                 throw new Exception("GRAMMAR NOT LL(1)");
         }
 
+        // Parse the given stream of tokens
         public ParseTree Parse(IEnumerable<Token> tokenSource)
         {
             errors = new List<IError>();
@@ -61,6 +67,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     Console.WriteLine("  PARSE: token " + tokenStream.Current);
                 }
 
+                // ignore error tokens
                 if (tokenStream.Current.Type == TokenType.ERROR)
                 {
                     if (Program.debug)
@@ -77,6 +84,7 @@ namespace InterpreterProject.SyntaxAnalysis
 
                     if (term == Terminal.EPSILON)
                     {
+                        // epsilon production was used, exclude from parse tree
                         if (Program.debug)
                             Console.WriteLine("  PARSE: ignore epsilon");
                         symbolStack.Pop();
@@ -84,18 +92,19 @@ namespace InterpreterProject.SyntaxAnalysis
                     }
                     else if (term.Matches(tokenStream.Current))
                     {
-                        leaf.Token = tokenStream.Current;
+                        // current token matches the top of the parse stack, add it to parse tree                        
                         if (Program.debug)
                             Console.WriteLine("  PARSE: Terminal match");
+                        leaf.Token = tokenStream.Current;
                         tokenStream.MoveNext();
                         symbolStack.Pop();
                         treeStack.Pop();
                     }
                     else
                     {
+                        // current token does no match, recover from error
                         if (Program.debug)
                             Console.WriteLine("  PARSE: Error, Terminal mismatch");
-
                         errors.Add(new SyntaxError(tokenStream.Current));
                         Synchronize(symbolStack, treeStack, tokenStream);
                     }
@@ -110,19 +119,22 @@ namespace InterpreterProject.SyntaxAnalysis
 
                     if (production == null)
                     {
-                        symbolStack.Push(var);
-                        treeStack.Push(popped);
-
+                        // cannot derive the current token from the nonterminal at the top of the stack
                         if (Program.debug)
                             Console.WriteLine("  PARSE: Error, No such production");
 
+                        symbolStack.Push(var);
+                        treeStack.Push(popped);
+                                                                                          
                         errors.Add(new SyntaxError(tokenStream.Current));
                         Synchronize(symbolStack, treeStack, tokenStream);
                     }
                     else
                     {
+                        // use the production specified by the parse table, add node to parse tree
                         if (Program.debug)
                             Console.WriteLine("  PARSE: Using production " + SymbolsToString(production));
+
                         for (int i = production.Length - 1; i >= 0; i--)
                         {
                             IParseNode treeChild;
@@ -144,13 +156,16 @@ namespace InterpreterProject.SyntaxAnalysis
             return parseTree;
         }
 
+        // Uses phrase-level error recovery with First and Follow sets to recover from bad state
         private void Synchronize(Stack<ISymbol> symbolStack, Stack<IParseNode> treeStack, IEnumerator<Token> tokenStream)
         {
+            // Loop until good state found (return statements) or no more symbols on stack.
         sync: while (symbolStack.Count > 0)
             {
                 if (Program.debug)
                     Console.WriteLine("  PARSE: Synchronize token " + tokenStream.Current + " symbol " + symbolStack.Peek());
 
+                // no recovery from end of file, empty the parse stack
                 if (tokenStream.Current.Type == TokenType.EOF)
                 {
                     while (symbolStack.Count > 0)
@@ -168,6 +183,7 @@ namespace InterpreterProject.SyntaxAnalysis
                     Terminal t = symbolStack.Peek() as Terminal;
                     if (t.Matches(tokenStream.Current))
                     {
+                        // good state reached
                         if (Program.debug)
                             Console.WriteLine("  PARSE: Token matches");
                         return;
@@ -175,6 +191,8 @@ namespace InterpreterProject.SyntaxAnalysis
 
                     if (syncTerm.Matches(tokenStream.Current))
                     {
+                        // special case: we have a synchronising token like ';' that we do not want to skip over
+                        // so remove symbol from parse stack
                         if (Program.debug)
                             Console.WriteLine("  PARSE: Discarding symbol " + symbolStack.Peek());
                         symbolStack.Pop();
@@ -182,6 +200,7 @@ namespace InterpreterProject.SyntaxAnalysis
                         continue;
                     }
 
+                    // normal case: discard token and continue with recovery
                     if (Program.debug)
                         Console.WriteLine("  PARSE: Discard token");
                     if (!tokenStream.MoveNext())
@@ -193,11 +212,14 @@ namespace InterpreterProject.SyntaxAnalysis
                     Nonterminal v = symbolStack.Peek() as Nonterminal;
                     if (table.Get(v, tokenStream.Current) != null)
                     {
+                        // good state reached (current token in First set of symbol at top of stack)
                         if (Program.debug)
                             Console.WriteLine("  PARSE: Valid production exists");
                         return;
                     }
 
+                    // if current terminal could be matched by something in Follow set of 
+                    // symbol at top of stack, then skip the current symbol
                     foreach (ISymbol sym in grammar.Follow(v))
                     {
                         if (sym is Terminal)
@@ -226,6 +248,7 @@ namespace InterpreterProject.SyntaxAnalysis
                         }
                     }
 
+                    // default action: skip current terminal
                     if (Program.debug)
                         Console.WriteLine("  PARSE: Discard token");
                     if (!tokenStream.MoveNext())

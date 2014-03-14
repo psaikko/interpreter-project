@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.Languages
 {
+    // Representation of a Mini-PL statement
     public abstract class Statement
     {
         public abstract RuntimeError Execute(MiniPL.Runnable context, TextReader stdin, TextWriter stdout);
@@ -22,30 +23,28 @@ namespace InterpreterProject.Languages
             set { }
         }
 
+        // Every statement contains token to identify location in code
         Statement(Token token) 
         { 
             this.token = token; 
         }
 
+        // Create appropriate statement object from abstract syntax tree node
         public static Statement FromTreeNode(IParseNode ASTNode,
             Dictionary<String, Terminal> terms,
             Dictionary<String, Nonterminal> vars)
         {
-            ParseTree subtree =
-                ASTNode as ParseTree;
+            ParseTree subtree = ASTNode as ParseTree;
             if (subtree == null)
                 throw new Exception("EXPECTED TREE NODE");
             if (subtree.Nonterminal != vars["statement"])
                 throw new Exception("EXPECTED STATEMENT NODE");
 
-            if (subtree.Children[0] is ParseTree) // ----------------------------------- Declaration
+            if (subtree.Children[0] is ParseTree) // -------------------------------------------------- Declaration
             {
-                ParseTree declTree =
-                    subtree.Children[0] as ParseTree;
-                ParseLeaf idLeaf =
-                    declTree.Children[0] as ParseLeaf;
-                ParseLeaf typeLeaf =
-                    declTree.Children[1] as ParseLeaf;
+                ParseTree declTree = subtree.Children[0] as ParseTree;
+                ParseLeaf idLeaf = declTree.Children[0] as ParseLeaf;
+                ParseLeaf typeLeaf = declTree.Children[1] as ParseLeaf;
                 if (idLeaf == null || typeLeaf == null)
                     throw new Exception("BAD AST STRUCTURE");
                 Token idToken = idLeaf.Token;
@@ -59,21 +58,18 @@ namespace InterpreterProject.Languages
                     case 2: // ------------------------------------------------------------------------ simple declaration
                         return new Statement.DeclarationStmt(identifier, type, idToken);
                     case 3: // ------------------------------------------------------------------------ declaration with assignment
-                        ParseLeaf valueLeaf =
-                            declTree.Children[2] as ParseLeaf;
-                        Expression expr =
-                            Expression.FromTreeNode(declTree.Children[2], terms, vars);
+                        ParseLeaf valueLeaf = declTree.Children[2] as ParseLeaf;
+                        Expression expr = Expression.FromTreeNode(declTree.Children[2], terms, vars);
                         return new Statement.DeclarationStmt(identifier, type, idToken, expr);
                     default:
                         throw new Exception("BAD AST STRUCTURE");
                 }
             }
-            else // Assignment or read or print or assert or for
+            else // Assignment / read / print / assert / for statement
             {
-                ParseLeaf firstChild =
-                    subtree.Children[0] as ParseLeaf;
+                ParseLeaf firstChild = subtree.Children[0] as ParseLeaf;
                 if (firstChild.Terminal.MatchedTokenType != null &&
-                    firstChild.Terminal.MatchedTokenType.Name == "identifier") // ---------------------------- assignment or for
+                    firstChild.Terminal.MatchedTokenType.Name == "identifier") // --------------------- assignment or for
                 {
                     if (subtree.Children.Count == 2) // ----------------------------------------------- assignment
                     {
@@ -84,8 +80,7 @@ namespace InterpreterProject.Languages
                     else if (subtree.Children.Count == 4) // ------------------------------------------ for
                     {
                         List<Statement> block = new List<Statement>();
-                        ParseTree blockChild =
-                            subtree.Children[3] as ParseTree;
+                        ParseTree blockChild = subtree.Children[3] as ParseTree;
                         foreach (IParseNode blockSubtree in blockChild.Children)
                             block.Add(Statement.FromTreeNode(blockSubtree, terms, vars));
                         if (blockChild == null)
@@ -124,9 +119,9 @@ namespace InterpreterProject.Languages
                     }
                 }
             }
-            throw new Exception("THIS SHOULD NOT HAPPEN WHAT DID YOU DO");
         }
 
+        // read statement
         public class ReadStmt : Statement
         {
             string identifier;
@@ -141,21 +136,25 @@ namespace InterpreterProject.Languages
                 this.identifier = identifier;
             }
 
+            // Execute read statement 
             public override RuntimeError Execute(MiniPL.Runnable context, TextReader stdin, TextWriter stdout)
             {
+                // read whitespace-delimited token from input stream
                 string input = "";
                 char[] buf = new char[1];
 
+                // works well enough for console input but surely there's a better way..
                 while (true)
                 {
                     int read = stdin.Read(buf, 0, 1);
                     if (read == 0) break;
-                    if (buf[0] == ' ' || buf[0] == '\t' || buf[0] == '\n') break;
+                    if (buf[0] == ' ' || buf[0] == '\t' || buf[0] == '\n') break; 
                     input += buf[0];
                 }
 
                 if (context.declarations[identifier].Type == ValueType.Integer)
                 {
+                    // if expecting integer but parsing fails, create runtime error
                     int inputInt = 0;
                     if (!Int32.TryParse(input, out inputInt)) return new RuntimeError(Token, "expected to read integer");
                     context.values[identifier] = new Value(inputInt);
@@ -170,6 +169,7 @@ namespace InterpreterProject.Languages
                 return null;
             }
 
+            // Mini-PL spec only defines reading integer and string values
             public override void TypeCheck(MiniPL.Runnable context)
             {
                 if (context.declarations[identifier].Type == ValueType.Boolean)
@@ -177,6 +177,7 @@ namespace InterpreterProject.Languages
             }
         }
 
+        // assert statement
         public class AssertStmt : Statement
         {
             Expression expr;
@@ -189,8 +190,10 @@ namespace InterpreterProject.Languages
 
             public override RuntimeError Execute(MiniPL.Runnable context, TextReader stdin, TextWriter stdout)
             {
+                
                 if (expr.Type(context) == ValueType.String)
                     throw new Exception("TYPE CHECKING FAILED");
+                // if expression evaluates to false, stop execution with a runtime error
                 if (expr.Evaluate(context).BooleanValue() == false)
                     return new RuntimeError(Token, "assertion failed");
                 return null;
@@ -198,12 +201,15 @@ namespace InterpreterProject.Languages
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
+                // typecheck parameter
                 expr.TypeCheck(context);
+                // only defined for boolean parameter, but we'll allow integers too..
                 if (expr.Type(context) == ValueType.String)
                     context.errors.Add(new SemanticError(Token, "cannot assert a string value"));
             }
         }
 
+        // print statement
         public class PrintStmt : Statement
         {
             Expression expr;
@@ -216,6 +222,7 @@ namespace InterpreterProject.Languages
 
             public override RuntimeError Execute(MiniPL.Runnable context, TextReader stdin, TextWriter stdout)
             {
+                // print value of parameter to output stream
                 switch (expr.Type(context))
                 {
                     case ValueType.Integer:
@@ -232,12 +239,15 @@ namespace InterpreterProject.Languages
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
+                // typecheck parameter
                 expr.TypeCheck(context);
+                // Mini-PL spec only defines print for integer and boolean values
                 if (expr.Type(context) == ValueType.Boolean)
                     context.errors.Add(new SemanticError(Token, "cannot print a boolean value"));
             }
         }
 
+        // assignment expression
         public class AssignStmt : Statement
         {
             Expression expr;
@@ -257,13 +267,16 @@ namespace InterpreterProject.Languages
 
             public override RuntimeError Execute(MiniPL.Runnable context, TextReader stdin, TextWriter stdout)
             {
+                // just update symbol table
                 context.values[identifier] = expr.Evaluate(context);
                 return null;
             }
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
+                // typecheck value
                 expr.TypeCheck(context);
+                // check that value type matches variable
                 switch (context.declarations[identifier].Type)
                 {
                     case ValueType.Boolean:
@@ -282,6 +295,7 @@ namespace InterpreterProject.Languages
             }
         }
 
+        // for statement
         public class ForStmt : Statement
         {                      
             Expression startVal;
@@ -310,6 +324,9 @@ namespace InterpreterProject.Languages
 
             public override RuntimeError Execute(MiniPL.Runnable context, TextReader stdin, TextWriter stdout)
             {
+                // execute all statements in block for every value of control variable from
+                // value of start expression to value of end expression (inclusive)
+
                 int start = startVal.Evaluate(context).IntValue();
                 int end = endVal.Evaluate(context).IntValue();
 
@@ -321,12 +338,14 @@ namespace InterpreterProject.Languages
                         stmt.Execute(context, stdin, stdout);
                     }
                 }
+                // sample code seemed to indicate control value should be end + 1 after execution
                 context.values[identifier] = new Value(end + 1);
                 return null;
             }
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
+                // typecheck parameters, control variable, and every statement in loop
                 startVal.TypeCheck(context);
                 endVal.TypeCheck(context);
                 if (context.declarations[identifier].Type != ValueType.Integer)
@@ -342,6 +361,7 @@ namespace InterpreterProject.Languages
             }
         }
 
+        // declaration statement, with optional assignment part
         public class DeclarationStmt : Statement
         {         
             Expression initialValue;
@@ -373,12 +393,14 @@ namespace InterpreterProject.Languages
 
             public override RuntimeError Execute(MiniPL.Runnable context, TextReader stdin, TextWriter stdout)
             {
+                // update symbol table to default or specified initial value
                 context.values[identifier] = (initialValue == null) ? new Value(type) : initialValue.Evaluate(context);
                 return null;
             }
 
             public override void TypeCheck(MiniPL.Runnable context)
             {
+                // if initial value specified check it agaist the type
                 if (initialValue != null)
                 {
                     initialValue.TypeCheck(context);

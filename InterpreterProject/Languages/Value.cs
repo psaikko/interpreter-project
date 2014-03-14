@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.Languages
 {
+    // Mini-PL value types
     public enum ValueType { Integer, String, Boolean }
 
+    // Representation of a Mini-PL value
     public class Value
     {
         Object value;
+        // dynamically determine value type
         public ValueType Type()
         {
             if (value is Int32)
@@ -22,6 +25,7 @@ namespace InterpreterProject.Languages
             else
                 throw new Exception("UNEXPECTED VARIABLE TYPE");
         }
+        // create a value from type- and value strings
         public Value(string typeString, string valueString)
         {
             switch (typeString)
@@ -39,6 +43,7 @@ namespace InterpreterProject.Languages
                     throw new Exception("UNEXPECTED TYPE STRING");
             }
         }
+        // create value from type enum and value string
         public Value(ValueType type, string valueString)
         {
             switch (type)
@@ -54,6 +59,7 @@ namespace InterpreterProject.Languages
                     break;
             }
         }
+        // create value with default value for the type
         public Value(ValueType type)
         {
             switch (type)
@@ -69,6 +75,7 @@ namespace InterpreterProject.Languages
                     break;
             }
         }
+        // create value from primitive type
         public Value(bool value)
         {
             this.value = value;
@@ -82,6 +89,7 @@ namespace InterpreterProject.Languages
             this.value = value;
         }
 
+        // get typed values
         public int IntValue()
         {
             return (int)value;
@@ -92,6 +100,7 @@ namespace InterpreterProject.Languages
         }
         public bool BooleanValue()
         {
+            // integers can be iterpreted as booleans
             if (Type() == ValueType.Boolean)
                 return (bool)value;
             else
@@ -103,6 +112,7 @@ namespace InterpreterProject.Languages
         private static readonly string[] escapeChars =
             new string[] { "\a", "\b", "\f", "\n", "\r", "\t", "\v", "\\", "\'", "\"", "\0" };
 
+        // unescape raw string values from text
         private static string Unescape(string s)
         {
             for (int i = 0; i < escapeStrings.Length; i++)
@@ -110,6 +120,7 @@ namespace InterpreterProject.Languages
             return s;
         }
 
+        // parse a type string
         public static ValueType TypeFromString(string s)
         {
             ValueType type;

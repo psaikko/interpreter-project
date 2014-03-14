@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.Errors
 {
+    // Used to catch divide-by-zero errors during runtime
     class MiniPL_DivideByZeroException : Exception
     {
         RuntimeError error;

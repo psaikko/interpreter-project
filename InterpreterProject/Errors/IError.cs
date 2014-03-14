@@ -8,6 +8,7 @@ using InterpreterProject.SyntaxAnalysis;
 
 namespace InterpreterProject.Errors
 {
+    // Interface for different errors that can occur during interpretation process
     public interface IError
     {
         string GetMessage();

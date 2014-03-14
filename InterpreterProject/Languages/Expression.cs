@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.Languages
 {
+    // Representation of a Mini-PL expression
     public abstract class Expression
     {
+        // used to keep track of relevant text position
         Token token;
         public Token Token
         {
@@ -21,11 +23,13 @@ namespace InterpreterProject.Languages
         public abstract ValueType Type(MiniPL.Runnable context);
         public abstract void TypeCheck(MiniPL.Runnable context);
 
+        // Every expression contains token to identify location in code
         Expression(Token token) 
         { 
             this.token = token; 
         }
 
+        // creates an appropriate Expression object from an abstract syntax tree node
         public static Expression FromTreeNode(IParseNode ASTNode,
             Dictionary<String, Terminal> terms,
             Dictionary<String, Nonterminal> vars)
@@ -43,7 +47,7 @@ namespace InterpreterProject.Languages
                             return ExprFromLeaf(child as ParseLeaf);
                         else // another expr
                             return FromTreeNode(child, terms, vars);
-                    case 2:
+                    case 2: // unary operation
                         {
                             IParseNode op = subtree.Children[0];
                             ParseLeaf opLeaf = op as ParseLeaf;
@@ -57,7 +61,7 @@ namespace InterpreterProject.Languages
                                 baseExpr = FromTreeNode(opnd as ParseTree, terms, vars);
                             return new UnaryOp(opLeaf.Token.Lexeme[0], baseExpr, opLeaf.Token);
                         }
-                    case 3:
+                    case 3: // binary operation
                         {
                             IParseNode op = subtree.Children[1];
                             ParseLeaf opLeaf = op as ParseLeaf;
@@ -79,6 +83,7 @@ namespace InterpreterProject.Languages
             else throw new Exception("EXPECTED LEAF NODE");
         }
 
+        // Creates an indentifier or value expression from an abstract syntax tree leaf
         private static Expression ExprFromLeaf(ParseLeaf leaf)
         {
             if (leaf == null) throw new Exception("MALFORMED AST");
@@ -88,6 +93,7 @@ namespace InterpreterProject.Languages
                 return new ValueExpr(new Value(leaf.Token.Type.Name, leaf.Token.Lexeme), leaf.Token);
         }
 
+        // Literal value
         public class ValueExpr : Expression
         {
             Value value;
@@ -114,6 +120,7 @@ namespace InterpreterProject.Languages
             }
         }
 
+        // variable identifier
         public class IdentifierExpr : Expression
         {
             string identifier;
@@ -140,6 +147,7 @@ namespace InterpreterProject.Languages
             }
         }
 
+        // unary operation (!)
         public class UnaryOp : Expression
         {
             public char op;
@@ -178,6 +186,7 @@ namespace InterpreterProject.Languages
             }
         }
 
+        // binary arithmetic or logical operation (+-/*=&<)
         public class BinaryOp : Expression
         {
             Expression lhs;
@@ -192,6 +201,7 @@ namespace InterpreterProject.Languages
                 this.rhs = rhs;
             }
 
+            // apply the appropriate operation on operands
             override public Value Evaluate(MiniPL.Runnable context)
             {
                 switch (op)
@@ -243,6 +253,7 @@ namespace InterpreterProject.Languages
                 throw new Exception("UNEXPECTED OPERATOR " + op);
             }
 
+            // the expected return type of the operation
             override public ValueType Type(MiniPL.Runnable context)
             {
                 switch (op)
@@ -268,6 +279,7 @@ namespace InterpreterProject.Languages
                 }
             }
 
+            // recursively check operands and check that their types are compatible with operation
             override public void TypeCheck(MiniPL.Runnable context)
             {
                 rhs.TypeCheck(context);

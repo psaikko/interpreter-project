@@ -10,10 +10,12 @@ using InterpreterProject.Errors;
 
 namespace InterpreterProject.Languages
 {
+    // Contains Mini-PL language definition and semantic checks
     public class MiniPL
     {
         static MiniPL instance;
 
+        // singleton class, no sense making many instaces of the language
         public static MiniPL GetInstance()
         {
             if (instance == null)
@@ -143,8 +145,10 @@ namespace InterpreterProject.Languages
             terminals["binary_operator"] = new Terminal(tokenTypes["binary_op"]);
             terminals["unary_operator"] = new Terminal(tokenTypes["unary_op"]);
 
+            // Create the Mini-PL grammar
             grammar = new CFG(nonterminals["program"], terminals.Values, nonterminals.Values);
 
+            // define production rules for the grammar
             grammar.AddProductionRule(nonterminals["program"], new ISymbol[] { nonterminals["statements"] });
             grammar.AddProductionRule(nonterminals["statements"], new ISymbol[] { nonterminals["statements_head"], nonterminals["statements_tail"] });
             grammar.AddProductionRule(nonterminals["statements_head"], new ISymbol[] { nonterminals["statement"], terminals[";"] });
@@ -176,6 +180,7 @@ namespace InterpreterProject.Languages
             grammar.AddProductionRule(nonterminals["operand"], new ISymbol[] { terminals["identifier"] });
             grammar.AddProductionRule(nonterminals["operand"], new ISymbol[] { terminals["("], nonterminals["expression"], terminals[")"] });
 
+            // use ; as synchronizing token for Mini-PL
             parser = new Parser(grammar, terminals[";"]);
         }
 
@@ -223,6 +228,8 @@ namespace InterpreterProject.Languages
             parseTree.RemoveNodes(isUnnecessaryNonterminal);
 
             if (Program.debug) Console.WriteLine(parseTree);
+
+            // AST is formed at this point, so do semantic checks
 
             // find declarations, produce errors if identifier declared multiple times         
             foreach (IParseNode node in parseTree.Nodes())
@@ -288,10 +295,7 @@ namespace InterpreterProject.Languages
             foreach (IParseNode statementNode in statementListNode.Children)
                 prog.statements.Add(Statement.FromTreeNode(statementNode, terminals, nonterminals));
 
-            // typecheck each statement
-            foreach (Statement stmt in prog.statements)
-                stmt.TypeCheck(prog);
-
+            // check that for-loop control variables are not modified inside the for-loop
             foreach (Statement stmt in prog.statements)
             {
                 if (stmt is Statement.ForStmt)
@@ -329,9 +333,15 @@ namespace InterpreterProject.Languages
                 }
             }
 
+            // typecheck each statement
+            foreach (Statement stmt in prog.statements)
+                stmt.TypeCheck(prog);
+
             return prog;
         }
 
+        // Representation of Mini-PL program as a list of executable statements
+        // with variable and declaration information
         public class Runnable
         {
             public List<Statement> statements = new List<Statement>();
@@ -341,6 +351,7 @@ namespace InterpreterProject.Languages
 
             public bool Execute(TextReader stdin, TextWriter stdout)
             {
+                // just print errors if there are any
                 if (errors.Count > 0)
                 {
                     foreach (IError err in errors)
@@ -350,6 +361,7 @@ namespace InterpreterProject.Languages
 
                 if (Program.debug) Console.WriteLine("Start execution");
 
+                // execute each statement in order, stopping if runtime error detected
                 foreach (Statement stmt in statements)
                 {
                     RuntimeError err;
@@ -357,7 +369,7 @@ namespace InterpreterProject.Languages
                     {
                         err = stmt.Execute(this, stdin, stdout);
                     }
-                    catch (MiniPL_DivideByZeroException ex)
+                    catch (MiniPL_DivideByZeroException ex) // ugly but it works
                     {
                         err = ex.Error;
                     }
