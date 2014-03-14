@@ -10,8 +10,8 @@ namespace InterpreterProject.Errors
 {
     public class SemanticError : IError
     {
-        public Token t;
-        public string description;
+        Token t;
+        string description;
 
         public SemanticError(Token t, string description)
         {

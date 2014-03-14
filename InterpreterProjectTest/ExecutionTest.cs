@@ -193,7 +193,7 @@ namespace InterpreterProjectTest
                              "     print x;\n" +
                              "     print \" : Hello, World!\n\";\n" +
                              "end for;\n" +
-                             "assert (x = (nTimes-1));";
+                             "assert (x = nTimes);";
             string input = "3";
             string output = RunWithInput(program, input);
             Assert.AreEqual("How many times?0 : Hello, World!\n1 : Hello, World!\n2 : Hello, World!\n", output);

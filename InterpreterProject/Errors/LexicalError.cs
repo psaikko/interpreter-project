@@ -10,7 +10,7 @@ namespace InterpreterProject.Errors
 {
     public class LexicalError : IError
     {
-        public Token t;
+        Token t;
 
         public LexicalError(Token t)
         {

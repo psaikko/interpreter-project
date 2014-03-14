@@ -9,8 +9,8 @@ namespace InterpreterProject.Errors
 {
     public class RuntimeError : IError
     {
-        public Token t;
-        public string description;
+        Token t;
+        string description;
 
         public RuntimeError(Token t, string description)
         {

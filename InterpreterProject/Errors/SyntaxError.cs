@@ -10,7 +10,7 @@ namespace InterpreterProject.Errors
 {
     public class SyntaxError : IError
     {
-        public Token t;
+        Token t;
 
         public SyntaxError(Token t)
         {

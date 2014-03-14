@@ -353,7 +353,7 @@ namespace InterpreterProject.Languages
                     }
                     catch (MiniPL_DivideByZeroException ex)
                     {
-                        err = ex.err;
+                        err = ex.Error;
                     }
                     if (err != null)
                     {
