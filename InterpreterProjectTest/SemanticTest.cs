@@ -18,7 +18,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.Scanner;
             Parser ps = miniPL.Parser;
             ParseTree ptree = ps.Parse(sc.Tokenize(program));
-            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.Errors);
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.Errors, ps.IsValidParseTree);
 
             return prog.errors;
         }
@@ -40,7 +40,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.Scanner;
             Parser ps = miniPL.Parser;
             ParseTree ptree = ps.Parse(sc.Tokenize(text));
-            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.Errors);
+            MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.Errors, ps.IsValidParseTree);
 
             Assert.AreEqual(3, prog.declarations.Count);
         }

@@ -41,7 +41,7 @@ namespace InterpreterProject
                     Scanner sc = miniPL.Scanner;
                     Parser ps = miniPL.Parser;
                     ParseTree ptree = ps.Parse(sc.Tokenize(fs));
-                    MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.Errors);
+                    MiniPL.Runnable prog = miniPL.ProcessParseTree(ptree, ps.Errors, ps.IsValidParseTree);
                     prog.Execute(Console.In, Console.Out);
 
                     break;

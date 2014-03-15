@@ -21,11 +21,17 @@ namespace InterpreterProject.SyntaxAnalysis
         CFG grammar;
 
         List<Error> errors;
-
         public List<Error> Errors
         {
             get { return errors; }
         }
+
+        bool isValidParseTree;
+        public bool IsValidParseTree
+        {
+            get { return isValidParseTree; }
+        }
+
 
         public Parser(CFG grammar, Terminal syncTerm)
         {
@@ -41,6 +47,7 @@ namespace InterpreterProject.SyntaxAnalysis
         // Parse the given stream of tokens
         public ParseTree Parse(IEnumerable<Token> tokenSource)
         {
+            isValidParseTree = true;
             errors = new List<Error>();
 
             Stack<ISymbol> symbolStack = new Stack<ISymbol>();
@@ -170,6 +177,7 @@ namespace InterpreterProject.SyntaxAnalysis
                 {
                     while (symbolStack.Count > 0)
                     {
+                        isValidParseTree = false;
                         symbolStack.Pop();
                         treeStack.Pop();
                     }
@@ -195,6 +203,7 @@ namespace InterpreterProject.SyntaxAnalysis
                         // so remove symbol from parse stack
                         if (Program.debug)
                             Console.WriteLine("  PARSE: Discarding symbol " + symbolStack.Peek());
+                        isValidParseTree = false;
                         symbolStack.Pop();
                         treeStack.Pop();
                         continue;
@@ -229,6 +238,7 @@ namespace InterpreterProject.SyntaxAnalysis
                             {
                                 if (Program.debug)
                                     Console.WriteLine("  PARSE: Discarding symbol " + symbolStack.Peek());
+                                isValidParseTree = false;
                                 symbolStack.Pop();
                                 treeStack.Pop();
                                 goto sync;
@@ -241,6 +251,7 @@ namespace InterpreterProject.SyntaxAnalysis
                             {
                                 if (Program.debug)
                                     Console.WriteLine("  PARSE: Discarding symbol " + symbolStack.Peek());
+                                isValidParseTree = false;
                                 symbolStack.Pop();
                                 treeStack.Pop();
                                 goto sync;

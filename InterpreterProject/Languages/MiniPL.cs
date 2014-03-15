@@ -53,7 +53,6 @@ namespace InterpreterProject.Languages
             get { return parser; }
         }
 
-
         Scanner scanner;
         public Scanner Scanner
         {
@@ -184,15 +183,12 @@ namespace InterpreterProject.Languages
             parser = new Parser(grammar, terminals[";"]);
         }
 
-        public Runnable ProcessParseTree(ParseTree parseTree, IEnumerable<Error> parseErrors)
+        public Runnable ProcessParseTree(ParseTree parseTree, IEnumerable<Error> parseErrors, bool isValidParseTree)
         {
             Runnable prog = new Runnable();
-            bool isValidParseTree = true;
             foreach (Error err in parseErrors)
             {
                 prog.errors.Add(err);
-                if (err is SyntaxError)
-                    isValidParseTree = false;
             }
 
             // can't construct AST if parse tree is bad
