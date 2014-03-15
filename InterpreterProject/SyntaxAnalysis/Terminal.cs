@@ -7,8 +7,10 @@ using InterpreterProject.LexicalAnalysis;
 
 namespace InterpreterProject.SyntaxAnalysis
 {
+    // Represents a Terminal grammar symbol
     public class Terminal : ISymbol
     {
+        // special terminals
         public static readonly Terminal EPSILON = new Terminal("");
         public static readonly Terminal EOF = new Terminal(TokenType.EOF);
 
@@ -23,6 +25,8 @@ namespace InterpreterProject.SyntaxAnalysis
         {
             get { return matchedString; }
         } 
+
+        // can be a terminal matching either a specific string or token type
 
         public Terminal(TokenType tokenType)
         {

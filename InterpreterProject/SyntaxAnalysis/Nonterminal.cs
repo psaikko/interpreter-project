@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.SyntaxAnalysis
 {
+    // Represents a grammar nonterminal symbol
     public class Nonterminal : ISymbol
     {
         string name;

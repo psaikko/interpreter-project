@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.SyntaxAnalysis
 {
+    // Implementation of a parse tree leaf node
     public class ParseLeaf : IParseNode
     {
         private Terminal terminal;

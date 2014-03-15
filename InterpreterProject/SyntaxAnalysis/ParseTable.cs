@@ -7,10 +7,12 @@ using InterpreterProject.LexicalAnalysis;
 
 namespace InterpreterProject.SyntaxAnalysis
 {
+    // Implementation of a parse table
     public class ParseTable
     {
         Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>> table = new Dictionary<Nonterminal, Dictionary<Terminal, ISymbol[]>>();
 
+        // can get production from nonterminal and terminal as usual
         public ISymbol[] Get(Nonterminal var, Terminal term)
         {
             if (!table.ContainsKey(var))
@@ -20,6 +22,8 @@ namespace InterpreterProject.SyntaxAnalysis
             return table[var][term];
         }
 
+        // or from a nonterminal and a token, in which case we need to check
+        // all the terminals for the given nonterminal and see if one matches the token
         public ISymbol[] Get(Nonterminal var, Token token)
         {
             Dictionary<Terminal, ISymbol[]> tableRow = table[var];
@@ -31,6 +35,7 @@ namespace InterpreterProject.SyntaxAnalysis
             return null;
         }
 
+        // Add a production for some (nonterminal, terminal) pair to the table
         public void Add(Nonterminal var, Terminal term, ISymbol[] production)
         {
             if (!table.ContainsKey(var))

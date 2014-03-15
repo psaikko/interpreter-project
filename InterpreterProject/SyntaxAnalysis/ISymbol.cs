@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.SyntaxAnalysis
 {
+    // interface for grammar symbols
     public interface ISymbol
     {
     }

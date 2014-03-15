@@ -257,6 +257,7 @@ namespace InterpreterProject.SyntaxAnalysis
             }
         }
 
+        // creates string representation of a production rule for debugging
         private string SymbolsToString(IEnumerable<ISymbol> production)
         {
             if (production == null) return "null";

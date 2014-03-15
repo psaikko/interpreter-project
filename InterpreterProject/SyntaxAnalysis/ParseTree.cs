@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.SyntaxAnalysis
 {
+    // Implementation of a parse tree internal node
     public class ParseTree : IParseNode
     {
         List<IParseNode> children = new List<IParseNode>();
@@ -26,6 +27,7 @@ namespace InterpreterProject.SyntaxAnalysis
             this.nonterminal = var; 
         }
 
+        // string representation of the parse tree, for debugging
         public override string ToString()
         {
             String s = "";
@@ -61,6 +63,7 @@ namespace InterpreterProject.SyntaxAnalysis
             return s;
         }
 
+        // counts the number of nodes in the tree that satisfy some condition
         public int SymbolCount(Predicate<IParseNode> pred)
         {
             int count = 0;
@@ -81,6 +84,8 @@ namespace InterpreterProject.SyntaxAnalysis
             return count;
         }
 
+        // checks if a given depth of the parse tree contains some node
+        // satisfying a condition
         public bool DepthContains(int depth, Predicate<IParseNode> pred)
         {
             Stack<IParseNode> nodeStack = new Stack<IParseNode>();
@@ -110,12 +115,12 @@ namespace InterpreterProject.SyntaxAnalysis
             return false;
         }
 
+        // Remove each node that satisfies some condition
         public void RemoveNodes(Predicate<IParseNode> pred)
         {
             Stack<ParseTree> treeStack = new Stack<ParseTree>();
 
             treeStack.Push(this);
-
 
             while (treeStack.Count > 0)
             {
@@ -162,6 +167,8 @@ namespace InterpreterProject.SyntaxAnalysis
             }
         }
 
+        // Generator that returns every node in the parse tree
+        // uses a depth first search
         public IEnumerable<IParseNode> Nodes()
         {
             Stack<IParseNode> nodeStack = new Stack<IParseNode>();

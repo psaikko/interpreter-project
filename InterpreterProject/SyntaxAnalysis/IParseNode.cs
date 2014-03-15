@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.SyntaxAnalysis
 {
+    // interface for parse tree nodes
     public interface IParseNode
     {
         ISymbol GetSymbol();
