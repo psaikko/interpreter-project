@@ -13,12 +13,12 @@ namespace InterpreterProject
 {
     class Program
     {
-        public static bool debug = false;
+        public static bool debug = true;
 
         static void Main(string[] args)
         {
-            if (args.Length > 1)
-                debug = true;
+            if (args.Length == 2)
+                debug = false;
 
             switch (args.Length)
             {

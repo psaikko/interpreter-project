@@ -8,16 +8,11 @@ using InterpreterProject.SyntaxAnalysis;
 
 namespace InterpreterProject.Errors
 {
-    public class LexicalError : IError
+    public class LexicalError : Error
     {
-        Token t;
+        public LexicalError(Token t) : base(t) { }
 
-        public LexicalError(Token t)
-        {
-            this.t = t;
-        }
-
-        public string GetMessage()
+        override public string GetMessage()
         {
             return String.Format("Lexical error: unexpected character '{0}' at row {1}", t.Lexeme, t.TextPosition);
         }

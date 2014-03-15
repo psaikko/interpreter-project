@@ -12,7 +12,7 @@ namespace InterpreterProjectTest
     [TestClass]
     public class SemanticTest
     {
-        private List<IError> GetErrors(string program)
+        private List<Error> GetErrors(string program)
         {
             MiniPL miniPL = MiniPL.GetInstance();
             Scanner sc = miniPL.Scanner;
@@ -69,7 +69,7 @@ namespace InterpreterProjectTest
         {
             string text = "var i : int; for i in 0..9 do i := i + 1; end for;";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
             Assert.AreEqual(1, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
         }
@@ -79,7 +79,7 @@ namespace InterpreterProjectTest
         {
             string text = "var i : int; var j : int; for i in 0..9 do for j in 0..9 do i := i + 1; end for; end for;";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
             Assert.AreEqual(1, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
         }
@@ -97,7 +97,7 @@ namespace InterpreterProjectTest
         {
             string text = "var b : bool; read b;";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
             Assert.AreEqual(1, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
         }
@@ -107,7 +107,7 @@ namespace InterpreterProjectTest
         {
             string text = "var b : bool; print b;";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
             Assert.AreEqual(1, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
         }
@@ -117,7 +117,7 @@ namespace InterpreterProjectTest
         {
             string text = "var s : string; assert(s);";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
             Assert.AreEqual(1, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
         }
@@ -127,7 +127,7 @@ namespace InterpreterProjectTest
         {
             string text = "var b : bool; b := \"nope\";";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
             Assert.AreEqual(1, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
         }
@@ -137,7 +137,7 @@ namespace InterpreterProjectTest
         {
             string text = "var b : bool := \"nope\";";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
             Assert.AreEqual(1, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
         }
@@ -147,7 +147,7 @@ namespace InterpreterProjectTest
         {
             string text = "var a : int := (1 + \"lol\"); var b : int := (\"lol\" + 1);";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
             // 2 for bad assignments, extra for assigning inferred string type to int variable
             Assert.AreEqual(3, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
@@ -160,7 +160,7 @@ namespace InterpreterProjectTest
         {
             string text = "var a : int := (1 - \"lol\");\n var b : int := (\"lol\" - 1);\n var c : int := (1 - (1 = 1));";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
 
             Assert.AreEqual(3, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
@@ -173,7 +173,7 @@ namespace InterpreterProjectTest
         {
             string text = "var a : int := (1 * \"lol\");\n var b : int := (\"lol\" * 1);\n var c : int := (1 * (1 = 1));";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
 
             Assert.AreEqual(3, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
@@ -186,7 +186,7 @@ namespace InterpreterProjectTest
         {
             string text = "var a : int := (1 / \"lol\");\n var b : int := (\"lol\" / 1);\n var c : int := (1 / (1 = 1));";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
 
             Assert.AreEqual(3, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
@@ -199,7 +199,7 @@ namespace InterpreterProjectTest
         {
             string text = "assert(1 = \"nope\"); assert(\"nope\" = 1);";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
 
             Assert.AreEqual(2, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
@@ -211,7 +211,7 @@ namespace InterpreterProjectTest
         {
             string text = "assert(1 < \"nope\"); assert(\"nope\" < 1); assert(\"nope\" < (1=1)); assert((1=1) < \"nope\");";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
 
             Assert.AreEqual(4, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
@@ -225,7 +225,7 @@ namespace InterpreterProjectTest
         {
             string text = "assert(1 & \"nope\"); assert(\"nope\" & 1); assert(\"nope\" & (1=1)); assert((1=1) & \"nope\");";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
 
             Assert.AreEqual(4, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
@@ -239,7 +239,7 @@ namespace InterpreterProjectTest
         {
             string text = "assert(!\"nope\");";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
 
             Assert.AreEqual(1, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);
@@ -251,7 +251,7 @@ namespace InterpreterProjectTest
             // should determine '+' to yield a string type, give type error on &
             string text = "assert((\"a\"+\"b\") & (1=2));";
 
-            List<IError> errors = GetErrors(text);
+            List<Error> errors = GetErrors(text);
 
             Assert.AreEqual(1, errors.Count);
             Assert.IsTrue(errors[0] is SemanticError);

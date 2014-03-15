@@ -8,16 +8,11 @@ using InterpreterProject.SyntaxAnalysis;
 
 namespace InterpreterProject.Errors
 {
-    public class SyntaxError : IError
+    public class SyntaxError : Error
     {
-        Token t;
+        public SyntaxError(Token t) : base(t) { }
 
-        public SyntaxError(Token t)
-        {
-            this.t = t;
-        }
-
-        public string GetMessage()
+        override public string GetMessage()
         {
             return String.Format("Syntax error: unexpected {2} token \"{0}\" at {1}", t.Lexeme, t.TextPosition, t.Type.Name);
         }

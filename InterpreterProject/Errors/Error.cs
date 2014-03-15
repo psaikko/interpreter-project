@@ -9,8 +9,12 @@ using InterpreterProject.SyntaxAnalysis;
 namespace InterpreterProject.Errors
 {
     // Interface for different errors that can occur during interpretation process
-    public interface IError
+    public abstract class Error
     {
-        string GetMessage();
+        protected Token t;
+
+        protected Error(Token t) { this.t = t; }
+
+        abstract public string GetMessage();
     }
 }

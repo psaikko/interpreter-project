@@ -7,18 +7,17 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.Errors
 {
-    public class RuntimeError : IError
+    public class RuntimeError : Error
     {
-        Token t;
         string description;
 
         public RuntimeError(Token t, string description)
+            : base(t)
         {
-            this.t = t;
             this.description = description;
         }
 
-        public string GetMessage()
+        override public string GetMessage()
         {
             return String.Format("Runtime error: {0} at {1}", description, t.TextPosition);
         }

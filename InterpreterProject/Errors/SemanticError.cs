@@ -4,22 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using InterpreterProject.LexicalAnalysis;
-using InterpreterProject.SyntaxAnalysis;
 
 namespace InterpreterProject.Errors
 {
-    public class SemanticError : IError
+    public class SemanticError : Error
     {
-        Token t;
         string description;
 
-        public SemanticError(Token t, string description)
+        public SemanticError(Token t, string description) 
+            : base(t)
         {
-            this.t = t;
             this.description = description;
         }
 
-        public string GetMessage()
+        override public string GetMessage()
         {
             return String.Format("Semantic error: {0} at {1}", description, t.TextPosition);
         }

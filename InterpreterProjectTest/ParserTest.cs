@@ -179,7 +179,7 @@ namespace InterpreterProjectTest
 
             ParseTree ptree  = ps.Parse(sc.Tokenize(text));
 
-            List<IError> errors = ps.Errors;
+            List<Error> errors = ps.Errors;
 
             Assert.AreEqual(0, errors.Count);
         }
@@ -201,7 +201,7 @@ namespace InterpreterProjectTest
             Scanner sc = miniPL.Scanner;
             Parser ps = miniPL.Parser;
             ps.Parse(sc.Tokenize(text));
-            List<IError> errors = ps.Errors;
+            List<Error> errors = ps.Errors;
 
             Assert.AreEqual(0, errors.Count);
         }
@@ -225,7 +225,7 @@ namespace InterpreterProjectTest
             Parser ps = miniPL.Parser;
             ParseTree ptree = ps.Parse(sc.Tokenize(text));
 
-            List<IError> errors = ps.Errors;
+            List<Error> errors = ps.Errors;
 
             Assert.AreEqual(0, errors.Count);
         }
@@ -243,7 +243,7 @@ namespace InterpreterProjectTest
             Parser ps = miniPL.Parser;
             ParseTree ptree = ps.Parse(sc.Tokenize(text));
 
-            List<IError> errors = ps.Errors;
+            List<Error> errors = ps.Errors;
 
             Assert.AreEqual(6, errors.Count);
 
@@ -290,7 +290,7 @@ namespace InterpreterProjectTest
             Parser ps = miniPL.Parser;
 
             ps.Parse(sc.Tokenize(text));
-            List<IError> errors = ps.Errors;
+            List<Error> errors = ps.Errors;
 
             Assert.AreEqual(6, errors.Count);
         }        

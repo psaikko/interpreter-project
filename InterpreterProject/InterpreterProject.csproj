@@ -56,7 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Errors\IError.cs" />
+    <Compile Include="Errors\Error.cs" />
     <Compile Include="Errors\LexicalError.cs" />
     <Compile Include="Errors\MiniPL_DivideByZeroException.cs" />
     <Compile Include="Errors\RuntimeError.cs" />

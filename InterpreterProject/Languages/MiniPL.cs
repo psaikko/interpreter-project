@@ -184,11 +184,11 @@ namespace InterpreterProject.Languages
             parser = new Parser(grammar, terminals[";"]);
         }
 
-        public Runnable ProcessParseTree(ParseTree parseTree, IEnumerable<IError> parseErrors)
+        public Runnable ProcessParseTree(ParseTree parseTree, IEnumerable<Error> parseErrors)
         {
             Runnable prog = new Runnable();
             bool isValidParseTree = true;
-            foreach (IError err in parseErrors)
+            foreach (Error err in parseErrors)
             {
                 prog.errors.Add(err);
                 if (err is SyntaxError)
@@ -347,14 +347,14 @@ namespace InterpreterProject.Languages
             public List<Statement> statements = new List<Statement>();
             public Dictionary<string, Statement.DeclarationStmt> declarations = new Dictionary<string, Statement.DeclarationStmt>();
             public Dictionary<string, Value> values = new Dictionary<string, Value>();
-            public List<IError> errors = new List<IError>();
+            public List<Error> errors = new List<Error>();
 
             public bool Execute(TextReader stdin, TextWriter stdout)
             {
                 // just print errors if there are any
                 if (errors.Count > 0)
                 {
-                    foreach (IError err in errors)
+                    foreach (Error err in errors)
                         stdout.WriteLine(err.GetMessage());
                     return false;
                 }

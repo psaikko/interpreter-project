@@ -20,9 +20,9 @@ namespace InterpreterProject.SyntaxAnalysis
         Terminal syncTerm;
         CFG grammar;
 
-        List<IError> errors;
+        List<Error> errors;
 
-        public List<IError> Errors
+        public List<Error> Errors
         {
             get { return errors; }
         }
@@ -41,7 +41,7 @@ namespace InterpreterProject.SyntaxAnalysis
         // Parse the given stream of tokens
         public ParseTree Parse(IEnumerable<Token> tokenSource)
         {
-            errors = new List<IError>();
+            errors = new List<Error>();
 
             Stack<ISymbol> symbolStack = new Stack<ISymbol>();
             symbolStack.Push(Terminal.EOF);
