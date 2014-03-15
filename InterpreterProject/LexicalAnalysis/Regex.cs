@@ -6,16 +6,24 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.LexicalAnalysis
 {
+    // Implementation of a regex object,
+    // is actually a NFA-like structure constructed with regular operations
     public class Regex
     {
         private Node start;
         private Node end;
 
+        // defines a start and end node for the expression
         private Regex(Node start, Node end)
         {
             this.start = start;
             this.end = end;
         }
+
+        //
+        // Implementations of various regular operations
+        // and some extensions for convenience
+        //
 
         public static Regex Union(String s)
         {
@@ -91,6 +99,8 @@ namespace InterpreterProject.LexicalAnalysis
                 re = re.Concat(Char(c));
             return re;
         }
+
+        // Not and Any assume an ASCII alphabet. Unicode characters will cause them to misbehave
 
         public static Regex Not(params char[] cs)
         {
@@ -173,8 +183,8 @@ namespace InterpreterProject.LexicalAnalysis
         }
 
         /*
-         * Do a BFS of the underlying automaton and print node data
-         * For debugging purposes
+         * Do a BFS of the underlying automaton and print node data,
+         * for debugging purposes
          */
         public override string ToString()
         {
@@ -218,13 +228,14 @@ namespace InterpreterProject.LexicalAnalysis
         }
 
         /*
-         * Make a DFA-ish automaton from the regex
+         * Make a DFA-ish automaton from the NFA-like structure of the regex
          */
         public TokenAutomaton ConstructAutomaton()
         {
             Dictionary<ISet<Node>, TokenAutomaton.Node> DFAStates =
                 new Dictionary<ISet<Node>, TokenAutomaton.Node>(new SetEqualityComparer<Node>());
             TokenAutomaton.Node DFAStartState = new TokenAutomaton.Node();
+            // set of nodes accessible from NFA start state
             ISet<Node> NFAStartStates = start.EpsilonMove();
             DFAStates.Add(NFAStartStates, DFAStartState);
 
@@ -233,7 +244,9 @@ namespace InterpreterProject.LexicalAnalysis
 
             while (s.Count != 0)
             {
+                // pop a NFA state
                 ISet<Node> currentNFAStates = s.Pop();
+                // get the corresponding DFA state
                 TokenAutomaton.Node currentDFAState = DFAStates[currentNFAStates];
                 ISet<char> nextChars = new HashSet<char>();
 
@@ -241,22 +254,25 @@ namespace InterpreterProject.LexicalAnalysis
                 foreach (Node n in currentNFAStates)
                     nextChars.UnionWith(n.transitions.Keys);
 
+
                 foreach (char c in nextChars)
                 {
+                    // set of NFA states that can be reached from the current set with input c
                     ISet<Node> nextNFAStates = Node.Move(currentNFAStates, c);
-
                     if (nextNFAStates.Count != 0)
                     {
+                        // include NFA states that can be reached with an epsilon transition
                         HashSet<Node> epsilonClosure = new HashSet<Node>();
                         epsilonClosure.UnionWith(nextNFAStates);
-                        epsilonClosure.UnionWith(Node.EpsilonMove(nextNFAStates, cached: true));
+                        epsilonClosure.UnionWith(Node.EpsilonMove(nextNFAStates));
 
                         TokenAutomaton.Node nextDFAState;
-
                         if (!DFAStates.TryGetValue(epsilonClosure, out nextDFAState))
                         {
+                            // no DFA state exists for this set of NFA states yet, so we create one
                             nextDFAState = new TokenAutomaton.Node();
 
+                            // set accepted token types for the DFA state
                             foreach (Node n in epsilonClosure)
                             {
                                 if (n.tokenType != null &&
@@ -271,9 +287,9 @@ namespace InterpreterProject.LexicalAnalysis
                             s.Push(epsilonClosure);
                         }
 
+                        // create transition
                         currentDFAState.transitions.Add(c, nextDFAState);
                     }
-
                 }
             }
 
@@ -297,7 +313,6 @@ namespace InterpreterProject.LexicalAnalysis
              */
             public ISet<Node> EpsilonMove()
             {
-                calls++;
                 HashSet<Node> reachable = new HashSet<Node>();
                 reachable.Add(this);
                 Stack<Node> s = new Stack<Node>();
@@ -318,33 +333,21 @@ namespace InterpreterProject.LexicalAnalysis
                 return reachable;
             }
 
-            public static int calls = 0;
             /*
-             * During the DFA construction process the structure will remain
-             * unchanged, but EpsilonMove will get called many times for any 
-             * particular node so we cache the result as it is an expensive
-             * operation.
+             * Calculates the epsilon closure of a set of nodes
              */
-            private ISet<Node> cachedEpsilonMove = null;
-            public ISet<Node> EpsilonMove(bool cache)
-            {
-                if (cache)
-                {
-                    if (cachedEpsilonMove == null)
-                        cachedEpsilonMove = EpsilonMove();
-                    return cachedEpsilonMove;
-                }
-                return EpsilonMove();
-            }
-
-            public static ISet<Node> EpsilonMove(ICollection<Node> nodes, bool cached = false)
+            public static ISet<Node> EpsilonMove(ICollection<Node> nodes)
             {
                 HashSet<Node> reachable = new HashSet<Node>();
                 foreach (Node node in nodes)
-                    reachable.UnionWith(node.EpsilonMove(true));
+                    reachable.UnionWith(node.EpsilonMove());
                 return reachable;
             }
 
+            /*
+             * Gets the set of nodes that can be reached with input c
+             * from some set of nodes
+             */
             public static ISet<Node> Move(ICollection<Node> nodes, char c)
             {
                 HashSet<Node> reachable = new HashSet<Node>();

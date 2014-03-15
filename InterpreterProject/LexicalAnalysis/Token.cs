@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.LexicalAnalysis
 {
+    // Represents a some token
+    // consists of lexeme, token type, and the position of the lexeme
+    // in the scanned text
     public class Token
     {
         TokenType type;

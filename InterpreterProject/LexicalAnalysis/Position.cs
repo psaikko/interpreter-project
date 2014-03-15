@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.LexicalAnalysis
 {
+    // represents a position in the source text
     public class Position : IComparable<Position>
     {
         int row;

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.LexicalAnalysis
 {
+    // Compares the contents of sets so they can be used as dictionary keys
+    // Used in the NFA->DFA conversion in Regex.cs
     class SetEqualityComparer<T> : IEqualityComparer<ISet<T>>
     {
         public bool Equals(ISet<T> x, ISet<T> y)

@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace InterpreterProject.LexicalAnalysis
 {
+    // Used to define a type of token that the scanner will recognize
     public class TokenType
     {
         public enum Priority { Whitespace, Default, Keyword };
 
+        // special token types
         public static readonly TokenType ERROR = new TokenType("ERROR", Regex.None());
         public static readonly TokenType EOF = new TokenType("EOF", Regex.Char(TokenAutomaton.EOF));
 
@@ -19,6 +21,7 @@ namespace InterpreterProject.LexicalAnalysis
             get { return name; }
         }
 
+        // token priority used to distinguish between whitespace, regular tokens, and keywords
         Priority tokenPriority;
         public Priority TokenPriority
         {
@@ -27,6 +30,7 @@ namespace InterpreterProject.LexicalAnalysis
 
         Regex regex;
 
+        // in addition to creating the TokenType object, set the accepting state for the regex
         public TokenType(String name, Regex regex, Priority priority = Priority.Default)
         {
             this.name = name;
@@ -35,6 +39,7 @@ namespace InterpreterProject.LexicalAnalysis
             regex.DefineTokenClass(this);
         }
 
+        // creates a token of this tokentype
         public Token CreateToken(String lexeme, int row, int col)
         {
             return new Token(this, lexeme, row, col);
@@ -45,6 +50,7 @@ namespace InterpreterProject.LexicalAnalysis
             return regex.ConstructAutomaton();
         }
 
+        // combines the regexes (their internal NFA-like structure) 
         public static TokenAutomaton CombinedAutomaton(params TokenType[] ts)
         {
             Regex[] rs = new Regex[ts.Length];
